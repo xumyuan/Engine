@@ -25,6 +25,7 @@ namespace engine {
 			~Window();
 			void update();
 			void clear() const;
+			void close() const;
 			bool closed() const;
 			bool isKeyPressed(unsigned int keycode) const;
 			bool isMouseButtonPressed(unsigned int keycode) const;

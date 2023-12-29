@@ -3,10 +3,11 @@
 namespace engine {
 	namespace graphics {
 
-		FPSCamera::FPSCamera(glm::vec3 position, glm::vec3 up, GLfloat yaw, GLfloat pitch)
+		FPSCamera::FPSCamera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), GLfloat yaw = YAW, GLfloat pitch = PITCH)
 			: m_Front(glm::vec3(0.0f, 0.0f, -1.0f)), m_MovementSpeed(SPEED), m_MouseSensitivity(SENSITIVITY), m_FOV(FOV)
 		{
 			m_Position = position;
+			m_WorldUp = up;
 			m_Up = up;
 			m_Yaw = yaw;
 			m_Pitch = pitch;
@@ -17,7 +18,7 @@ namespace engine {
 			: m_Front(glm::vec3(0.0f, 0.0f, -1.0f)), m_MovementSpeed(SPEED), m_MouseSensitivity(SENSITIVITY), m_FOV(FOV)
 		{
 			m_Position = glm::vec3(xPos, yPos, zPos);
-			m_Up = glm::vec3(xUp, yUp, zUp);
+			m_WorldUp = glm::vec3(xUp, yUp, zUp);
 			m_Yaw = yaw;
 			m_Pitch = pitch;
 			updateCameraVectors();
@@ -43,7 +44,7 @@ namespace engine {
 			}
 		}
 
-		void FPSCamera::processMouseMovement(GLfloat xOffset, GLfloat yOffset, GLboolean constrainPitch) {
+		void FPSCamera::processMouseMovement(GLfloat xOffset, GLfloat yOffset, GLboolean constrainPitch = true) {
 			xOffset *= m_MouseSensitivity;
 			yOffset *= m_MouseSensitivity;
 

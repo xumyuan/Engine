@@ -134,12 +134,14 @@
     <ClInclude Include="src\graphics\Window.h" />
     <ClInclude Include="src\utils\FileUtils.h" />
     <ClInclude Include="src\utils\Timer.h" />
+    <ClInclude Include="src\utils\Time.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\graphics\camera\FPSCamera.cpp" />
     <ClCompile Include="src\graphics\shader.cpp" />
     <ClCompile Include="src\graphics\Window.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\utils\Time.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\shaders\basic.frag" />
