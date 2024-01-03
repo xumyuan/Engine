@@ -65,7 +65,7 @@ namespace engine {
 
 			// Create the window
 			if (FULLSCREEN_MODE) {
-				setResolution();
+				setFullScreenResolution();
 				m_Window = glfwCreateWindow(m_Width, m_Height, m_Title, glfwGetPrimaryMonitor(), NULL);
 			}
 			else {
@@ -134,7 +134,7 @@ namespace engine {
 		}
 
 		// Sets the Window's Size to the Primary Monitor's Resolution
-		void Window::setResolution() {
+		void Window::setFullScreenResolution() {
 			const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 			m_Width = mode->width;
 			m_Height = mode->height;
@@ -160,9 +160,5 @@ namespace engine {
 				return m_Buttons[keycode];
 			}
 		}
-
-
-
-
 	}
 }

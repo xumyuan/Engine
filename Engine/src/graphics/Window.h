@@ -40,7 +40,7 @@ namespace engine {
 			inline int getHeight() { return m_Height; }
 		private:
 			bool init();
-			void setResolution();
+			void setFullScreenResolution();
 			static friend void error_callback(int error, const char* description);
 			static friend void window_resize(GLFWwindow* window, int width, int height);
 			static friend void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);

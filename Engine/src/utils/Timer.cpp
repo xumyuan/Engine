@@ -10,8 +10,6 @@ namespace engine {
 		startTime = glfwGetTime();
 	}
 
-	double Timer::elapsed() {
-		return glfwGetTime() - startTime;
-	}
+	
 
 };

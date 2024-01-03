@@ -11,7 +11,7 @@ namespace engine {
 
 		void reset();
 
-		double elapsed();
+		inline double elapsed() { return glfwGetTime() - startTime; }
 	};
 
 }

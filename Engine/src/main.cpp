@@ -175,13 +175,13 @@ int main() {
 			window.close();
 
 		if (window.isKeyPressed(GLFW_KEY_W))
-			camera.processKeyboard(engine::graphics::FORWARD, time.delta);
+			camera.processKeyboard(engine::graphics::FORWARD, time.getDeltaTime());
 		if (window.isKeyPressed(GLFW_KEY_S))
-			camera.processKeyboard(engine::graphics::BACKWARD, time.delta);
+			camera.processKeyboard(engine::graphics::BACKWARD, time.getDeltaTime());
 		if (window.isKeyPressed(GLFW_KEY_A))
-			camera.processKeyboard(engine::graphics::LEFT, time.delta);
+			camera.processKeyboard(engine::graphics::LEFT, time.getDeltaTime());
 		if (window.isKeyPressed(GLFW_KEY_D))
-			camera.processKeyboard(engine::graphics::RIGHT, time.delta);
+			camera.processKeyboard(engine::graphics::RIGHT, time.getDeltaTime());
 
 		camera.processMouseScroll(window.getScrollY() * 6);
 		window.resetScroll();
