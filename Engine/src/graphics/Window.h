@@ -3,6 +3,7 @@
 #include <GL\glew.h>
 #include <GLFW\glfw3.h>
 #include <iostream>
+#include "..\utils\Logger.h"
 
 namespace engine {
 	namespace graphics {
@@ -15,6 +16,7 @@ namespace engine {
 			const char* m_Title;
 			int m_Width, m_Height;
 			GLFWwindow* m_Window;
+			engine::Logger m_log;
 
 			bool m_Keys[MAX_KEYS];
 			bool m_Buttons[MAX_BUTTONS];

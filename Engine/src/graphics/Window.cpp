@@ -46,10 +46,15 @@ namespace engine {
 			m_Width = width;
 			m_Height = height;
 
+			m_log.setOutputFile("logged_files/window_creation.txt");
+			m_log.clearFileContents();
+
 			if (!init()) {
+				m_log.error("Window Initialization", "Could not initialize window class");
 				glfwDestroyWindow(m_Window);
 				glfwTerminate();
 			}
+			m_log.info("Window Initialization", "Window class initialized successfully");
 		}
 
 		Window::~Window() {
@@ -59,6 +64,7 @@ namespace engine {
 
 		bool Window::init() {
 			if (!glfwInit()) {
+				m_log.error("Window Initialization", "Could not initialize the GLFW window");
 				std::cout << "GLFW Failed To Initialize" << std::endl;
 			}
 
@@ -73,6 +79,7 @@ namespace engine {
 			}
 
 			if (!m_Window) {
+				m_log.error("Window Initialization", "Could not create the GLFW window");
 				std::cout << "GLFW Window Couldn't Be Created" << std::endl;
 			}
 
@@ -103,6 +110,7 @@ namespace engine {
 			// Initialize GLEW (allows us to use newer versions of OpenGL)
 			if (glewInit() != GLEW_OK) {
 				std::cout << "Could not Initialize GLEW" << std::endl;
+				m_log.error("Window Initialization", "Could not initialize the GLEW");
 				return 0;
 			}
 			std::cout << "OpenGL " << glGetString(GL_VERSION) << std::endl;
