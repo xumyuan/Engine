@@ -30,6 +30,9 @@
     <ClInclude Include="src\graphics\camera\FPSCamera.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="src\utils\Time.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\graphics\shader.cpp">
@@ -42,6 +45,15 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\main.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\Time.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\FileUtils.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\Timer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
