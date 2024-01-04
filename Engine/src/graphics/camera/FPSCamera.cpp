@@ -1,5 +1,7 @@
 #include "FPSCamera.h"
 
+#include <iostream>
+
 namespace engine {
 	namespace graphics {
 
@@ -30,17 +32,25 @@ namespace engine {
 
 		void FPSCamera::processKeyboard(Camera_Movement direction, GLfloat deltaTime) {
 			GLfloat velocity = m_MovementSpeed * deltaTime;
-			if (direction == FORWARD) {
+			switch (direction) {
+			case FORWARD:
 				m_Position += m_Front * velocity;
-			}
-			if (direction == BACKWARD) {
+				break;
+			case BACKWARD:
 				m_Position -= m_Front * velocity;
-			}
-			if (direction == LEFT) {
+				break;
+			case LEFT:
 				m_Position -= m_Right * velocity;
-			}
-			if (direction == RIGHT) {
+				break;
+			case RIGHT:
 				m_Position += m_Right * velocity;
+				break;
+			case UPWARDS:
+				m_Position += m_WorldUp * velocity;
+				break;
+			case DOWNWARDS:
+				m_Position -= m_WorldUp * velocity;
+				break;
 			}
 		}
 

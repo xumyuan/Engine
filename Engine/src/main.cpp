@@ -117,12 +117,13 @@ int main() {
 	glBindTexture(GL_TEXTURE_2D, diffuseMap);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 	glGenerateMipmap(GL_TEXTURE_2D);
-	SOIL_free_image_data(image);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glBindTexture(GL_TEXTURE_2D, 0);
+	SOIL_free_image_data(image);
+
 
 
 	// Specular map
@@ -130,12 +131,13 @@ int main() {
 	glBindTexture(GL_TEXTURE_2D, specularMap);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 	glGenerateMipmap(GL_TEXTURE_2D);
-	SOIL_free_image_data(image);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glBindTexture(GL_TEXTURE_2D, 0);
+	SOIL_free_image_data(image);
+
 
 	shader.enable();
 	shader.setUniform1i("material.diffuse", 0);
@@ -183,9 +185,17 @@ int main() {
 			camera.processKeyboard(engine::graphics::LEFT, time.getDeltaTime());
 		if (window.isKeyPressed(GLFW_KEY_D))
 			camera.processKeyboard(engine::graphics::RIGHT, time.getDeltaTime());
+		if (window.isKeyPressed(GLFW_KEY_SPACE))
+			camera.processKeyboard(engine::graphics::UPWARDS, time.getDeltaTime());
+		if (window.isKeyPressed(GLFW_KEY_LEFT_CONTROL))
+			camera.processKeyboard(engine::graphics::DOWNWARDS, time.getDeltaTime());
 
 		camera.processMouseScroll(window.getScrollY() * 6);
 		window.resetScroll();
+
+		lightPos.x = sin(glfwGetTime()) * 2.0f;
+		lightPos.y = cos(glfwGetTime()) * 1.5f;
+		lightPos.z = -2.0f;
 
 		// Cube
 		shader.enable();
@@ -201,7 +211,8 @@ int main() {
 		shader.setUniform3f("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
 
 		glm::mat4 model(1);
-		model = glm::rotate(model, (GLfloat)count.elapsed(), glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(0.0f, 0.0f, -7.0f));
+		model = glm::rotate(model, (GLfloat)count.elapsed(), glm::vec3(1.0f, 0.5f, 0.2f));
 		model = glm::scale(model, glm::vec3(2, 2, 2));
 		
 
