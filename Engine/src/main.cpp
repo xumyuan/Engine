@@ -105,9 +105,10 @@ int main() {
 	glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 
 	// Load Textures
-	GLuint diffuseMap, specularMap;
+	GLuint diffuseMap, specularMap,emissionMap;
 	glGenTextures(1, &diffuseMap);
 	glGenTextures(1, &specularMap);
+	glGenTextures(1, &emissionMap);
 	int width, height;
 	unsigned char* image;
 
@@ -138,10 +139,33 @@ int main() {
 	glBindTexture(GL_TEXTURE_2D, 0);
 	SOIL_free_image_data(image);
 
+	// Emission map
+	image = SOIL_load_image("res/container2_emission.png", &width, &height, 0, SOIL_LOAD_RGB);
+	glBindTexture(GL_TEXTURE_2D, emissionMap);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+	glGenerateMipmap(GL_TEXTURE_2D); // Generate mip maps for what is currently bounded to GL_TEXTURE_2D
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	SOIL_free_image_data(image);
+
 
 	shader.enable();
 	shader.setUniform1i("material.diffuse", 0);
 	shader.setUniform1i("material.specular", 1);
+	shader.setUniform1i("material.emission", 2); 
+
+	// Activate a bind to texture unit 0 with our diffuse map
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, diffuseMap);
+	// Activate a bind to texture unit 1 with our specular map
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, specularMap);
+	// Activate a bind to texture unit 2 with our emission map
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, emissionMap);
 
 
 	// Prepare the fps counter right before the first tick
@@ -193,8 +217,7 @@ int main() {
 		camera.processMouseScroll(window.getScrollY() * 6);
 		window.resetScroll();
 
-		lightPos.x = sin(glfwGetTime()) * 2.0f;
-		lightPos.y = cos(glfwGetTime()) * 1.5f;
+		
 		lightPos.z = -2.0f;
 
 		// Cube
@@ -212,7 +235,7 @@ int main() {
 
 		glm::mat4 model(1);
 		model = glm::translate(model, glm::vec3(0.0f, 0.0f, -7.0f));
-		model = glm::rotate(model, (GLfloat)count.elapsed(), glm::vec3(1.0f, 0.5f, 0.2f));
+		model = glm::rotate(model, (GLfloat)count.elapsed(), glm::vec3(0.01f, 0.01f, 0.02f));
 		model = glm::scale(model, glm::vec3(2, 2, 2));
 		
 
@@ -261,6 +284,11 @@ int main() {
 			frames++;
 		}
 	}
+
+	// Clean up the memory (quite useless in this spot)
+	glDeleteVertexArrays(1, &VAO);
+	glDeleteVertexArrays(1, &lightVAO);
+	glDeleteBuffers(1, &VBO);
 
 	return 0;
 }
