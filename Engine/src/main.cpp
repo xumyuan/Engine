@@ -21,7 +21,7 @@ GLfloat pitch = 0.0f;
 int main() {
 	glEnable(GL_DEPTH_TEST);
 
-	engine::graphics::Shader shader("src/shaders/basic.vert", "src/shaders/basic.frag");
+	engine::graphics::Shader shader("src/shaders/basic.vert", "src/shaders/spotlight.frag");
 	engine::graphics::Shader lampShader("src/shaders/basic.vert", "src/shaders/lightCube.frag");
 	// Set up vertex data (and buffer(s)) and attribute pointers
 	GLfloat vertices[] = {
@@ -69,6 +69,19 @@ int main() {
 		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
 	};
 
+	glm::vec3 cubePositions[] = {
+		glm::vec3(0.0f,  0.0f,  0.0f),
+		glm::vec3(2.0f,  5.0f, -15.0f),
+		glm::vec3(-1.5f, -2.2f, -2.5f),
+		glm::vec3(-3.8f, -2.0f, -12.3f),
+		glm::vec3(2.4f, -0.4f, -3.5f),
+		glm::vec3(-1.7f,  3.0f, -7.5f),
+		glm::vec3(1.3f, -2.0f, -2.5f),
+		glm::vec3(1.5f,  2.0f, -2.5f),
+		glm::vec3(1.5f,  0.2f, -1.5f),
+		glm::vec3(-1.3f,  1.0f, -1.5f)
+	};
+
 	GLuint VBO, VAO, lightVAO;
 	glGenVertexArrays(1, &VAO);
 	glGenVertexArrays(1, &lightVAO);
@@ -105,7 +118,7 @@ int main() {
 	glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 
 	// Load Textures
-	GLuint diffuseMap, specularMap,emissionMap;
+	GLuint diffuseMap, specularMap, emissionMap;
 	glGenTextures(1, &diffuseMap);
 	glGenTextures(1, &specularMap);
 	glGenTextures(1, &emissionMap);
@@ -155,7 +168,14 @@ int main() {
 	shader.enable();
 	shader.setUniform1i("material.diffuse", 0);
 	shader.setUniform1i("material.specular", 1);
-	shader.setUniform1i("material.emission", 2); 
+	shader.setUniform1i("material.emission", 2);
+
+	// Point light
+	shader.setUniform1f("light.cutOff", glm::cos(glm::radians(22.0f)));
+	shader.setUniform1f("light.outerCutOff", glm::cos(glm::radians(25.0f)));
+	shader.setUniform1f("light.constant", 1.0f);
+	shader.setUniform1f("light.linear", 0.09f);
+	shader.setUniform1f("light.quadratic", 0.032f);
 
 	// Activate a bind to texture unit 0 with our diffuse map
 	glActiveTexture(GL_TEXTURE0);
@@ -217,8 +237,8 @@ int main() {
 		camera.processMouseScroll(window.getScrollY() * 6);
 		window.resetScroll();
 
-		
-		lightPos.z = -2.0f;
+
+
 
 		// Cube
 		shader.enable();
@@ -227,17 +247,17 @@ int main() {
 		shader.setUniform3f("viewPos", glm::vec3(cameraPosition.x, cameraPosition.y, cameraPosition.z));
 
 		shader.setUniform1f("material.shininess", 32.0f);
-		shader.setUniform3f("light.position", glm::vec3(lightPos.x, lightPos.y, lightPos.z));
 		shader.setUniform3f("light.ambient", glm::vec3(0.15f, 0.15f, 0.15f));
 		shader.setUniform3f("light.diffuse", glm::vec3(0.6f, 0.6f, 0.6f));
-		
 		shader.setUniform3f("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+		shader.setUniform3f("light.position", camera.getPosition());
+		shader.setUniform3f("light.direction", camera.getFront());
 
 		glm::mat4 model(1);
 		model = glm::translate(model, glm::vec3(0.0f, 0.0f, -7.0f));
 		model = glm::rotate(model, (GLfloat)count.elapsed(), glm::vec3(0.01f, 0.01f, 0.02f));
 		model = glm::scale(model, glm::vec3(2, 2, 2));
-		
+
 
 		glm::mat4 view;
 		view = camera.getViewMatrix();
@@ -245,9 +265,9 @@ int main() {
 		glm::mat4 projection;
 		projection = glm::perspective(glm::radians(camera.getFOV()), (float)window.getWidth() / (float)window.getHeight(), 0.1f, 100.0f);
 
-		shader.setUniformMat4("model", model);
 		shader.setUniformMat4("view", view);
 		shader.setUniformMat4("projection", projection);
+		shader.setUniform1f("time", glfwGetTime());
 
 		// Bind Diffuse Map
 		glActiveTexture(GL_TEXTURE0);
@@ -257,11 +277,17 @@ int main() {
 		glBindTexture(GL_TEXTURE_2D, specularMap);
 
 		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		for (unsigned int i = 0; i < 10; i++) {
+			glm::mat4 model(1.0);
+			model = glm::translate(model, cubePositions[i]);
+			model = glm::rotate(model, glm::radians(20.0f * (i + (float)glfwGetTime())), glm::vec3(0.3f, 0.5f, 1.0f));
+			shader.setUniformMat4("model", model);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
 		glBindVertexArray(0);
 
 		// LightCube
-		model = glm::mat4(1);
+		/*model = glm::mat4(1);
 		model = glm::translate(model, lightPos);
 		model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));
 
@@ -272,7 +298,7 @@ int main() {
 
 		glBindVertexArray(lightVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glBindVertexArray(0);
+		glBindVertexArray(0);*/
 
 		window.update();
 		if (timer.elapsed() >= 1) {
