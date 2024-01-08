@@ -148,11 +148,9 @@
     <ClCompile Include="src\utils\Timer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\shaders\directionalLight.frag" />
     <None Include="src\shaders\basic.vert" />
     <None Include="src\shaders\lightCube.frag" />
-    <None Include="src\shaders\pointlight.frag" />
-    <None Include="src\shaders\spotlight.frag" />
+    <None Include="src\shaders\multipleLight.frag" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\awesomeface.png" />
