@@ -141,6 +141,7 @@
     <ClInclude Include="src\graphics\shader.h" />
     <ClInclude Include="src\graphics\Window.h" />
     <ClInclude Include="src\utils\FileUtils.h" />
+    <ClInclude Include="src\utils\Singleton.h" />
     <ClInclude Include="src\utils\Timer.h" />
     <ClInclude Include="src\utils\Time.h" />
     <ClInclude Include="src\terrain\Terrain.h" />
