@@ -74,9 +74,9 @@ namespace engine {
 			updateCameraVectors();
 		}
 
-		void FPSCamera::processMouseScroll(GLfloat yOffset) {
-			if (m_FOV >= 1.0f && m_FOV <= FOV) {
-				m_FOV -= yOffset;
+		void FPSCamera::processMouseScroll(GLfloat offset) {
+			if (offset != 0 && m_FOV >= 1.0f && m_FOV <= FOV) {
+				m_FOV -= offset;
 			}
 			if (m_FOV < 1.0f) {
 				m_FOV = 1.0f;

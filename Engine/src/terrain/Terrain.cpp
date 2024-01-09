@@ -3,43 +3,45 @@
 namespace engine {
 	namespace terrain {
 
-		Terrain::Terrain(glm::vec3& worldPosition)
+		Terrain::Terrain(glm::vec3& worldPosition) : m_Position(worldPosition)
 		{
-			m_Position = worldPosition;
-			m_VertexSideCount = 1024;
-			m_TerrainSize = 2;
-			m_HeightMapScale = 100;
+
 
 			std::vector<graphics::Vertex> vertices;
 			std::vector<unsigned int> indices;
 			std::vector<graphics::Texture> textures;
 
-			// Vertex generation
+
+
+			GLint mapWidth, mapHeight;
+			unsigned char* heightMapImage = stbi_load("res/terrain/heightMap.png", &mapWidth, &mapHeight, 0, SOIL_LOAD_L);
+			if (mapWidth != mapHeight) {
+				std::cout << "Height map must be square" << std::endl;
+				return;
+			}
+
+			m_Position = worldPosition;
+			m_VertexSideCount = mapWidth;
+			m_TerrainSize = 2;
+			m_HeightMapScale = 100;
+
+			// 顶点生成
 			for (GLuint z = 0; z < m_VertexSideCount; z++) {
 				for (GLuint x = 0; x < m_VertexSideCount; x++) {
 					graphics::Vertex vertex;
 
-					vertex.Position = glm::vec3(x * m_TerrainSize, 0, z * m_TerrainSize);
-					vertex.Normal = glm::vec3(0, 1, 0);
+					vertex.Position = glm::vec3(x * m_TerrainSize, getVertexHeight(x, z, heightMapImage), z * m_TerrainSize);
+					vertex.Normal = calculateNormal(x, z, heightMapImage);
 					vertex.TexCoords = glm::vec2((GLfloat)x / ((GLfloat)m_VertexSideCount - 1.0f), (GLfloat)z / ((GLfloat)m_VertexSideCount - 1.0f));
 
 					vertices.push_back(vertex);
 				}
 			}
 
-			// Height map
-			GLint mapWidth, mapHeight;
-			unsigned char* heightMapImage = stbi_load("res/terrain/heightMap.png", &mapWidth, &mapHeight, 0, SOIL_LOAD_L);
-			for (GLuint height = 0; height < mapHeight; ++height) {
-				for (GLuint width = 0; width < mapWidth; ++width) {
-					// Normalize height to [-1, 1]
-					GLfloat temp = (heightMapImage[width + (height * mapWidth)] / 127.5f) - 1;
-
-					vertices[width + (height * mapWidth)].Position.y = temp * m_HeightMapScale;
-				}
-			}
 			stbi_image_free(heightMapImage);
 
+
+			// 生成索引
 			for (GLuint height = 0; height < m_VertexSideCount - 1; ++height) {
 				for (GLuint width = 0; width < m_VertexSideCount - 1; ++width) {
 					// Triangle 1
@@ -85,6 +87,27 @@ namespace engine {
 
 		void Terrain::Draw(graphics::Shader& shader) const {
 			m_Mesh->Draw(shader);
+		}
+
+		glm::vec3 Terrain::calculateNormal(int x, int z, unsigned char* heightMapData) {
+			GLfloat heightR = getVertexHeight(x + 1, z, heightMapData);
+			GLfloat heightL = getVertexHeight(x - 1, z, heightMapData);
+			GLfloat heightU = getVertexHeight(x, z + 1, heightMapData);
+			GLfloat heightD = getVertexHeight(x, z - 1, heightMapData);
+
+			glm::vec3 normal(heightL - heightR, 2.0f, heightD - heightU);
+			normal = glm::normalize(normal);
+
+			return normal;
+		}
+
+		GLfloat Terrain::getVertexHeight(int x, int z, unsigned char* heightMapData) {
+			if (x < 0 || x >= m_VertexSideCount || z < 0 || z >= m_VertexSideCount) {
+				return 0.0f;
+			}
+
+			// Normalize height to [-1, 1] then multiply it by the height map scale
+			return ((heightMapData[x + (z * m_VertexSideCount)] / 127.5f) - 1) * m_HeightMapScale;
 		}
 
 	}

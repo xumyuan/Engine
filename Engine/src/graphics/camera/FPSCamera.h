@@ -21,7 +21,7 @@ namespace engine {
 		const GLfloat YAW = -90.0f;
 		const GLfloat PITCH = 0.0f;
 		const GLfloat SPEED = 40.0f;
-		const GLfloat SENSITIVITY = 0.25f;
+		const GLfloat SENSITIVITY = 0.1f;
 		const GLfloat FOV = 80.0f;
 
 		class FPSCamera {
