@@ -129,6 +129,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\graphics\Model.h" />
+    <ClInclude Include="src\graphics\Mesh.h" />
+    <ClInclude Include="src\graphics\stb_image.h" />
     <ClInclude Include="src\utils\Logger.h" />
     <ClInclude Include="src\graphics\camera\FPSCamera.h" />
     <ClInclude Include="src\graphics\shader.h" />
@@ -138,6 +141,8 @@
     <ClInclude Include="src\utils\Time.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\graphics\Model.cpp" />
+    <ClCompile Include="src\graphics\Mesh.cpp" />
     <ClCompile Include="src\utils\Logger.cpp" />
     <ClCompile Include="src\graphics\camera\FPSCamera.cpp" />
     <ClCompile Include="src\graphics\shader.cpp" />
