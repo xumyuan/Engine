@@ -105,6 +105,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>dependencies;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -120,6 +121,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>dependencies;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -129,9 +131,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\platform\OpenGL\IndexBuffer.h" />
+    <ClInclude Include="src\platform\OpenGL\Buffer.h" />
     <ClInclude Include="src\graphics\Model.h" />
     <ClInclude Include="src\graphics\Mesh.h" />
-    <ClInclude Include="src\graphics\stb_image.h" />
+    <ClInclude Include="dependencies\stb_image.h" />
     <ClInclude Include="src\utils\Logger.h" />
     <ClInclude Include="src\graphics\camera\FPSCamera.h" />
     <ClInclude Include="src\graphics\shader.h" />
@@ -139,8 +143,13 @@
     <ClInclude Include="src\utils\FileUtils.h" />
     <ClInclude Include="src\utils\Timer.h" />
     <ClInclude Include="src\utils\Time.h" />
+    <ClInclude Include="src\terrain\Terrain.h" />
+    <ClInclude Include="src\platform\OpenGL\VertexArray.h" />
+    <ClInclude Include="src\platform\OpenGL\Utility.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\platform\OpenGL\IndexBuffer.cpp" />
+    <ClCompile Include="src\platform\OpenGL\Buffer.cpp" />
     <ClCompile Include="src\graphics\Model.cpp" />
     <ClCompile Include="src\graphics\Mesh.cpp" />
     <ClCompile Include="src\utils\Logger.cpp" />
@@ -151,11 +160,15 @@
     <ClCompile Include="src\utils\FileUtils.cpp" />
     <ClCompile Include="src\utils\Time.cpp" />
     <ClCompile Include="src\utils\Timer.cpp" />
+    <ClCompile Include="src\terrain\Terrain.cpp" />
+    <ClCompile Include="src\platform\OpenGL\VertexArray.cpp" />
+    <ClCompile Include="src\platform\OpenGL\Utility.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\shaders\basic.vert" />
     <None Include="src\shaders\lightCube.frag" />
     <None Include="src\shaders\multipleLight.frag" />
+    <None Include="src\shaders\terrain.frag" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\awesomeface.png" />
@@ -163,6 +176,12 @@
     <Image Include="res\container2.png" />
     <Image Include="res\container2_emission.png" />
     <Image Include="res\container2_specular.png" />
+    <Image Include="res\terrain\blendMap.png" />
+    <Image Include="res\terrain\dirt.png" />
+    <Image Include="res\terrain\grass.png" />
+    <Image Include="res\terrain\heightMap.png" />
+    <Image Include="res\terrain\sand.png" />
+    <Image Include="res\terrain\stone.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

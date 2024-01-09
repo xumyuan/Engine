@@ -42,7 +42,22 @@
     <ClInclude Include="src\graphics\Model.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\graphics\stb_image.h">
+    <ClInclude Include="dependencies\stb_image.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\terrain\Terrain.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\platform\OpenGL\Buffer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\platform\OpenGL\IndexBuffer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\platform\OpenGL\VertexArray.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\platform\OpenGL\Utility.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -77,11 +92,27 @@
     <ClCompile Include="src\graphics\Model.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\terrain\Terrain.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\platform\OpenGL\Buffer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\platform\OpenGL\IndexBuffer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\platform\OpenGL\VertexArray.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\platform\OpenGL\Utility.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\shaders\basic.vert" />
     <None Include="src\shaders\lightCube.frag" />
     <None Include="src\shaders\multipleLight.frag" />
+    <None Include="src\shaders\terrain.frag" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\awesomeface.png">
@@ -97,6 +128,24 @@
       <Filter>资源文件</Filter>
     </Image>
     <Image Include="res\container2_emission.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\terrain\stone.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\terrain\sand.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\terrain\heightMap.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\terrain\grass.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\terrain\dirt.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\terrain\blendMap.png">
       <Filter>资源文件</Filter>
     </Image>
   </ItemGroup>
