@@ -26,12 +26,13 @@ namespace engine {
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
 			glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_Indices.size() * sizeof(unsigned int), &m_Indices[0], GL_STATIC_DRAW);
 
+			//顶点属性
 			glEnableVertexAttribArray(0);
 			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
-
+			//法线属性
 			glEnableVertexAttribArray(1);
 			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
-
+			//纹理坐标属性
 			glEnableVertexAttribArray(2);
 			glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
 
@@ -48,10 +49,13 @@ namespace engine {
 				std::stringstream ss;
 				std::string number;
 				std::string name = m_Textures[i].type;
-				if (name == "texture_diffuse")
+				if (name == "texture_diffuse") {
 					ss << diffuseNr++;
-				else if (name == "texture_specular")
+				}
+				else if (name == "texture_specular") {
 					ss << specularNr++;
+				}
+
 				number = ss.str();
 
 				shader.setUniform1i(("material." + name + number).c_str(), i);

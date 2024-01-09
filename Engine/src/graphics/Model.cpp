@@ -6,7 +6,7 @@
 namespace engine {
 	namespace graphics {
 
-		Model::Model(char* path) {
+		Model::Model(const char* path) {
 			loadModel(path);
 		}
 

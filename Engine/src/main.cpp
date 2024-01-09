@@ -10,6 +10,7 @@
 #include "utils\Time.h"
 #include "graphics\camera\FPSCamera.h"
 #include "utils\Logger.h"
+#include "graphics\Model.h"
 
 engine::graphics::FPSCamera camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f);
 
@@ -84,7 +85,7 @@ int main() {
 
 
 	glm::vec3 pointLightPositions[] = {
-		glm::vec3(0.7f,  0.2f,  2.0f),
+		glm::vec3(3.0f, 0.2f, -1.0f),
 		glm::vec3(2.3f, -3.3f, -4.0f),
 		glm::vec3(-4.0f,  2.0f, -12.0f),
 		glm::vec3(0.0f,  0.0f, -3.0f)
@@ -174,9 +175,12 @@ int main() {
 
 
 	shader.enable();
-	shader.setUniform1i("material.diffuse", 0);
-	shader.setUniform1i("material.specular", 1);
-	shader.setUniform1i("material.emission", 2);
+
+	// Load model
+	//std::string test = "res/3D_Models/Crysis/nanosuit.obj";
+	std::string test = "res/3D_Models/nanosuit_model/nanosuit.obj";
+	//std::string test = "res/3D_Models/Town/Buildings.obj";
+	engine::graphics::Model nanosuitModel(test.c_str());
 
 
 	// Activate a bind to texture unit 0 with our diffuse map
@@ -204,7 +208,7 @@ int main() {
 
 
 	while (!window.closed()) {
-		glClearColor(0.2f, 0.0f, 0.0f, 1.0f); // 场景背景色
+		glClearColor(0.0f, 0.0f, 0.2f, 1.0f);  // 场景背景色
 
 		window.clear();
 		time.update();
@@ -328,15 +332,12 @@ int main() {
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, specularMap);
 
-		glBindVertexArray(VAO);
-		for (unsigned int i = 0; i < 10; i++) {
-			glm::mat4 model(1.0);
-			model = glm::translate(model, cubePositions[i]);
-			model = glm::rotate(model, glm::radians(20.0f * (i + (float)glfwGetTime())), glm::vec3(0.3f, 0.5f, 1.0f));
-			shader.setUniformMat4("model", model);
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}
-		glBindVertexArray(0);
+		// Draw model
+		model = glm::mat4(1.0);
+		model = glm::scale(model, glm::vec3(0.01f, 0.01f, 0.01f));
+		model = glm::translate(model, glm::vec3(0.0f, -11.0f, 0.0f));
+		shader.setUniformMat4("model", model);
+		nanosuitModel.Draw(shader);
 
 
 
