@@ -24,7 +24,7 @@ int main() {
 	glEnable(GL_DEPTH_TEST);
 
 	//engine::graphics::Shader shader("src/shaders/basic.vert", "src/shaders/multipleLight.frag");
-	//engine::graphics::Shader lampShader("src/shaders/basic.vert", "src/shaders/lightCube.frag");
+	engine::graphics::Shader lampShader("src/shaders/basic.vert", "src/shaders/lightCube.frag");
 
 	engine::graphics::Shader shader("src/shaders/basic.vert", "src/shaders/terrain.frag");
 
@@ -88,43 +88,26 @@ int main() {
 	};
 
 	glm::vec3 pointLightPositions[] = {
-		glm::vec3(3.0f, 0.2f, -1.0f),
+		glm::vec3(0.0f, -30.0f, 0.0f),
 		glm::vec3(2.3f, -3.3f, -4.0f),
 		glm::vec3(-4.0f,  2.0f, -12.0f),
 		glm::vec3(0.0f,  0.0f, -3.0f)
 	};
 
-	//GLuint VBO, VAO, lightVAO;
-	//glGenVertexArrays(1, &VAO);
-	//glGenVertexArrays(1, &lightVAO);
-	//glGenBuffers(1, &VBO);
+	GLuint VBO, lightVAO;
+	glGenVertexArrays(1, &lightVAO);
+	glGenBuffers(1, &VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
 
-	//glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-	//glBindVertexArray(VAO);
-
-	//// Position attribute
-	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
-	//glEnableVertexAttribArray(0);
-	//// Colour attribute
-	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-	//glEnableVertexAttribArray(1);
-
-	//glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
-	//glEnableVertexAttribArray(2);
-
-	//glBindVertexArray(0); // Unbind VAO
-	//glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	//// Light Cube
-	//glBindVertexArray(lightVAO);
-	//glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
-	//glEnableVertexAttribArray(0);
-	//glBindVertexArray(0); //unbind
-	//glBindBuffer(GL_ARRAY_BUFFER, 0);
+	// Light Cube
+	glBindVertexArray(lightVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(0);
+	glBindVertexArray(0); //unbind
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	//// Light position
 	//glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
@@ -175,7 +158,9 @@ int main() {
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	//glBindTexture(GL_TEXTURE_2D, 0);
 	//SOIL_free_image_data(image);
-	glm::vec3 w_position(0, 0, 0);
+	glm::vec3 w_position(-350, -40, -350);
+	//glm::vec3 w_position(0, 0, 0);
+
 	engine::terrain::Terrain terrain(w_position);
 	shader.enable();
 
@@ -250,7 +235,7 @@ int main() {
 		window.resetScroll();
 
 		// Cube
-		//shader.enable();
+		shader.enable();
 
 		glm::vec3 cameraPosition = camera.getPosition();
 		shader.setUniform3f("viewPos", glm::vec3(cameraPosition.x, cameraPosition.y, cameraPosition.z));
@@ -260,17 +245,17 @@ int main() {
 		// directional light
 		shader.setUniform3f("dirLight.direction", glm::vec3(0.0f, -1.0f, 0.0f));
 		shader.setUniform3f("dirLight.ambient", glm::vec3(0.05f, 0.05f, 0.05f));
-		shader.setUniform3f("dirLight.diffuse", glm::vec3(0.8f, 0.8f, 0.8f));
+		shader.setUniform3f("dirLight.diffuse", glm::vec3(0.1f, 0.1f, 0.1f));
 		shader.setUniform3f("dirLight.specular", glm::vec3(0.5f, 0.5f, 0.5f));
 
 		//// point lights
-		//shader.setUniform3f("pointLights[0].position", pointLightPositions[0]);
-		//shader.setUniform3f("pointLights[0].ambient", glm::vec3(0.05f, 0.05f, 0.05f));
-		//shader.setUniform3f("pointLights[0].diffuse", glm::vec3(0.8f, 0.8f, 0.8f));
-		//shader.setUniform3f("pointLights[0].specular", glm::vec3(1.0f, 1.0f, 1.0f));
-		//shader.setUniform1f("pointLights[0].constant", 1.0f);
-		//shader.setUniform1f("pointLights[0].linear", 0.09);
-		//shader.setUniform1f("pointLights[0].quadratic", 0.032);
+		shader.setUniform3f("pointLight.position", pointLightPositions[0] + glm::vec3(sin(glfwGetTime()) * 30, 0.0f, cos(glfwGetTime()) * 30));
+		shader.setUniform3f("pointLight.ambient", glm::vec3(0.05f, 0.05f, 0.05f));
+		shader.setUniform3f("pointLight.diffuse", glm::vec3(0.8f, 0.8f, 0.8f));
+		shader.setUniform3f("pointLight.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+		shader.setUniform1f("pointLight.constant", 1.0f);
+		shader.setUniform1f("pointLight.linear", 0.007);
+		shader.setUniform1f("pointLight.quadratic", 0.0002);
 
 		//shader.setUniform3f("pointLights[0].position", pointLightPositions[0]);
 		//shader.setUniform3f("pointLights[0].ambient", glm::vec3(0.05f, 0.05f, 0.05f));
@@ -303,19 +288,20 @@ int main() {
 		//shader.setUniform1f("pointLights[3].constant", 1.0f);
 		//shader.setUniform1f("pointLights[3].linear", 0.09);
 		//shader.setUniform1f("pointLights[3].quadratic", 0.032);
-		//// spotLight
-		//shader.setUniform3f("spotLight.position", camera.getPosition());
-		//shader.setUniform3f("spotLight.direction", camera.getFront());
-		//shader.setUniform3f("spotLight.ambient", glm::vec3(0.0f, 0.0f, 0.0f));
-		//shader.setUniform3f("spotLight.diffuse", glm::vec3(1.0f, 1.0f, 1.0f));
-		//shader.setUniform3f("spotLight.specular", glm::vec3(1.0f, 1.0f, 1.0f));
-		//shader.setUniform1f("spotLight.constant", 1.0f);
-		//shader.setUniform1f("spotLight.linear", 0.09);
-		//shader.setUniform1f("spotLight.quadratic", 0.032);
-		//shader.setUniform1f("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
-		//shader.setUniform1f("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
+		// spotLight
+		shader.setUniform3f("spotLight.position", camera.getPosition());
+		shader.setUniform3f("spotLight.direction", camera.getFront());
+		shader.setUniform3f("spotLight.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
+		shader.setUniform3f("spotLight.diffuse", glm::vec3(1.0f, 1.0f, 1.0f));
+		shader.setUniform3f("spotLight.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+		shader.setUniform1f("spotLight.constant", 1.0f);
+		shader.setUniform1f("spotLight.linear", 0.022);
+		shader.setUniform1f("spotLight.quadratic", 0.0019);
+		shader.setUniform1f("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
+		shader.setUniform1f("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
 
-
+		// Draw Terrain
+		shader.enable();
 		glm::mat4 view;
 		view = camera.getViewMatrix();
 
@@ -325,6 +311,7 @@ int main() {
 		shader.setUniformMat4("view", view);
 		shader.setUniformMat4("projection", projection);
 		shader.setUniform1f("time", glfwGetTime());
+		terrain.Draw(shader);
 
 		//// Bind Diffuse Map
 		//glActiveTexture(GL_TEXTURE0);
@@ -334,29 +321,25 @@ int main() {
 		//glBindTexture(GL_TEXTURE_2D, specularMap);
 
 		// Draw model
-		glm::mat4 model(1.0);
+		//glm::mat4 model(1.0);
 		/*model = glm::scale(model, glm::vec3(0.01f, 0.01f, 0.01f));
 		model = glm::translate(model, glm::vec3(0.0f, -11.0f, 0.0f));*/
-		shader.setUniformMat4("model", model);
+		//shader.setUniformMat4("model", model);
 		//nanosuitModel.Draw(shader);
 
-		terrain.Draw(shader);
-
-		//lampShader.enable();
-		//lampShader.setUniformMat4("model", model);
-		//lampShader.setUniformMat4("view", view);
-		//lampShader.setUniformMat4("projection", projection);
-
-		//glBindVertexArray(lightVAO);
-		//// LightCube
-		//for (unsigned int i = 0; i < 4; ++i) {
-		//	glm::mat4 model = glm::mat4(1.0);
-		//	model = glm::translate(model, pointLightPositions[i]);
-		//	model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));
-		//	lampShader.setUniformMat4("model", model);
-		//	glDrawArrays(GL_TRIANGLES, 0, 36);
-		//}
-		//glBindVertexArray(0);
+		glBindVertexArray(lightVAO);
+		lampShader.enable();
+		lampShader.setUniformMat4("view", view);
+		lampShader.setUniformMat4("projection", projection);
+		// LightCube
+		for (unsigned int i = 0; i < 1; ++i) {
+			glm::mat4 model = glm::mat4(1.0);
+			model = glm::translate(model, pointLightPositions[i] + glm::vec3(sin(glfwGetTime()) * 30, 0.0f, cos(glfwGetTime()) * 30));
+			model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));
+			lampShader.setUniformMat4("model", model);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
+		glBindVertexArray(0);
 
 		window.update();
 		if (timer.elapsed() >= 1) {

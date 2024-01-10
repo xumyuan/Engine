@@ -61,7 +61,8 @@ namespace engine {
 			std::string module = "Logger";
 			std::string message = "Log file cleared";
 			if (!filestream) {
-				debug(filePath, module, message);
+				std::cout << "Error: Logger Can't Log To: " << file.c_str() << std::endl;
+				error("logged_files/log.txt", "Logger Dtor", "Could not empty the contents of file: " + file);
 			}
 			filestream.close();
 

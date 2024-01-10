@@ -1,11 +1,12 @@
 #include "Terrain.h"
+#include "../utils/Logger.h"
 
 namespace engine {
 	namespace terrain {
 
 		Terrain::Terrain(glm::vec3& worldPosition) : m_Position(worldPosition)
 		{
-
+			m_ModelMatrix = glm::translate(glm::mat4(1), worldPosition);
 
 			std::vector<graphics::Vertex> vertices;
 			std::vector<unsigned int> indices;
@@ -16,7 +17,8 @@ namespace engine {
 			GLint mapWidth, mapHeight;
 			unsigned char* heightMapImage = stbi_load("res/terrain/heightMap.png", &mapWidth, &mapHeight, 0, SOIL_LOAD_L);
 			if (mapWidth != mapHeight) {
-				std::cout << "Height map must be square" << std::endl;
+				std::cout << "ERROR: Can't use a heightmap with a different width and height" << std::endl;
+				utils::Logger::getInstance().error("logged_files/terrain_creation.txt", "terrain initialization", "Can't use a heightmap with a different width and height");
 				return;
 			}
 
@@ -86,6 +88,7 @@ namespace engine {
 		}
 
 		void Terrain::Draw(graphics::Shader& shader) const {
+			shader.setUniformMat4("model", m_ModelMatrix);
 			m_Mesh->Draw(shader);
 		}
 
