@@ -131,6 +131,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\graphics\renderer\Renderer.h" />
+    <ClInclude Include="src\graphics\renderer\Renderable3D.h" />
+    <ClInclude Include="src\Scene3D.h" />
     <ClInclude Include="src\platform\OpenGL\IndexBuffer.h" />
     <ClInclude Include="src\platform\OpenGL\Buffer.h" />
     <ClInclude Include="src\graphics\Model.h" />
@@ -149,6 +152,9 @@
     <ClInclude Include="src\platform\OpenGL\Utility.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\graphics\renderer\Renderer.cpp" />
+    <ClCompile Include="src\graphics\renderer\Renderable3D.cpp" />
+    <ClCompile Include="src\Scene3D.cpp" />
     <ClCompile Include="src\platform\OpenGL\IndexBuffer.cpp" />
     <ClCompile Include="src\platform\OpenGL\Buffer.cpp" />
     <ClCompile Include="src\graphics\Model.cpp" />
