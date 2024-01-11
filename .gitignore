@@ -9,8 +9,8 @@
 *.user
 *.userosscache
 *.sln.docstates
+!Engine/res/**/*.obj
 
-Engine/res/3D_Models/
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
