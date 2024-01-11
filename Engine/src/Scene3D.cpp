@@ -26,9 +26,13 @@ namespace engine {
 		//加载模型
 		Add(new graphics::Renderable3D(position, scale, rotationAxis, 0, new engine::graphics::Model("res/3D_Models/nanosuit_model/nanosuit.obj")));
 
+		position = glm::vec3(200.0f, 200.0f, 100.0f);
+		scale = glm::vec3(0.2f, 0.2f, 0.2f);
+		rotationAxis = glm::vec3(0.0f, 0.0f, 0.0f);
+		Add(new graphics::Renderable3D(position, scale, rotationAxis, 0, new engine::graphics::Model("res/3D_Models/Sponza/sponza.obj")));
 		// 地形shader设置
 		terrainShader.enable();
-		terrainShader.setUniform1f("material.shininess", 32.0f);
+		terrainShader.setUniform1f("material.shininess", 128.0f);
 		terrainShader.setUniform3f("dirLight.direction", glm::vec3(-0.3f, -1.0f, -0.3f));
 		terrainShader.setUniform3f("dirLight.ambient", glm::vec3(0.1f, 0.1f, 0.1f));
 		terrainShader.setUniform3f("dirLight.diffuse", glm::vec3(0.4f, 0.4f, 0.4f));
@@ -50,7 +54,7 @@ namespace engine {
 
 		// 模型shader
 		modelShader.enable();
-		modelShader.setUniform1f("material.shininess", 32.0f);
+		modelShader.setUniform1f("material.shininess", 128.0f);
 		modelShader.setUniform3f("dirLight.direction", glm::vec3(-0.3f, -1.0f, -0.3f));
 		modelShader.setUniform3f("dirLight.ambient", glm::vec3(0.1f, 0.1f, 0.1f));
 		modelShader.setUniform3f("dirLight.diffuse", glm::vec3(0.4f, 0.4f, 0.4f));
