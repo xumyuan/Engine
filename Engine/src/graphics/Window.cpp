@@ -6,7 +6,6 @@
 
 namespace engine {
 	namespace graphics {
-
 		/*              Callback Functions              */
 		static void error_callback(int error, const char* description) {
 			std::cout << "Error:" << std::endl << description << std::endl;
@@ -52,6 +51,9 @@ namespace engine {
 				glfwDestroyWindow(m_Window);
 				glfwTerminate();
 			}
+
+			memset(m_Keys, 0, sizeof(bool) * MAX_KEYS);
+			memset(m_Buttons, 0, sizeof(bool) * MAX_BUTTONS);
 		}
 
 		Window::~Window() {
@@ -148,7 +150,8 @@ namespace engine {
 		/*                   Getters                    */
 		bool Window::isKeyPressed(unsigned int keycode) const {
 			if (keycode >= MAX_KEYS) {
-				//TODO: LOG THIS
+				utils::Logger::getInstance().error("logged_files/input_errors.txt", "Input Check", "Key checked is out of bounds (ie not supported)");
+				std::cout << "Max key overflow in Window" << std::endl;
 				return false;
 			}
 			else {
@@ -158,12 +161,15 @@ namespace engine {
 
 		bool Window::isMouseButtonPressed(unsigned int keycode) const {
 			if (keycode >= MAX_BUTTONS) {
-				//TODO: LOG THIS
+				utils::Logger::getInstance().error("logged_files/input_errors.txt", "Input Check", "Key checked is out of bounds (ie not supported)");
+				std::cout << "Max mouse button overflow in window" << std::endl;
 				return false;
 			}
 			else {
 				return m_Buttons[keycode];
 			}
 		}
+
+
 	}
 }

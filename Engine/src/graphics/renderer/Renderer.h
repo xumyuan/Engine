@@ -10,7 +10,6 @@ namespace engine {
 			void submit(Renderable3D* renderable);
 			void flush(Shader& shader);
 		private:
-			void init();
 			std::deque<Renderable3D*> m_RenderQueue;
 		};
 
