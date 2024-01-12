@@ -4,7 +4,7 @@
 namespace engine {
 	namespace opengl {
 
-		GLuint Utility::loadTextureFromFile(const char* path) {
+		GLuint Utility::loadTextureFromFile(const char* path, bool containsTransparencyOnSides) {
 			GLuint textureID;
 			glGenTextures(1, &textureID);
 
@@ -23,8 +23,15 @@ namespace engine {
 				glGenerateMipmap(GL_TEXTURE_2D);
 
 				// Texture wrapping
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+				if (containsTransparencyOnSides) {
+					// Can't use GL_REPEAT or interpolation will mess with the transparency
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+				}
+				else {
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+				}
 
 				// Texture filtering
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
@@ -34,7 +41,7 @@ namespace engine {
 				stbi_image_free(data);
 			}
 			else {
-				std::cout << "Texture failed to load at path: " << path << std::endl; 
+				std::cout << "Texture failed to load at path: " << path << std::endl;
 				utils::Logger::getInstance().error("logged_files/texture_loading.txt", "texture load (OpenGL) fail path:", path);
 				stbi_image_free(data);
 			}

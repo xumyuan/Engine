@@ -9,10 +9,13 @@ namespace engine {
 		public:
 			Renderer();
 
-			void submit(Renderable3D* renderable);
+			void submitOpaque(Renderable3D* renderable);
+			void submitTransparent(Renderable3D* renderable);
+
 			void flush(Shader& shader, Shader& outlineShader);
 		private:
-			std::deque<Renderable3D*> m_RenderQueue;
+			std::deque<Renderable3D*> m_OpaqueRenderQueue;
+			std::deque<Renderable3D*> m_TransparentRenderQueue;
 		};
 
 	};

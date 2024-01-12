@@ -40,7 +40,7 @@ int main() {
 
 
 	while (!window.closed()) {
-		glClearColor(0.5f, 0.0f, 0.0f, 1.0f);  // 场景背景色
+		glClearColor(0.2f, 0.f, 0.0f, 1.0f);  // 场景背景色
 
 		window.clear();
 		deltaTime.update();
