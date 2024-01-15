@@ -44,12 +44,13 @@ namespace engine {
 
 
 			// 生成索引
+			// 统一三角形顶点顺序，允许使用背面剔除
 			for (GLuint height = 0; height < m_VertexSideCount - 1; ++height) {
 				for (GLuint width = 0; width < m_VertexSideCount - 1; ++width) {
 					// Triangle 1
 					indices.push_back(width + (height * m_VertexSideCount));
-					indices.push_back(1 + width + (height * m_VertexSideCount));
 					indices.push_back(1 + m_VertexSideCount + width + (height * m_VertexSideCount));
+					indices.push_back(1 + width + (height * m_VertexSideCount));
 
 					// Triangle 2
 					indices.push_back(width + (height * m_VertexSideCount));

@@ -45,13 +45,13 @@ namespace engine {
 			void processKeyboard(Camera_Movement direction, GLfloat deltaTime);
 			void processMouseMovement(GLfloat xOffset, GLfloat yOffset, GLboolean constrainPitch);
 			void processMouseScroll(GLfloat yOffset);
-			inline GLfloat getYaw() { return m_Yaw; }
-			inline GLfloat getPitch() { return m_Pitch; }
-			inline GLfloat getMovementSpeed() { return m_MovementSpeed; }
-			inline GLfloat getMouseSensitivity() { return m_MouseSensitivity; }
-			inline GLfloat getFOV() { return m_FOV; }
-			inline glm::vec3 getFront() { return m_Front; }
-			inline glm::vec3 getPosition() { return m_Position; }
+			inline GLfloat getYaw() const { return m_Yaw; }
+			inline GLfloat getPitch() const { return m_Pitch; }
+			inline GLfloat getMovementSpeed() const { return m_MovementSpeed; }
+			inline GLfloat getMouseSensitivity() const { return m_MouseSensitivity; }
+			inline GLfloat getFOV() const { return m_FOV; }
+			inline const glm::vec3& getFront() const { return m_Front; }
+			inline const glm::vec3& getPosition() const { return m_Position; }
 		private:
 			void updateCameraVectors();
 		};

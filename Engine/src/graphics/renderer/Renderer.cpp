@@ -2,7 +2,7 @@
 namespace engine {
 	namespace graphics {
 
-		Renderer::Renderer()
+		Renderer::Renderer(FPSCamera* camera) : m_Camera(camera)
 		{
 		}
 
@@ -62,9 +62,13 @@ namespace engine {
 				m_OpaqueRenderQueue.pop_front();
 			}
 
+			//排序后从后往前渲染，没有考虑缩放和旋转
+			std::sort(m_TransparentRenderQueue.begin(), m_TransparentRenderQueue.end(), [this](Renderable3D* a, Renderable3D* b)->bool {
+				return glm::length2(m_Camera->getPosition() - a->getPosition()) > glm::length2(m_Camera->getPosition() - b->getPosition());
+				});
+
 
 			//透明物体渲染
-			//排序后渲染
 			while (!m_TransparentRenderQueue.empty()) {
 				auto* current = m_TransparentRenderQueue.front();
 

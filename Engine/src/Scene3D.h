@@ -21,7 +21,7 @@ namespace engine {
 		//要渲染的3d对象列表
 		std::vector<graphics::Renderable3D*> m_Renderables;
 
-		graphics::Shader terrainShader, modelShader,outlineShader;
+		graphics::Shader terrainShader, modelShader, outlineShader;
 	public:
 		Scene3D(graphics::FPSCamera* camera, graphics::Window* window);
 		~Scene3D();
@@ -32,8 +32,8 @@ namespace engine {
 		void onUpdate(float deltaTime);
 		void onRender();
 
-		inline graphics::Renderer* getRenderer() { return m_Renderer; }
-		inline graphics::FPSCamera* getCamera() { return m_Camera; }
+		inline graphics::Renderer* getRenderer()const { return m_Renderer; }
+		inline graphics::FPSCamera* getCamera() const { return m_Camera; }
 
 	private:
 		void init();

@@ -13,7 +13,7 @@ namespace engine {
 		Time();
 		void update();
 
-		inline GLdouble getDeltaTime() { return delta; }
+		inline GLdouble getDeltaTime() const { return delta; }
 	};
 
 }

@@ -9,7 +9,7 @@ namespace engine {
 		: terrainShader("src/shaders/basic.vert", "src/shaders/terrain.frag"), modelShader("src/shaders/basic.vert", "src/shaders/model.frag"), m_Camera(camera), m_Window(window),
 		outlineShader("src/shaders/basic.vert", "src/shaders/basic.frag")
 	{
-		m_Renderer = new graphics::Renderer();
+		m_Renderer = new graphics::Renderer(camera);
 		glm::vec3 worldpos = glm::vec3(0.0f, -20.0f, 0.0f);
 		m_Terrain = new terrain::Terrain(worldpos);
 
@@ -25,6 +25,9 @@ namespace engine {
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_STENCIL_TEST);
 
+		//开启背面剔除
+		glEnable(GL_CULL_FACE);
+
 
 		std::vector<graphics::Mesh> meshes;
 		meshes.push_back(*m_meshFactory.CreateQuad("res/textures/window.png", false));
@@ -33,7 +36,9 @@ namespace engine {
 
 		Add(new graphics::Renderable3D(glm::vec3(30.0f, 0.0f, 30.0f), glm::vec3(0.2f, 0.2f, 0.2f), glm::vec3(0.0f, 1.0f, 0.0f), 0, new engine::graphics::Model("res/3D_Models/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX"), false));
 
-		/*Add(new graphics::Renderable3D(glm::vec3(40, 10, 40), glm::vec3(10, 10, 10), glm::vec3(1.0, 0.0, 0.0), glm::radians(90.0f), new graphics::Model(meshes), false, true));*/
+		Add(new graphics::Renderable3D(glm::vec3(40, 20, 40), glm::vec3(15, 15, 15), glm::vec3(1.0, 0.0, 0.0), glm::radians(90.0f), new graphics::Model(meshes), false, true));
+		Add(new graphics::Renderable3D(glm::vec3(80, 20, 80), glm::vec3(15, 15, 15), glm::vec3(1.0, 0.0, 0.0), glm::radians(90.0f), new graphics::Model(meshes), false, true));
+		Add(new graphics::Renderable3D(glm::vec3(120, 20, 120), glm::vec3(15, 15, 15), glm::vec3(1.0, 0.0, 0.0), glm::radians(90.0f), new graphics::Model(meshes), false, true));
 
 		// 地形shader设置
 		terrainShader.enable();

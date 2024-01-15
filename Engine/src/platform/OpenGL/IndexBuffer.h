@@ -17,7 +17,7 @@ namespace engine {
 			void bind() const;
 			void unbind() const;
 
-			inline GLsizei getCount() { return m_Count; }
+			inline GLsizei getCount() const { return m_Count; }
 		};
 
 	}
