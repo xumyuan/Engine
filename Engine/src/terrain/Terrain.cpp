@@ -25,7 +25,7 @@ namespace engine {
 			m_Position = worldPosition;
 			m_VertexSideCount = mapWidth;
 			m_TerrainSize = 2;
-			m_HeightMapScale = 100;
+			m_HeightMapScale = 150;
 
 			// ¶¥µãÉú³É
 			for (GLuint z = 0; z < m_VertexSideCount; z++) {
@@ -65,7 +65,7 @@ namespace engine {
 			texture.type = "texture_diffuse";
 			textures.push_back(texture);
 
-			texture.id = opengl::Utility::loadTextureFromFile("res/terrain/dirt.png");
+				texture.id = opengl::Utility::loadTextureFromFile("res/terrain/dirt.png");
 			texture.type = "texture_diffuse";
 			textures.push_back(texture);
 

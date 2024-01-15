@@ -131,6 +131,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\graphics\Skybox.h" />
     <ClInclude Include="src\platform\OpenGL\Framebuffer.h" />
     <ClInclude Include="src\graphics\MeshFactory.h" />
     <ClInclude Include="src\graphics\renderer\Renderer.h" />
@@ -154,6 +155,7 @@
     <ClInclude Include="src\platform\OpenGL\Utility.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\graphics\Skybox.cpp" />
     <ClCompile Include="src\platform\OpenGL\Framebuffer.cpp" />
     <ClCompile Include="src\graphics\MeshFactory.cpp" />
     <ClCompile Include="src\graphics\renderer\Renderer.cpp" />
@@ -181,6 +183,8 @@
     <None Include="src\shaders\framebufferColorBuffer.frag" />
     <None Include="src\shaders\framebufferColorBuffer.vert" />
     <None Include="src\shaders\model.frag" />
+    <None Include="src\shaders\skybox.frag" />
+    <None Include="src\shaders\skybox.vert" />
     <None Include="src\shaders\terrain.frag" />
   </ItemGroup>
   <ItemGroup>

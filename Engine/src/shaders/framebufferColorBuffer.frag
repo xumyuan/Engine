@@ -43,6 +43,13 @@ void main() {
 	//	-2, -2, -2
 	//);
 
+	// Œﬁ¥¶¿Ì
+	float kernel[9] = float[] (
+		0, 0, 0,
+		0, 1, 0,
+		0, 0, 0
+	);
+
 	vec3 colour = vec3(0.0);
 
 	// Apply the kernel
