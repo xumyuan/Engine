@@ -105,7 +105,6 @@ namespace engine {
 		m_OutlineShader.setUniformMat4("view", m_Camera->getViewMatrix());
 		m_OutlineShader.setUniformMat4("projection", glm::perspective(glm::radians(m_Camera->getFOV()), (float)m_Window->getWidth() / (float)m_Window->getHeight(), 0.1f, 1000.0f));
 
-		m_Skybox->Draw();
 
 		// Models
 		m_ModelShader.enable();
@@ -127,7 +126,12 @@ namespace engine {
 			}
 			iter++;
 		}
-		m_Renderer->flush(m_ModelShader, m_OutlineShader);
+		m_Renderer->flushOpaque(m_ModelShader, m_OutlineShader);
+
+		m_Skybox->Draw();
+
+		m_ModelShader.enable();
+		m_Renderer->flushTransparent(m_ModelShader, m_OutlineShader);
 
 		// Terrain
 		glStencilMask(0x00); // Don't update the stencil buffer

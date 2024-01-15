@@ -16,12 +16,10 @@ namespace engine {
 			m_TransparentRenderQueue.push_back(renderable);
 		}
 
-		//将渲染队列中的物体渲染出来
-		void Renderer::flush(Shader& shader, Shader& outlineShader) {
-
+		// 不透明物渲染
+		void Renderer::flushOpaque(Shader& shader, Shader& outlineShader) {
 			//不透明物体渲染队列
 			while (!m_OpaqueRenderQueue.empty()) {
-				Renderable3D* current = m_OpaqueRenderQueue.front();
 
 				// Drawing prepration
 				glEnable(GL_DEPTH_TEST);
@@ -29,6 +27,10 @@ namespace engine {
 
 				glStencilFunc(GL_ALWAYS, 1, 0xFF);
 				glStencilMask(0xFF);
+
+				Renderable3D* current = m_OpaqueRenderQueue.front();
+
+
 
 				glm::mat4 model(1);
 				model = glm::translate(model, current->getPosition());
@@ -61,6 +63,10 @@ namespace engine {
 				}
 				m_OpaqueRenderQueue.pop_front();
 			}
+		}
+
+		// 透明物体渲染
+		void Renderer::flushTransparent(Shader& shader, Shader& outlineShader) {
 
 			// 关闭背面剔除，否则会导致透明物体的背面也被剔除
 			glDisable(GL_CULL_FACE);
@@ -72,9 +78,6 @@ namespace engine {
 
 			//透明物体渲染
 			while (!m_TransparentRenderQueue.empty()) {
-				auto* current = m_TransparentRenderQueue.front();
-
-				glEnable(GL_DEPTH_TEST);
 				glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
 				glStencilFunc(GL_ALWAYS, 1, 0xFF);
@@ -83,6 +86,9 @@ namespace engine {
 				//开启混合
 				glEnable(GL_BLEND);
 				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+
+				auto* current = m_TransparentRenderQueue.front();
 
 				glm::mat4 model(1);
 				model = glm::translate(model, current->getPosition());
