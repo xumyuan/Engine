@@ -16,7 +16,7 @@ namespace engine {
 
 			inline GLuint getColourBufferTexture() { return m_ColourTexture; }
 		private:
-			GLuint m_FBO, m_RBO, m_ColourTexture;
+			GLuint m_FBO, m_DepthStencilTexture, m_ColourTexture;
 
 			unsigned int m_Width, m_Height;
 		};

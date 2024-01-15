@@ -10,6 +10,9 @@ namespace engine {
 		{
 		public:
 			Mesh* CreateQuad(const char* path, bool shouldHaveSpec = false);
+
+			// 用于绘制帧缓冲区的颜色缓冲区
+			Mesh* CreateScreenQuad(int colourBufferId);
 		};
 	}
 }

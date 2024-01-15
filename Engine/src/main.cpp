@@ -13,7 +13,8 @@
 #include "graphics\Model.h"
 #include "terrain\Terrain.h"
 #include "Scene3D.h"
-
+#include "platform/OpenGL/Framebuffer.h"
+#include "graphics/MeshFactory.h"
 
 
 
@@ -25,6 +26,12 @@ int main() {
 	engine::graphics::FPSCamera camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f);
 	engine::graphics::Window window("Engine", 1366, 768);
 	engine::Scene3D scene(&camera, &window);
+
+	engine::opengl::Framebuffer framebuffer(window.getWidth(), window.getHeight());
+	engine::graphics::Shader framebufferShader("src/shaders/framebufferColorBuffer.vert", "src/shaders/framebufferColorBuffer.frag");
+
+	engine::graphics::MeshFactory meshFactory;
+	engine::graphics::Mesh* colorBufferMesh = meshFactory.CreateScreenQuad(framebuffer.getColourBufferTexture());
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -40,7 +47,7 @@ int main() {
 
 
 	while (!window.closed()) {
-		glClearColor(0.2f, 0.f, 0.0f, 1.0f);  // 场景背景色
+		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);  // 场景背景色
 
 		window.clear();
 		deltaTime.update();
@@ -75,9 +82,22 @@ int main() {
 		camera.processMouseScroll(window.getScrollY() * 6);
 		window.resetScroll();
 
+		//绘制到自定义缓冲区
+		framebuffer.bind();
+		window.clear();
+		
+
 		scene.onUpdate(deltaTime.getDeltaTime());
 		scene.onRender();
-	
+
+		// 绘制到默认缓冲区
+		framebuffer.unbind();
+		glDisable(GL_BLEND);
+		
+		framebufferShader.enable();
+		colorBufferMesh->Draw(framebufferShader);
+		framebufferShader.disable();
+
 		window.update();
 		if (fpsTimer.elapsed() >= 1) {
 			std::cout << "FPS: " << frames << std::endl;

@@ -8,10 +8,15 @@ namespace engine {
 			bind();
 
 			// 深度和模板
-			glGenRenderbuffers(1, &m_RBO);
-			glBindRenderbuffer(GL_RENDERBUFFER, m_RBO);
-			glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
-			glBindRenderbuffer(GL_RENDERBUFFER, 0);
+			glGenTextures(1, &m_DepthStencilTexture);
+			glBindTexture(GL_TEXTURE_2D, m_DepthStencilTexture);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, width, height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, nullptr);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // Both need to clamp to edge or you might see strange colours around the
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); // border due to interpolation and how it works with GL_REPEAT
+			glBindTexture(GL_TEXTURE_2D, 0);
+
 
 			// 颜色
 			glGenTextures(1, &m_ColourTexture);
@@ -23,9 +28,11 @@ namespace engine {
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 			glBindTexture(GL_TEXTURE_2D, 0);
 
+
 			//添加缓冲附件
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_ColourTexture, 0);
-			glFramebufferRenderbuffer(GL_RENDERBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_RBO);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, m_DepthStencilTexture, 0);
+
 
 			// 检查帧缓冲是否完整
 			if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
@@ -33,7 +40,10 @@ namespace engine {
 				return;
 			}
 
+
 			unbind();
+
+
 		}
 
 		void Framebuffer::bind() {
