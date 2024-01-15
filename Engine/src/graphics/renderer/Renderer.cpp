@@ -62,6 +62,8 @@ namespace engine {
 				m_OpaqueRenderQueue.pop_front();
 			}
 
+			// 关闭背面剔除，否则会导致透明物体的背面也被剔除
+			glDisable(GL_CULL_FACE);
 			//排序后从后往前渲染，没有考虑缩放和旋转
 			std::sort(m_TransparentRenderQueue.begin(), m_TransparentRenderQueue.end(), [this](Renderable3D* a, Renderable3D* b)->bool {
 				return glm::length2(m_Camera->getPosition() - a->getPosition()) > glm::length2(m_Camera->getPosition() - b->getPosition());
