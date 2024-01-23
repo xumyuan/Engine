@@ -4,6 +4,7 @@
 #include <GLFW\glfw3.h>
 #include <iostream>
 #include "..\utils\Logger.h"
+#include "../Defs.h"
 
 namespace engine {
 	namespace graphics {

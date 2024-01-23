@@ -81,6 +81,9 @@
     <ClInclude Include="src\graphics\Skybox.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="src\Defs.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\graphics\shader.cpp">
@@ -152,8 +155,8 @@
     <None Include="src\shaders\basic.frag" />
     <None Include="src\shaders\model.frag" />
     <None Include="src\shaders\terrain.frag" />
-    <None Include="src\shaders\framebufferColorBuffer.frag" />
-    <None Include="src\shaders\framebufferColorBuffer.vert" />
+    <None Include="src\shaders\framebuffer.frag" />
+    <None Include="src\shaders\framebuffer.vert" />
     <None Include="src\shaders\skybox.frag" />
     <None Include="src\shaders\skybox.vert" />
     <None Include="src\shaders\modelRefraciton.frag" />

@@ -16,9 +16,6 @@
 #include "platform/OpenGL/Framebuffer.h"
 #include "graphics/MeshFactory.h"
 
-
-
-
 GLfloat yaw = -90.0f;
 GLfloat pitch = 0.0f;
 
@@ -26,12 +23,14 @@ int main() {
 	engine::graphics::FPSCamera camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f);
 	engine::graphics::Window window("Engine", 1366, 768);
 	engine::Scene3D scene(&camera, &window);
-
+	
 	engine::opengl::Framebuffer framebuffer(window.getWidth(), window.getHeight());
-	engine::graphics::Shader framebufferShader("src/shaders/framebufferColorBuffer.vert", "src/shaders/framebufferColorBuffer.frag");
+	engine::opengl::Framebuffer blitFramebuffer(window.getWidth(), window.getHeight(), false);
+	
+	engine::graphics::Shader framebufferShader("src/shaders/framebuffer.vert", "src/shaders/framebuffer.frag");
 
 	engine::graphics::MeshFactory meshFactory;
-	engine::graphics::Mesh* colorBufferMesh = meshFactory.CreateScreenQuad(framebuffer.getColourBufferTexture());
+	engine::graphics::Mesh* colorBufferMesh = meshFactory.CreateScreenQuad(blitFramebuffer.getColorBufferTexture());
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -40,12 +39,10 @@ int main() {
 
 	engine::Time deltaTime;
 
-
 	bool firstMove = true;
 	GLfloat lastX = window.getMouseX();
 	GLfloat lastY = window.getMouseY();
-
-
+	
 	while (!window.closed()) {
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);  // 场景背景色
 
@@ -82,18 +79,22 @@ int main() {
 		camera.processMouseScroll(window.getScrollY() * 6);
 		window.resetScroll();
 
-		//绘制到自定义缓冲区
+		//绘制到自定义多重采样缓冲区
 		framebuffer.bind();
 		window.clear();
-		
 
 		scene.onUpdate(deltaTime.getDeltaTime());
 		scene.onRender();
 
+		// 将多重采样缓冲区blit到非多重采样缓冲区
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffer.getFramebuffer());
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, blitFramebuffer.getFramebuffer());
+		glBlitFramebuffer(0, 0, window.getWidth(), window.getHeight(), 0, 0, window.getWidth(), window.getHeight(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
 		// 绘制到默认缓冲区
 		framebuffer.unbind();
 		glDisable(GL_BLEND);
-		
+		window.clear();
 		framebufferShader.enable();
 		colorBufferMesh->Draw(framebufferShader);
 		framebufferShader.disable();

@@ -22,6 +22,8 @@ namespace engine {
 	}
 
 	void Scene3D::init() {
+		glEnable(GL_MULTISAMPLE);
+
 		//开启深度测试和模板测试
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_STENCIL_TEST);
@@ -112,7 +114,7 @@ namespace engine {
 		m_ModelReflectionShader.setUniformMat4("view", m_Camera->getViewMatrix());
 		m_ModelReflectionShader.setUniformMat4("projection", glm::perspective(glm::radians(m_Camera->getFOV()), (float)m_Window->getWidth() / (float)m_Window->getHeight(), 0.1f, 1000.0f));
 
-		// Models
+		// 模型渲染
 		m_ModelShader.enable();
 		m_ModelShader.setUniform3f("pointLights[0].position", glm::vec3(200.0f, 215.0f, 100.0f));
 		m_ModelShader.setUniform3f("spotLight.position", m_Camera->getPosition());
@@ -141,10 +143,8 @@ namespace engine {
 
 		m_Skybox->Draw();
 
-		m_ModelShader.enable();
-		m_Renderer->flushTransparent(m_ModelShader, m_OutlineShader);
 
-		// Terrain
+		// 地形
 		glStencilMask(0x00); // Don't update the stencil buffer
 		m_TerrainShader.enable();
 		m_TerrainShader.setUniform3f("pointLight.position", glm::vec3(200.0f, 200.0f, 100.0f));
@@ -157,6 +157,10 @@ namespace engine {
 		m_TerrainShader.setUniformMat4("view", m_Camera->getViewMatrix());
 		m_TerrainShader.setUniformMat4("projection", glm::perspective(glm::radians(m_Camera->getFOV()), (float)m_Window->getWidth() / (float)m_Window->getHeight(), 0.1f, 1000.0f));
 		m_Terrain->Draw(m_TerrainShader);
+
+		//透明物体渲染
+		m_ModelShader.enable();
+		m_Renderer->flushTransparent(m_ModelShader, m_OutlineShader);
 	}
 
 	void Scene3D::Add(graphics::Renderable3D* renderable) {

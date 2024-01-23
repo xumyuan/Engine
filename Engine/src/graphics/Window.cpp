@@ -65,10 +65,13 @@ namespace engine {
 			if (!glfwInit()) {
 				utils::Logger::getInstance().error("logged_files/window_creation.txt", "Window Initialization", "Could not initialize the GLFW window");
 				std::cout << "GLFW Failed To Initialize" << std::endl;
+				return false;
 			}
 
+			// 开启MSAA抗锯齿
+			glfwWindowHint(GLFW_SAMPLES, MSAA_SAMPLE_AMOUNT);
 
-			// Create the window
+			// 创建窗口
 			if (FULLSCREEN_MODE) {
 				setFullScreenResolution();
 				m_Window = glfwCreateWindow(m_Width, m_Height, m_Title, glfwGetPrimaryMonitor(), NULL);
@@ -80,6 +83,7 @@ namespace engine {
 			if (!m_Window) {
 				utils::Logger::getInstance().error("logged_files/window_creation.txt", "Window Initialization", "Could not create the GLFW window");
 				std::cout << "GLFW Window Couldn't Be Created" << std::endl;
+				return false;
 			}
 
 			// Setup the mouse settings
