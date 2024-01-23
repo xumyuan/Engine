@@ -7,7 +7,8 @@
 namespace engine {
 	Scene3D::Scene3D(graphics::FPSCamera* camera, graphics::Window* window)
 		: m_TerrainShader("src/shaders/basic.vert", "src/shaders/terrain.frag"), m_ModelShader("src/shaders/basic.vert", "src/shaders/model.frag"), m_Camera(camera), m_Window(window),
-		m_OutlineShader("src/shaders/basic.vert", "src/shaders/basic.frag")
+		m_OutlineShader("src/shaders/basic.vert", "src/shaders/basic.frag"),
+		m_ModelReflectionShader("src/shaders/basic.vert", "src/shaders/modelReflection.frag")
 	{
 		m_Renderer = new graphics::Renderer(camera);
 		glm::vec3 worldpos = glm::vec3(0.0f, -20.0f, 0.0f);
@@ -105,6 +106,11 @@ namespace engine {
 		m_OutlineShader.setUniformMat4("view", m_Camera->getViewMatrix());
 		m_OutlineShader.setUniformMat4("projection", glm::perspective(glm::radians(m_Camera->getFOV()), (float)m_Window->getWidth() / (float)m_Window->getHeight(), 0.1f, 1000.0f));
 
+		//·´Éäshader
+		m_ModelReflectionShader.enable();
+		m_ModelReflectionShader.setUniform3f("cameraPos", m_Camera->getPosition());
+		m_ModelReflectionShader.setUniformMat4("view", m_Camera->getViewMatrix());
+		m_ModelReflectionShader.setUniformMat4("projection", glm::perspective(glm::radians(m_Camera->getFOV()), (float)m_Window->getWidth() / (float)m_Window->getHeight(), 0.1f, 1000.0f));
 
 		// Models
 		m_ModelShader.enable();
@@ -126,6 +132,11 @@ namespace engine {
 			}
 			iter++;
 		}
+		/*m_ModelReflectionShader.enable();
+		m_ModelReflectionShader.setUniform1i("environmentMap", 0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, m_Skybox->getSkyboxCubemap());
+		m_Renderer->flushOpaque(m_ModelReflectionShader, m_OutlineShader);*/
+
 		m_Renderer->flushOpaque(m_ModelShader, m_OutlineShader);
 
 		m_Skybox->Draw();

@@ -40,7 +40,6 @@ namespace engine {
 				3, 7, 6,
 			};
 
-			// Is this correct?
 			m_SkyboxVBO.load(skyboxVertices, 8 * 3, 3);
 			m_SkyboxIBO.load(skyboxIndices, 36);
 			m_SkyboxVAO.addBuffer(&m_SkyboxVBO, 0);

@@ -17,6 +17,8 @@ namespace engine {
 			Skybox(const std::vector<const char*>& filePaths, FPSCamera* camera, Window* window);
 
 			void Draw();
+
+			inline unsigned int getSkyboxCubemap() { return m_SkyboxCubemap; }
 		private:
 			FPSCamera* m_Camera;
 			Window* m_Window;
