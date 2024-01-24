@@ -84,6 +84,21 @@
     <ClInclude Include="src\Defs.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="src\graphics\dynamic lights\DirectionalLight.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\graphics\dynamic lights\DynamicLight.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\graphics\dynamic lights\PointLight.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\graphics\dynamic lights\SpotLight.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\graphics\dynamic lights\DynamicLightManager.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\graphics\shader.cpp">
@@ -147,6 +162,21 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\graphics\Skybox.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\graphics\dynamic lights\DirectionalLight.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\graphics\dynamic lights\DynamicLight.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\graphics\dynamic lights\PointLight.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\graphics\dynamic lights\SpotLight.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\graphics\dynamic lights\DynamicLightManager.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

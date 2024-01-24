@@ -7,6 +7,7 @@
 #include "graphics\Window.h"
 #include "graphics\MeshFactory.h"
 #include "graphics\Skybox.h"
+#include "graphics\dynamic lights\DynamicLightManager.h"
 
 namespace engine {
 
@@ -18,6 +19,7 @@ namespace engine {
 		terrain::Terrain* m_Terrain;
 		graphics::MeshFactory m_meshFactory;
 		graphics::Skybox* m_Skybox;
+		graphics::DynamicLightManager m_DynamicLightManager;
 
 		// Some sort of list of entities (tied to models that are in the Renderer (should this be changed to Renderer3D?))
 		//要渲染的3d对象列表

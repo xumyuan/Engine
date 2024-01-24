@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -131,6 +131,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\graphics\dynamic lights\DynamicLightManager.h" />
+    <ClInclude Include="src\graphics\dynamic lights\DirectionalLight.h" />
+    <ClInclude Include="src\graphics\dynamic lights\DynamicLight.h" />
+    <ClInclude Include="src\graphics\dynamic lights\PointLight.h" />
+    <ClInclude Include="src\graphics\dynamic lights\SpotLight.h" />
     <ClInclude Include="src\Defs.h" />
     <ClInclude Include="src\graphics\Skybox.h" />
     <ClInclude Include="src\platform\OpenGL\Framebuffer.h" />
@@ -156,6 +161,11 @@
     <ClInclude Include="src\platform\OpenGL\Utility.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\graphics\dynamic lights\DynamicLightManager.cpp" />
+    <ClCompile Include="src\graphics\dynamic lights\DirectionalLight.cpp" />
+    <ClCompile Include="src\graphics\dynamic lights\DynamicLight.cpp" />
+    <ClCompile Include="src\graphics\dynamic lights\PointLight.cpp" />
+    <ClCompile Include="src\graphics\dynamic lights\SpotLight.cpp" />
     <ClCompile Include="src\graphics\Skybox.cpp" />
     <ClCompile Include="src\platform\OpenGL\Framebuffer.cpp" />
     <ClCompile Include="src\graphics\MeshFactory.cpp" />

@@ -8,7 +8,8 @@ namespace engine {
 	Scene3D::Scene3D(graphics::Camera* camera, graphics::Window* window)
 		: m_TerrainShader("src/shaders/basic.vert", "src/shaders/terrain.frag"), m_ModelShader("src/shaders/basic.vert", "src/shaders/model.frag"), m_Camera(camera), m_Window(window),
 		m_OutlineShader("src/shaders/basic.vert", "src/shaders/basic.frag"),
-		m_ModelReflectionShader("src/shaders/basic.vert", "src/shaders/modelReflection.frag")
+		m_ModelReflectionShader("src/shaders/basic.vert", "src/shaders/modelReflection.frag"),
+		m_DynamicLightManager()
 	{
 		m_Renderer = new graphics::Renderer(camera);
 		glm::vec3 worldpos = glm::vec3(0.0f, -20.0f, 0.0f);
@@ -39,7 +40,7 @@ namespace engine {
 			glm::vec3(90.0f, -10.0f, 90.0f),
 			glm::vec3(3.0f, 3.0f, 3.0f),
 			glm::vec3(0.0f, 1.0f, 0.0f),
-			0, 
+			0,
 			new engine::graphics::Model("res/3D_Models/nanosuit_model/nanosuit.obj"),
 			nullptr, true, false));
 

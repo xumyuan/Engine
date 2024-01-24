@@ -33,15 +33,12 @@ namespace engine {
 				setupModelMatrix(current, shader);
 				current->draw(shader);
 
-
-
-
 				// »æÖÆÍâÂÖÀª
 				if (current->getShouldOutline()) {
 					glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
 
 					outlineShader.enable();
-					setupModelMatrix(current, outlineShader, 1.025f);
+					setupModelMatrix(current, outlineShader, 1.0025f);
 
 					current->draw(outlineShader);
 					outlineShader.disable();
