@@ -20,6 +20,12 @@ namespace engine {
 			}
 			Vertex(const glm::vec3& pos, const glm::vec3& normal, const glm::vec2& texCoords)
 				: Position(pos), Normal(normal), TexCoords(texCoords) {}
+
+			Vertex(float xPos, float yPos, float zPos, float xNorm, float yNorm, float zNorm, float xTexCoord, float yTexCoord) {
+				Position.x = xPos; Position.y = yPos; Position.z = zPos;
+				Normal.x = xNorm; Normal.y = yNorm; Normal.z = zNorm;
+				TexCoords.x = xTexCoord; TexCoords.y = yTexCoord;
+			}
 		};
 
 		struct Texture {

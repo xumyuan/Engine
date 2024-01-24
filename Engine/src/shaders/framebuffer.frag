@@ -58,4 +58,8 @@ void main() {
 	}
 
 	FragColor = vec4(colour, 1.0);
+
+	// Ù¤Âí½ÃÕý
+	//float gamma = 2.2f;
+	//FragColor = vec4(pow(colour, vec3(1.0 / gamma)), 1.0);
 }
