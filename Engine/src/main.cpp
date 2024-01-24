@@ -8,7 +8,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "utils\Time.h"
-#include "graphics\camera\FPSCamera.h"
+#include "graphics\camera\Camera.h"
 #include "utils\Logger.h"
 #include "graphics\Model.h"
 #include "terrain\Terrain.h"
@@ -20,7 +20,7 @@ GLfloat yaw = -90.0f;
 GLfloat pitch = 0.0f;
 
 int main() {
-	engine::graphics::FPSCamera camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f);
+	engine::graphics::Camera camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f);
 	engine::graphics::Window window("Engine", 1366, 768);
 	engine::Scene3D scene(&camera, &window);
 	

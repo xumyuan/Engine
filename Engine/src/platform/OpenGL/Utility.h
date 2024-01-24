@@ -7,7 +7,9 @@
 #include <iostream>
 #include "stb_image.h"
 #include <vector>
+#include <glm/common.hpp>
 #include "../../utils/Logger.h"
+#include "../../Defs.h"
 
 namespace engine {
 	namespace opengl {

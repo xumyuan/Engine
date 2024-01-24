@@ -20,7 +20,6 @@ namespace engine {
 
 				glBindTexture(GL_TEXTURE_2D, textureID);
 				glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-				glGenerateMipmap(GL_TEXTURE_2D);
 
 				// Texture wrapping
 				if (containsTransparencyOnSides) {
@@ -34,10 +33,20 @@ namespace engine {
 				}
 
 				// Texture filtering
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, -0.4f); //If you want to sample the mipmap 0.4 levels larger then you openGL does by default
-				// Free now that the memory is 
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);//三线性插值
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // 放大不能使用mipmap，使用双线性插值
+
+				// Mipmapping
+				glGenerateMipmap(GL_TEXTURE_2D);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, 0);
+
+				// 各向异性过滤
+				GLfloat maxAnisotropy;
+				glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAnisotropy);
+				GLfloat anistropyAmount = glm::min(maxAnisotropy, ANISOTROPIC_FILTERING);
+				glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, anistropyAmount);
+				
+				// 释放内存
 				stbi_image_free(data);
 			}
 			else {

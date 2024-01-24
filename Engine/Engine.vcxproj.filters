@@ -27,7 +27,7 @@
     <ClInclude Include="src\graphics\Window.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\graphics\camera\FPSCamera.h">
+    <ClInclude Include="src\graphics\camera\Camera.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\utils\Time.h">
@@ -92,7 +92,7 @@
     <ClCompile Include="src\graphics\Window.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\graphics\camera\FPSCamera.cpp">
+    <ClCompile Include="src\graphics\camera\Camera.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\main.cpp">
