@@ -54,7 +54,7 @@ in vec3 FragPos;
 
 out vec4 color;
 
-uniform int numPointLights = 1;
+uniform int numPointLights;
 uniform Material material;
 uniform float time;
 uniform vec3 viewPos;

@@ -8,7 +8,6 @@ namespace engine {
 	Scene3D::Scene3D(graphics::Camera* camera, graphics::Window* window)
 		: m_TerrainShader("src/shaders/basic.vert", "src/shaders/terrain.frag"), m_ModelShader("src/shaders/basic.vert", "src/shaders/model.frag"), m_Camera(camera), m_Window(window),
 		m_OutlineShader("src/shaders/basic.vert", "src/shaders/basic.frag"),
-		m_ModelReflectionShader("src/shaders/basic.vert", "src/shaders/modelReflection.frag"),
 		m_DynamicLightManager()
 	{
 		m_Renderer = new graphics::Renderer(camera);
@@ -46,9 +45,6 @@ namespace engine {
 
 		Add(new graphics::Renderable3D(glm::vec3(30.0f, 0.0f, 30.0f), glm::vec3(0.2f, 0.2f, 0.2f), glm::vec3(0.0f, 1.0f, 0.0f), 0, new engine::graphics::Model("res/3D_Models/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX"), nullptr, false));
 
-
-
-
 		Add(new graphics::Renderable3D(glm::vec3(40, 20, 40), glm::vec3(15, 15, 15), glm::vec3(1.0, 0.0, 0.0), glm::radians(90.0f), new graphics::Model(meshes), nullptr, false, true));
 		Add(new graphics::Renderable3D(glm::vec3(80, 20, 80), glm::vec3(15, 15, 15), glm::vec3(1.0, 0.0, 0.0), glm::radians(90.0f), new graphics::Model(meshes), nullptr, false, true));
 		Add(new graphics::Renderable3D(glm::vec3(120, 20, 120), glm::vec3(15, 15, 15), glm::vec3(1.0, 0.0, 0.0), glm::radians(90.0f), new graphics::Model(meshes), nullptr, false, true));
@@ -56,10 +52,12 @@ namespace engine {
 		// 地形shader设置
 		m_TerrainShader.enable();
 		m_TerrainShader.setUniform1f("material.shininess", 128.0f);
+		// 平行光
 		m_TerrainShader.setUniform3f("dirLight.direction", glm::vec3(-0.3f, -1.0f, -0.3f));
 		m_TerrainShader.setUniform3f("dirLight.ambient", glm::vec3(0.1f, 0.1f, 0.1f));
 		m_TerrainShader.setUniform3f("dirLight.diffuse", glm::vec3(0.6f, 0.6f, 0.6f));
 		m_TerrainShader.setUniform3f("dirLight.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+		// 聚光
 		m_TerrainShader.setUniform3f("spotLight.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
 		m_TerrainShader.setUniform3f("spotLight.diffuse", glm::vec3(1.0f, 1.0f, 1.0f));
 		m_TerrainShader.setUniform3f("spotLight.specular", glm::vec3(1.0f, 1.0f, 1.0f));
@@ -68,34 +66,18 @@ namespace engine {
 		m_TerrainShader.setUniform1f("spotLight.quadratic", 0.0019);
 		m_TerrainShader.setUniform1f("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
 		m_TerrainShader.setUniform1f("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
-		m_TerrainShader.setUniform3f("pointLight.ambient", glm::vec3(0.05f, 0.05f, 0.05f));
-		m_TerrainShader.setUniform3f("pointLight.diffuse", glm::vec3(0.85f, 0.85f, 0.85f));
-		m_TerrainShader.setUniform3f("pointLight.specular", glm::vec3(1.0f, 1.0f, 1.0f));
-		m_TerrainShader.setUniform1f("pointLight.constant", 1.0f);
-		m_TerrainShader.setUniform1f("pointLight.linear", 0.007);
-		m_TerrainShader.setUniform1f("pointLight.quadratic", 0.0002);
+		// 点光源
+		m_TerrainShader.setUniform3f("pointLights[0].ambient", glm::vec3(0.05f, 0.05f, 0.05f));
+		m_TerrainShader.setUniform3f("pointLights[0].diffuse", glm::vec3(0.85f, 0.85f, 0.85f));
+		m_TerrainShader.setUniform3f("pointLights[0].specular", glm::vec3(1.0f, 1.0f, 1.0f));
+		m_TerrainShader.setUniform1f("pointLights[0].constant", 1.0f);
+		m_TerrainShader.setUniform1f("pointLights[0].linear", 0.007);
+		m_TerrainShader.setUniform1f("pointLights[0].quadratic", 0.0002);
 
 		// 模型shader
 		m_ModelShader.enable();
 		m_ModelShader.setUniform1f("material.shininess", 128.0f);
-		m_ModelShader.setUniform3f("dirLight.direction", glm::vec3(-0.3f, -1.0f, -0.3f));
-		m_ModelShader.setUniform3f("dirLight.ambient", glm::vec3(0.1f, 0.1f, 0.1f));
-		m_ModelShader.setUniform3f("dirLight.diffuse", glm::vec3(0.6f, 0.6f, 0.6f));
-		m_ModelShader.setUniform3f("dirLight.specular", glm::vec3(0.5f, 0.5f, 0.5f));
-		m_ModelShader.setUniform3f("spotLight.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
-		m_ModelShader.setUniform3f("spotLight.diffuse", glm::vec3(1.0f, 1.0f, 1.0f));
-		m_ModelShader.setUniform3f("spotLight.specular", glm::vec3(1.0f, 1.0f, 1.0f));
-		m_ModelShader.setUniform1f("spotLight.constant", 1.0f);
-		m_ModelShader.setUniform1f("spotLight.linear", 0.022);
-		m_ModelShader.setUniform1f("spotLight.quadratic", 0.0019);
-		m_ModelShader.setUniform1f("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
-		m_ModelShader.setUniform1f("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
-		m_ModelShader.setUniform3f("pointLights[0].ambient", glm::vec3(0.05f, 0.05f, 0.05f));
-		m_ModelShader.setUniform3f("pointLights[0].diffuse", glm::vec3(0.85f, 0.85f, 0.85f));
-		m_ModelShader.setUniform3f("pointLights[0].specular", glm::vec3(1.0f, 1.0f, 1.0f));
-		m_ModelShader.setUniform1f("pointLights[0].constant", 1.0f);
-		m_ModelShader.setUniform1f("pointLights[0].linear", 0.007);
-		m_ModelShader.setUniform1f("pointLights[0].quadratic", 0.0002);
+		m_DynamicLightManager.setupLightingUniforms(m_ModelShader);
 
 		// Skybox
 		std::vector<const char*> skyboxFilePaths;
@@ -115,21 +97,18 @@ namespace engine {
 	// 场景渲染
 	void Scene3D::onRender() {
 		//setup
+		m_DynamicLightManager.setSpotLightDirection(m_Camera->getFront());
+		m_DynamicLightManager.setSpotLightPosition(m_Camera->getPosition());
+
+
 		m_OutlineShader.enable();
 		m_OutlineShader.setUniformMat4("view", m_Camera->getViewMatrix());
 		m_OutlineShader.setUniformMat4("projection", glm::perspective(glm::radians(m_Camera->getFOV()), (float)m_Window->getWidth() / (float)m_Window->getHeight(), 0.1f, 1000.0f));
 
-		//反射shader
-		m_ModelReflectionShader.enable();
-		m_ModelReflectionShader.setUniform3f("cameraPos", m_Camera->getPosition());
-		m_ModelReflectionShader.setUniformMat4("view", m_Camera->getViewMatrix());
-		m_ModelReflectionShader.setUniformMat4("projection", glm::perspective(glm::radians(m_Camera->getFOV()), (float)m_Window->getWidth() / (float)m_Window->getHeight(), 0.1f, 1000.0f));
 
 		// 模型渲染
 		m_ModelShader.enable();
-		m_ModelShader.setUniform3f("pointLights[0].position", glm::vec3(200.0f, 215.0f, 100.0f));
-		m_ModelShader.setUniform3f("spotLight.position", m_Camera->getPosition());
-		m_ModelShader.setUniform3f("spotLight.direction", m_Camera->getFront());
+		m_DynamicLightManager.setupLightingUniforms(m_ModelShader);
 		m_ModelShader.setUniform3f("viewPos", m_Camera->getPosition());
 		m_ModelShader.setUniformMat4("view", m_Camera->getViewMatrix());
 		m_ModelShader.setUniformMat4("projection", glm::perspective(glm::radians(m_Camera->getFOV()), (float)m_Window->getWidth() / (float)m_Window->getHeight(), 0.1f, 1000.0f));
@@ -145,10 +124,6 @@ namespace engine {
 			}
 			iter++;
 		}
-		/*m_ModelReflectionShader.enable();
-		m_ModelReflectionShader.setUniform1i("environmentMap", 0);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, m_Skybox->getSkyboxCubemap());
-		m_Renderer->flushOpaque(m_ModelReflectionShader, m_OutlineShader);*/
 
 		m_Renderer->flushOpaque(m_ModelShader, m_OutlineShader);
 
@@ -158,7 +133,7 @@ namespace engine {
 		// 地形
 		glStencilMask(0x00); // Don't update the stencil buffer
 		m_TerrainShader.enable();
-		m_TerrainShader.setUniform3f("pointLight.position", glm::vec3(200.0f, 200.0f, 100.0f));
+		m_TerrainShader.setUniform3f("pointLights[0].position", glm::vec3(200.0f, 200.0f, 100.0f));
 		m_TerrainShader.setUniform3f("spotLight.position", m_Camera->getPosition());
 		m_TerrainShader.setUniform3f("spotLight.direction", m_Camera->getFront());
 		m_TerrainShader.setUniform3f("viewPos", m_Camera->getPosition());
