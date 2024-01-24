@@ -22,11 +22,13 @@ GLfloat pitch = 0.0f;
 int main() {
 	engine::graphics::Camera camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f);
 	engine::graphics::Window window("Engine", 1366, 768);
-	engine::Scene3D scene(&camera, &window);
 	
+	//创建场景
+	engine::Scene3D scene(&camera, &window);
+
 	engine::opengl::Framebuffer framebuffer(window.getWidth(), window.getHeight());
 	engine::opengl::Framebuffer blitFramebuffer(window.getWidth(), window.getHeight(), false);
-	
+
 	engine::graphics::Shader framebufferShader("src/shaders/framebuffer.vert", "src/shaders/framebuffer.frag");
 
 	engine::graphics::MeshFactory meshFactory;
@@ -37,12 +39,15 @@ int main() {
 	engine::Timer fpsTimer;
 	int frames = 0;
 
+	framebufferShader.enable();
+	framebufferShader.setUniform2f("readOffset", glm::vec2(1.0f / window.getWidth(), 1.0f / window.getHeight()));
+
 	engine::Time deltaTime;
 
 	bool firstMove = true;
 	GLfloat lastX = window.getMouseX();
 	GLfloat lastY = window.getMouseY();
-	
+
 	while (!window.closed()) {
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);  // 场景背景色
 

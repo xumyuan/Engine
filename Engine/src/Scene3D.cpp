@@ -35,13 +35,22 @@ namespace engine {
 		std::vector<graphics::Mesh> meshes;
 		meshes.push_back(*m_meshFactory.CreateQuad("res/textures/window.png", false));
 
-		Add(new graphics::Renderable3D(glm::vec3(90.0f, -10.0f, 90.0f), glm::vec3(3.0f, 3.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f), 0, new engine::graphics::Model("res/3D_Models/nanosuit_model/nanosuit.obj"), true, false));
+		Add(new graphics::Renderable3D(
+			glm::vec3(90.0f, -10.0f, 90.0f),
+			glm::vec3(3.0f, 3.0f, 3.0f),
+			glm::vec3(0.0f, 1.0f, 0.0f),
+			0, 
+			new engine::graphics::Model("res/3D_Models/nanosuit_model/nanosuit.obj"),
+			nullptr, true, false));
 
-		Add(new graphics::Renderable3D(glm::vec3(30.0f, 0.0f, 30.0f), glm::vec3(0.2f, 0.2f, 0.2f), glm::vec3(0.0f, 1.0f, 0.0f), 0, new engine::graphics::Model("res/3D_Models/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX"), false));
+		Add(new graphics::Renderable3D(glm::vec3(30.0f, 0.0f, 30.0f), glm::vec3(0.2f, 0.2f, 0.2f), glm::vec3(0.0f, 1.0f, 0.0f), 0, new engine::graphics::Model("res/3D_Models/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX"), nullptr, false));
 
-		Add(new graphics::Renderable3D(glm::vec3(40, 20, 40), glm::vec3(15, 15, 15), glm::vec3(1.0, 0.0, 0.0), glm::radians(90.0f), new graphics::Model(meshes), false, true));
-		Add(new graphics::Renderable3D(glm::vec3(80, 20, 80), glm::vec3(15, 15, 15), glm::vec3(1.0, 0.0, 0.0), glm::radians(90.0f), new graphics::Model(meshes), false, true));
-		Add(new graphics::Renderable3D(glm::vec3(120, 20, 120), glm::vec3(15, 15, 15), glm::vec3(1.0, 0.0, 0.0), glm::radians(90.0f), new graphics::Model(meshes), false, true));
+
+
+
+		Add(new graphics::Renderable3D(glm::vec3(40, 20, 40), glm::vec3(15, 15, 15), glm::vec3(1.0, 0.0, 0.0), glm::radians(90.0f), new graphics::Model(meshes), nullptr, false, true));
+		Add(new graphics::Renderable3D(glm::vec3(80, 20, 80), glm::vec3(15, 15, 15), glm::vec3(1.0, 0.0, 0.0), glm::radians(90.0f), new graphics::Model(meshes), nullptr, false, true));
+		Add(new graphics::Renderable3D(glm::vec3(120, 20, 120), glm::vec3(15, 15, 15), glm::vec3(1.0, 0.0, 0.0), glm::radians(90.0f), new graphics::Model(meshes), nullptr, false, true));
 
 		// 地形shader设置
 		m_TerrainShader.enable();
@@ -102,6 +111,7 @@ namespace engine {
 		//m_Renderables[0]->setRadianRotation(m_Renderables[0]->getRadianRotation() + deltaTime);
 	}
 
+	// 场景渲染
 	void Scene3D::onRender() {
 		//setup
 		m_OutlineShader.enable();

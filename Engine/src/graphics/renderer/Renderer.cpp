@@ -30,27 +30,19 @@ namespace engine {
 
 				Renderable3D* current = m_OpaqueRenderQueue.front();
 
-
-
-				glm::mat4 model(1);
-				model = glm::translate(model, current->getPosition());
-				if ((current->getRotationAxis().x != 0 || current->getRotationAxis().y != 0 || current->getRotationAxis().z != 0) && current->getRadianRotation() != 0)
-					model = glm::rotate(model, current->getRadianRotation(), current->getRotationAxis());
-				model = glm::scale(model, current->getScale());
-				shader.setUniformMat4("model", model);
+				setupModelMatrix(current, shader);
 				current->draw(shader);
+
+
+
 
 				// 绘制外轮廓
 				if (current->getShouldOutline()) {
 					glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
 
 					outlineShader.enable();
-					model = glm::mat4(1);
-					model = glm::translate(model, current->getPosition());
-					if ((current->getRotationAxis().x != 0 || current->getRotationAxis().y != 0 || current->getRotationAxis().z != 0) && current->getRadianRotation() != 0)
-						model = glm::rotate(model, current->getRadianRotation(), current->getRotationAxis());
-					model = glm::scale(model, current->getScale() + glm::vec3(0.025f, 0.025f, 0.025f));
-					outlineShader.setUniformMat4("model", model);
+					setupModelMatrix(current, outlineShader, 1.025f);
+
 					current->draw(outlineShader);
 					outlineShader.disable();
 
@@ -89,26 +81,18 @@ namespace engine {
 
 
 				auto* current = m_TransparentRenderQueue.front();
-
-				glm::mat4 model(1);
-				model = glm::translate(model, current->getPosition());
-				if ((current->getRotationAxis().x != 0 || current->getRotationAxis().y != 0 || current->getRotationAxis().z != 0) && current->getRadianRotation() != 0)
-					model = glm::rotate(model, current->getRadianRotation(), current->getRotationAxis());
-				model = glm::scale(model, current->getScale());
-				shader.setUniformMat4("model", model);
+				setupModelMatrix(current, shader);
 				current->draw(shader);
+
+				
 
 				// 绘制外轮廓
 				if (current->getShouldOutline()) {
 					glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
 
 					outlineShader.enable();
-					model = glm::mat4(1);
-					model = glm::translate(model, current->getPosition());
-					if ((current->getRotationAxis().x != 0 || current->getRotationAxis().y != 0 || current->getRotationAxis().z != 0) && current->getRadianRotation() != 0)
-						model = glm::rotate(model, current->getRadianRotation(), current->getRotationAxis());
-					model = glm::scale(model, current->getScale() + glm::vec3(0.025f, 0.025f, 0.025f));
-					outlineShader.setUniformMat4("model", model);
+					setupModelMatrix(current, outlineShader, 1.025f);
+
 					current->draw(outlineShader);
 					outlineShader.disable();
 
@@ -125,6 +109,25 @@ namespace engine {
 				m_TransparentRenderQueue.pop_front();
 
 			}
+		}
+
+
+		// TODO: Currently only support two levels in a hierarchical scene graph
+		void Renderer::setupModelMatrix(Renderable3D* renderable, Shader& shader, float scaleFactor) {
+			glm::mat4 model(1);
+			glm::mat4 translate = glm::translate(glm::mat4(1.0f), renderable->getPosition());
+			glm::mat4 rotate = glm::toMat4(renderable->getOrientation());
+			glm::mat4 scale = glm::scale(glm::mat4(1.0f), renderable->getScale() * scaleFactor);
+
+			if (!renderable->getParent()) {
+				model = translate * rotate * scale;
+			}
+			else {
+				// Only apply scale locally
+				model = glm::translate(glm::mat4(1.0f), renderable->getParent()->getPosition()) * glm::toMat4(renderable->getParent()->getOrientation()) * translate * rotate * scale;
+			}
+
+			shader.setUniformMat4("model", model);
 		}
 	}
 }

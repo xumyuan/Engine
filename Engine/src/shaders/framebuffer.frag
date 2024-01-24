@@ -6,20 +6,20 @@ in vec2 TexCoord;
 
 uniform sampler2D texture_diffuse1;
 
-const float readOffset = 1.0 / 400.0; // Smaller value => Samples closer to the current fragment
+uniform vec2 readOffset;
 
 void main() {
 	// 后处理卷积核
 	vec2 readOffsets[9] = vec2[] (
-		vec2(-readOffset, readOffset),
-		vec2(0.0, readOffset),
-		vec2(readOffset, readOffset),
-		vec2(-readOffset, 0.0),
+		vec2(-readOffset.x, readOffset.y),
+		vec2(0.0, readOffset.y),
+		vec2(readOffset.x, readOffset.y),
+		vec2(-readOffset.x, 0.0),
 		vec2(0.0, 0.0),
-		vec2(readOffset, 0.0),
-		vec2(-readOffset, -readOffset),
-		vec2(0.0, -readOffset),
-		vec2(readOffset, -readOffset)
+		vec2(readOffset.x, 0.0),
+		vec2(-readOffset.x, -readOffset.y),
+		vec2(0.0, -readOffset.y),
+		vec2(readOffset.x, -readOffset.y)
 	);
 
 	// 模糊卷积核
@@ -58,8 +58,4 @@ void main() {
 	}
 
 	FragColor = vec4(colour, 1.0);
-
-	// 伽马矫正
-	//float gamma = 2.2f;
-	//FragColor = vec4(pow(colour, vec3(1.0 / gamma)), 1.0);
 }

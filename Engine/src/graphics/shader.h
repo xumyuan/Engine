@@ -14,9 +14,10 @@ namespace engine {
 		class Shader {
 		private:
 			GLuint m_ShaderID;
-			const char* m_VertPath, * m_FragPath;
+			const char* m_VertPath, * m_FragPath, * m_GeomPath;
 		public:
 			Shader(const char* vertPath, const char* fragPath);
+			Shader(const char* vertPath, const char* fragPath, const char* geoPath);
 			~Shader();
 
 			void setUniform1f(const GLchar* name, float value);

@@ -16,7 +16,9 @@ namespace engine {
 
 			void flushOpaque(Shader& shader, Shader& outlineShader);
 			void flushTransparent(Shader& shader, Shader& outlineShader);
+
 		private:
+			void setupModelMatrix(Renderable3D* renderable, Shader& shader, float scaleFactor = 1.0f);
 			std::deque<Renderable3D*> m_OpaqueRenderQueue;
 			std::deque<Renderable3D*> m_TransparentRenderQueue;
 
