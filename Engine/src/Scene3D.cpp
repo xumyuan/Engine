@@ -77,7 +77,6 @@ namespace engine {
 		// Ä£ÐÍshader
 		m_ModelShader.enable();
 		m_ModelShader.setUniform1f("material.shininess", 128.0f);
-		m_DynamicLightManager.setupLightingUniforms(m_ModelShader);
 
 		// Skybox
 		std::vector<const char*> skyboxFilePaths;

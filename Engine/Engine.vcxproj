@@ -131,6 +131,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\platform\OpenGL\Framebuffers\ShadowMap.h" />
+    <ClInclude Include="src\graphics\Material.h" />
     <ClInclude Include="src\graphics\dynamic lights\DynamicLightManager.h" />
     <ClInclude Include="src\graphics\dynamic lights\DirectionalLight.h" />
     <ClInclude Include="src\graphics\dynamic lights\DynamicLight.h" />
@@ -138,7 +140,7 @@
     <ClInclude Include="src\graphics\dynamic lights\SpotLight.h" />
     <ClInclude Include="src\Defs.h" />
     <ClInclude Include="src\graphics\Skybox.h" />
-    <ClInclude Include="src\platform\OpenGL\Framebuffer.h" />
+    <ClInclude Include="src\platform\OpenGL\Framebuffers\Framebuffer.h" />
     <ClInclude Include="src\graphics\MeshFactory.h" />
     <ClInclude Include="src\graphics\renderer\Renderer.h" />
     <ClInclude Include="src\graphics\renderer\Renderable3D.h" />
@@ -161,13 +163,15 @@
     <ClInclude Include="src\platform\OpenGL\Utility.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\platform\OpenGL\Framebuffers\ShadowMap.cpp" />
+    <ClCompile Include="src\graphics\Material.cpp" />
     <ClCompile Include="src\graphics\dynamic lights\DynamicLightManager.cpp" />
     <ClCompile Include="src\graphics\dynamic lights\DirectionalLight.cpp" />
     <ClCompile Include="src\graphics\dynamic lights\DynamicLight.cpp" />
     <ClCompile Include="src\graphics\dynamic lights\PointLight.cpp" />
     <ClCompile Include="src\graphics\dynamic lights\SpotLight.cpp" />
     <ClCompile Include="src\graphics\Skybox.cpp" />
-    <ClCompile Include="src\platform\OpenGL\Framebuffer.cpp" />
+    <ClCompile Include="src\platform\OpenGL\Framebuffers\Framebuffer.cpp" />
     <ClCompile Include="src\graphics\MeshFactory.cpp" />
     <ClCompile Include="src\graphics\renderer\Renderer.cpp" />
     <ClCompile Include="src\graphics\renderer\Renderable3D.cpp" />
@@ -196,6 +200,8 @@
     <None Include="src\shaders\model.frag" />
     <None Include="src\shaders\modelReflection.frag" />
     <None Include="src\shaders\modelRefraciton.frag" />
+    <None Include="src\shaders\shadowmap.frag" />
+    <None Include="src\shaders\shadowmap.vert" />
     <None Include="src\shaders\skybox.frag" />
     <None Include="src\shaders\skybox.vert" />
     <None Include="src\shaders\terrain.frag" />

@@ -13,7 +13,7 @@
 #include "graphics\Model.h"
 #include "terrain\Terrain.h"
 #include "Scene3D.h"
-#include "platform/OpenGL/Framebuffer.h"
+#include "platform/OpenGL/Framebuffers/Framebuffer.h"
 #include "graphics/MeshFactory.h"
 
 GLfloat yaw = -90.0f;
@@ -26,8 +26,12 @@ int main() {
 	//创建场景
 	engine::Scene3D scene(&camera, &window);
 
+	// 创建帧缓冲
 	engine::opengl::Framebuffer framebuffer(window.getWidth(), window.getHeight());
-	engine::opengl::Framebuffer blitFramebuffer(window.getWidth(), window.getHeight(), false);
+	framebuffer.addColorAttachment(true).addDepthStencilRBO(true).createFramebuffer();
+
+	engine::opengl::Framebuffer blitFramebuffer(window.getWidth(), window.getHeight());
+	blitFramebuffer.addColorAttachment(false).addDepthStencilRBO(false).createFramebuffer();
 
 	engine::graphics::Shader framebufferShader("src/shaders/framebuffer.vert", "src/shaders/framebuffer.frag");
 

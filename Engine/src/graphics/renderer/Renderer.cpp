@@ -18,11 +18,12 @@ namespace engine {
 
 		// 不透明物渲染
 		void Renderer::flushOpaque(Shader& shader, Shader& outlineShader) {
+			glEnable(GL_CULL_FACE);
+			glEnable(GL_DEPTH_TEST);
 			//不透明物体渲染队列
 			while (!m_OpaqueRenderQueue.empty()) {
 
 				// Drawing prepration
-				glEnable(GL_DEPTH_TEST);
 				glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
 				glStencilFunc(GL_ALWAYS, 1, 0xFF);
@@ -35,20 +36,9 @@ namespace engine {
 
 				// 绘制外轮廓
 				if (current->getShouldOutline()) {
-					glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
 
-					outlineShader.enable();
-					setupModelMatrix(current, outlineShader, 1.0025f);
-
-					current->draw(outlineShader);
-					outlineShader.disable();
-
-					glEnable(GL_DEPTH_TEST);
-					glStencilMask(0xFF);
-
+					drawOutline(outlineShader, current);
 					shader.enable();
-
-					glClear(GL_STENCIL_BUFFER_BIT);
 				}
 				m_OpaqueRenderQueue.pop_front();
 			}
@@ -64,7 +54,6 @@ namespace engine {
 				return glm::length2(m_Camera->getPosition() - a->getPosition()) > glm::length2(m_Camera->getPosition() - b->getPosition());
 				});
 
-
 			//透明物体渲染
 			while (!m_TransparentRenderQueue.empty()) {
 				glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
@@ -76,29 +65,14 @@ namespace engine {
 				glEnable(GL_BLEND);
 				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-
 				auto* current = m_TransparentRenderQueue.front();
 				setupModelMatrix(current, shader);
 				current->draw(shader);
 
-				
-
 				// 绘制外轮廓
 				if (current->getShouldOutline()) {
-					glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-
-					outlineShader.enable();
-					setupModelMatrix(current, outlineShader, 1.025f);
-
-					current->draw(outlineShader);
-					outlineShader.disable();
-
-					glEnable(GL_DEPTH_TEST);
-					glStencilMask(0xFF);
-
+					drawOutline(outlineShader, current);
 					shader.enable();
-
-					glClear(GL_STENCIL_BUFFER_BIT);
 				}
 
 				glDisable(GL_BLEND);
@@ -107,7 +81,6 @@ namespace engine {
 
 			}
 		}
-
 
 		// TODO: Currently only support two levels in a hierarchical scene graph
 		void Renderer::setupModelMatrix(Renderable3D* renderable, Shader& shader, float scaleFactor) {
@@ -125,6 +98,22 @@ namespace engine {
 			}
 
 			shader.setUniformMat4("model", model);
+		}
+
+		// 绘制外轮廓
+		void Renderer::drawOutline(Shader& outlineShader, Renderable3D* renderable) {
+			glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+
+			outlineShader.enable();
+			setupModelMatrix(renderable, outlineShader, 1.025f);
+
+			renderable->draw(outlineShader);
+			outlineShader.disable();
+
+			glEnable(GL_DEPTH_TEST);
+			glStencilMask(0xFF);
+
+			glClear(GL_STENCIL_BUFFER_BIT);
 		}
 	}
 }

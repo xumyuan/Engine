@@ -19,6 +19,9 @@ namespace engine {
 
 		private:
 			void setupModelMatrix(Renderable3D* renderable, Shader& shader, float scaleFactor = 1.0f);
+
+			void drawOutline(Shader& outlineShader, Renderable3D* renderable);
+
 			std::deque<Renderable3D*> m_OpaqueRenderQueue;
 			std::deque<Renderable3D*> m_TransparentRenderQueue;
 

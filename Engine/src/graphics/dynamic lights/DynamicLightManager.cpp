@@ -21,7 +21,7 @@ namespace engine {
 			m_DirectionalLight.specular = glm::vec3(0.5f, 0.5f, 0.5f);
 
 			m_SpotLight.isActive = true;
-			m_SpotLight.ambient = glm::vec3(0.2f, 0.2f, 0.2f);
+			m_SpotLight.ambient = glm::vec3(0.05f, 0.05f, 0.05f);
 			m_SpotLight.diffuse = glm::vec3(1.0f, 1.0f, 1.0f);
 			m_SpotLight.specular = glm::vec3(1.0f, 1.0f, 1.0f);
 			m_SpotLight.position = glm::vec3(0.0f, 0.0f, 0.0f);
