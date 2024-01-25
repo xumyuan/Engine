@@ -19,6 +19,8 @@ namespace engine {
 			// Control functions
 			inline void setSpotLightPosition(const glm::vec3& pos) { m_SpotLight.position = pos; }
 			inline void setSpotLightDirection(const glm::vec3& dir) { m_SpotLight.direction = dir; }
+			inline void setDirectionalLightDirection(const glm::vec3& dir) { m_DirectionalLight.direction = dir; }
+			inline void setPointLightPosition(int index, const glm::vec3& pos) { m_PointLights[index].position = pos; }
 		private:
 			void init();
 

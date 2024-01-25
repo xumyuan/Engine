@@ -3,7 +3,7 @@
 namespace engine {
 	namespace graphics {
 
-		GLCache::GLCache() {
+		GLCache::GLCache() : m_ActiveShaderID(0) {
 
 		}
 
@@ -14,6 +14,16 @@ namespace engine {
 		GLCache* GLCache::getInstance() {
 			static GLCache cache;
 			return &cache;
+		}
+
+		void GLCache::setStencilTest(bool choice) {
+			if (m_StencilTest != choice) {
+				m_StencilTest = choice;
+				if (m_StencilTest)
+					glEnable(GL_STENCIL_TEST);
+				else
+					glDisable(GL_STENCIL_TEST);
+			}
 		}
 
 		void GLCache::setDepthTest(bool choice) {
@@ -58,6 +68,33 @@ namespace engine {
 			if (m_DepthFunc != depthFunc) {
 				m_DepthFunc = depthFunc;
 				glDepthFunc(m_DepthFunc);
+			}
+		}
+
+		void GLCache::setStencilFunc(GLenum testFunc, GLint stencilFragValue, GLuint stencilBitmask) {
+			if (m_StencilTestFunc != testFunc || m_StencilFragValue != stencilFragValue || m_StencilFuncBitmask != stencilBitmask) {
+				m_StencilTestFunc = testFunc;
+				m_StencilFragValue = stencilFragValue;
+				m_StencilFuncBitmask = stencilBitmask;
+
+				glStencilFuncSeparate(GL_FRONT_AND_BACK, m_StencilTestFunc, m_StencilFragValue, m_StencilFuncBitmask);
+			}
+		}
+
+		void GLCache::setStencilOp(GLenum stencilFailOperation, GLenum depthFailOperation, GLenum depthPassOperation) {
+			if (m_StencilFailOperation != stencilFailOperation || m_DepthFailOperation != depthFailOperation || m_DepthPassOperation != depthPassOperation) {
+				m_StencilFailOperation = stencilFailOperation;
+				m_DepthFailOperation = depthFailOperation;
+				m_DepthPassOperation = depthPassOperation;
+
+				glStencilOpSeparate(GL_FRONT_AND_BACK, m_StencilFailOperation, m_DepthFailOperation, m_DepthPassOperation);
+			}
+		}
+
+		void GLCache::setStencilWriteMask(GLuint bitmask) {
+			if (m_StencilWriteBitmask != bitmask) {
+				m_StencilWriteBitmask = bitmask;
+				glStencilMaskSeparate(GL_FRONT_AND_BACK, m_StencilWriteBitmask);
 			}
 		}
 

@@ -22,19 +22,15 @@ namespace engine {
 
 		// 不透明物渲染
 		void Renderer::flushOpaque(Shader& shader, Shader& outlineShader) {
+			m_GLCache->switchShader(shader.getShaderID());
 			m_GLCache->setCull(true);
 			m_GLCache->setDepthTest(true);
 			m_GLCache->setBlend(false);
+			m_GLCache->setStencilTest(true);
+			m_GLCache->setStencilWriteMask(0xFF);
 
 			//不透明物体渲染队列
 			while (!m_OpaqueRenderQueue.empty()) {
-
-				// Drawing prepration
-				glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-
-				glStencilFunc(GL_ALWAYS, 1, 0xFF);
-				glStencilMask(0xFF);
-
 				Renderable3D* current = m_OpaqueRenderQueue.front();
 
 				setupModelMatrix(current, shader);
@@ -44,7 +40,7 @@ namespace engine {
 				if (current->getShouldOutline()) {
 
 					drawOutline(outlineShader, current);
-					shader.enable();
+					m_GLCache->switchShader(shader.getShaderID());
 				}
 				m_OpaqueRenderQueue.pop_front();
 			}
@@ -62,23 +58,24 @@ namespace engine {
 
 			//透明物体渲染
 			while (!m_TransparentRenderQueue.empty()) {
-				glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+				Renderable3D* current = m_TransparentRenderQueue.front();
 
-				glStencilFunc(GL_ALWAYS, 1, 0xFF);
-				glStencilMask(0xFF);
+				m_GLCache->setStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+				m_GLCache->setStencilFunc(GL_ALWAYS, 1, 0xFF);
+				if (current->getShouldOutline()) m_GLCache->setStencilWriteMask(0xFF);
+				else m_GLCache->setStencilWriteMask(0x00);
 
 				//开启混合
 				m_GLCache->setBlend(true);
 				m_GLCache->setBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-				auto* current = m_TransparentRenderQueue.front();
 				setupModelMatrix(current, shader);
 				current->draw(shader);
 
 				// 绘制外轮廓
 				if (current->getShouldOutline()) {
 					drawOutline(outlineShader, current);
-					shader.enable();
+					m_GLCache->switchShader(shader.getShaderID());
 				}
 
 
@@ -107,16 +104,14 @@ namespace engine {
 
 		// 绘制外轮廓
 		void Renderer::drawOutline(Shader& outlineShader, Renderable3D* renderable) {
-			glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+			m_GLCache->switchShader(outlineShader.getShaderID());
+			m_GLCache->setStencilFunc(GL_NOTEQUAL, 1, 0xFF);
 
-			outlineShader.enable();
 			setupModelMatrix(renderable, outlineShader, 1.025f);
 
 			renderable->draw(outlineShader);
-			outlineShader.disable();
 
 			m_GLCache->setDepthTest(true);
-			glStencilMask(0xFF);
 
 			glClear(GL_STENCIL_BUFFER_BIT);
 		}
