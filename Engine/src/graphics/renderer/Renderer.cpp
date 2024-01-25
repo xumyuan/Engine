@@ -4,6 +4,10 @@ namespace engine {
 
 		Renderer::Renderer(Camera* camera) : m_Camera(camera)
 		{
+			m_GLCache = GLCache::getInstance();
+			m_GLCache->setDepthTest(true);
+			m_GLCache->setBlend(false);
+			m_GLCache->setCull(true);
 		}
 
 		//不透明渲染队列
@@ -18,8 +22,10 @@ namespace engine {
 
 		// 不透明物渲染
 		void Renderer::flushOpaque(Shader& shader, Shader& outlineShader) {
-			glEnable(GL_CULL_FACE);
-			glEnable(GL_DEPTH_TEST);
+			m_GLCache->setCull(true);
+			m_GLCache->setDepthTest(true);
+			m_GLCache->setBlend(false);
+
 			//不透明物体渲染队列
 			while (!m_OpaqueRenderQueue.empty()) {
 
@@ -48,7 +54,7 @@ namespace engine {
 		void Renderer::flushTransparent(Shader& shader, Shader& outlineShader) {
 
 			// 关闭背面剔除，否则会导致透明物体的背面也被剔除
-			glDisable(GL_CULL_FACE);
+			m_GLCache->setCull(false);
 			//排序后从后往前渲染，没有考虑缩放和旋转
 			std::sort(m_TransparentRenderQueue.begin(), m_TransparentRenderQueue.end(), [this](Renderable3D* a, Renderable3D* b)->bool {
 				return glm::length2(m_Camera->getPosition() - a->getPosition()) > glm::length2(m_Camera->getPosition() - b->getPosition());
@@ -62,8 +68,8 @@ namespace engine {
 				glStencilMask(0xFF);
 
 				//开启混合
-				glEnable(GL_BLEND);
-				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+				m_GLCache->setBlend(true);
+				m_GLCache->setBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 				auto* current = m_TransparentRenderQueue.front();
 				setupModelMatrix(current, shader);
@@ -75,7 +81,6 @@ namespace engine {
 					shader.enable();
 				}
 
-				glDisable(GL_BLEND);
 
 				m_TransparentRenderQueue.pop_front();
 
@@ -110,7 +115,7 @@ namespace engine {
 			renderable->draw(outlineShader);
 			outlineShader.disable();
 
-			glEnable(GL_DEPTH_TEST);
+			m_GLCache->setDepthTest(true);
 			glStencilMask(0xFF);
 
 			glClear(GL_STENCIL_BUFFER_BIT);

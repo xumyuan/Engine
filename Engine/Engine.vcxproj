@@ -131,6 +131,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\graphics\renderer\GLCache.h" />
     <ClInclude Include="src\platform\OpenGL\Framebuffers\ShadowMap.h" />
     <ClInclude Include="src\graphics\Material.h" />
     <ClInclude Include="src\graphics\dynamic lights\DynamicLightManager.h" />
@@ -163,6 +164,7 @@
     <ClInclude Include="src\platform\OpenGL\Utility.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\graphics\renderer\GLCache.cpp" />
     <ClCompile Include="src\platform\OpenGL\Framebuffers\ShadowMap.cpp" />
     <ClCompile Include="src\graphics\Material.cpp" />
     <ClCompile Include="src\graphics\dynamic lights\DynamicLightManager.cpp" />

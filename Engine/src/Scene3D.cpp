@@ -43,7 +43,7 @@ namespace engine {
 			new engine::graphics::Model("res/3D_Models/nanosuit_model/nanosuit.obj"),
 			nullptr, true, false));
 
-		Add(new graphics::Renderable3D(glm::vec3(30.0f, 0.0f, 30.0f), glm::vec3(0.2f, 0.2f, 0.2f), glm::vec3(0.0f, 1.0f, 0.0f), 0, new engine::graphics::Model("res/3D_Models/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX"), nullptr, false));
+		Add(new graphics::Renderable3D(glm::vec3(60.0f, 20.0f, 60.0f), glm::vec3(0.2f, 0.2f, 0.2f), glm::vec3(0.0f, 1.0f, 0.0f), 0, new engine::graphics::Model("res/3D_Models/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX"), nullptr, false));
 
 		Add(new graphics::Renderable3D(glm::vec3(40, 20, 40), glm::vec3(15, 15, 15), glm::vec3(1.0, 0.0, 0.0), glm::radians(90.0f), new graphics::Model(meshes), nullptr, false, true));
 		Add(new graphics::Renderable3D(glm::vec3(80, 20, 80), glm::vec3(15, 15, 15), glm::vec3(1.0, 0.0, 0.0), glm::radians(90.0f), new graphics::Model(meshes), nullptr, false, true));
@@ -96,13 +96,16 @@ namespace engine {
 	// 场景渲染
 	void Scene3D::onRender() {
 		//setup
+		// 投影矩阵
+		glm::mat4 projectionMat = glm::perspective(glm::radians(m_Camera->getFOV()),
+			(float)m_Window->getHeight() / (float)m_Window->getHeight(), NEAR_PLANE, FAR_PLANE);
 		m_DynamicLightManager.setSpotLightDirection(m_Camera->getFront());
 		m_DynamicLightManager.setSpotLightPosition(m_Camera->getPosition());
 
 
 		m_OutlineShader.enable();
 		m_OutlineShader.setUniformMat4("view", m_Camera->getViewMatrix());
-		m_OutlineShader.setUniformMat4("projection", glm::perspective(glm::radians(m_Camera->getFOV()), (float)m_Window->getWidth() / (float)m_Window->getHeight(), 0.1f, 1000.0f));
+		m_OutlineShader.setUniformMat4("projection", projectionMat);
 
 
 		// 模型渲染
@@ -110,7 +113,7 @@ namespace engine {
 		m_DynamicLightManager.setupLightingUniforms(m_ModelShader);
 		m_ModelShader.setUniform3f("viewPos", m_Camera->getPosition());
 		m_ModelShader.setUniformMat4("view", m_Camera->getViewMatrix());
-		m_ModelShader.setUniformMat4("projection", glm::perspective(glm::radians(m_Camera->getFOV()), (float)m_Window->getWidth() / (float)m_Window->getHeight(), 0.1f, 1000.0f));
+		m_ModelShader.setUniformMat4("projection", projectionMat);
 
 		std::vector<graphics::Renderable3D*>::iterator iter = m_Renderables.begin();
 		while (iter != m_Renderables.end()) {
@@ -140,7 +143,7 @@ namespace engine {
 		modelMatrix = glm::translate(modelMatrix, m_Terrain->getPosition());
 		m_TerrainShader.setUniformMat4("model", modelMatrix);
 		m_TerrainShader.setUniformMat4("view", m_Camera->getViewMatrix());
-		m_TerrainShader.setUniformMat4("projection", glm::perspective(glm::radians(m_Camera->getFOV()), (float)m_Window->getWidth() / (float)m_Window->getHeight(), 0.1f, 1000.0f));
+		m_TerrainShader.setUniformMat4("projection", projectionMat);
 		m_Terrain->Draw(m_TerrainShader);
 
 		//透明物体渲染

@@ -1,15 +1,19 @@
 #pragma once
 #include <GL\glew.h>
 #include <GLFW\glfw3.h>
+#include "shader.h"
 
 namespace engine {
 	namespace graphics {
 		class Material
-		{
-			//用于PBR
-			GLuint diffuseMap, specularMap, emissionMap;
-			float shininess;
-			GLuint normalMap;
+		{//用于PBR
+		public:
+			Material(GLuint diffuseMap, GLuint specularMap, GLuint emissionMap, GLuint normalMap, float shininess, Shader* shader);
+		private:
+			GLuint m_DiffuseMap, m_SpecularMap, m_NormalMap, m_EmissionMap;
+			float m_Shininess;
+
+			Shader* m_Shader;
 		};
 	}
 }
