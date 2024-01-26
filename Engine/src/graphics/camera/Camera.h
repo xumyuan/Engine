@@ -4,6 +4,7 @@
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include "../Window.h"
 
 namespace engine {
 	namespace graphics {
@@ -42,9 +43,13 @@ namespace engine {
 			Camera(GLfloat xPos, GLfloat yPos, GLfloat zPos, GLfloat xUp, GLfloat yUp, GLfloat zUp, GLfloat yaw, GLfloat pitch);
 
 			glm::mat4 getViewMatrix();
+			void processInput(GLfloat deltaTime);
+
 			void processKeyboard(Camera_Movement direction, GLfloat deltaTime);
 			void processMouseMovement(GLfloat xOffset, GLfloat yOffset, GLboolean constrainPitch);
 			void processMouseScroll(GLfloat yOffset);
+
+			// Getters
 			inline GLfloat getYaw() const { return m_Yaw; }
 			inline GLfloat getPitch() const { return m_Pitch; }
 			inline GLfloat getMovementSpeed() const { return m_MovementSpeed; }

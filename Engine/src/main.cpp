@@ -21,8 +21,8 @@ GLfloat pitch = 0.0f;
 
 int main() {
 	engine::graphics::Camera camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f);
-	engine::graphics::Window window("Engine", 1366, 768);
-	
+	engine::graphics::Window window("Engine", WINDOW_X_RESOLUTION, WINDOW_Y_RESOLUTION);
+
 	//´´½¨³¡¾°
 	engine::Scene3D scene(&camera, &window);
 
@@ -110,7 +110,8 @@ int main() {
 
 		window.update();
 		if (fpsTimer.elapsed() >= 1) {
-			std::cout << "FPS: " << frames << std::endl;
+			std::cout << "FPS: " << frames << "\n";
+			std::cout << "AVG Frame Time: " << (1.0 / frames) * 1000.0 << "ms \n";
 			frames = 0;
 			fpsTimer.reset();
 		}

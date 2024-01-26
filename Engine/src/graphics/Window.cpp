@@ -2,6 +2,12 @@
 
 namespace engine {
 	namespace graphics {
+		bool Window::s_Keys[MAX_KEYS];
+		bool Window::s_Buttons[MAX_BUTTONS];
+		int Window::m_Width, Window::m_Height;
+		double Window::s_MouseX, Window::s_MouseY, Window::s_MouseXDelta, Window::s_MouseYDelta;
+		double Window::s_ScrollX, Window::s_ScrollY;
+
 		/*              Callback Functions              */
 		static void error_callback(int error, const char* description) {
 			std::cout << "Error:" << std::endl << description << std::endl;
@@ -16,31 +22,41 @@ namespace engine {
 
 		static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 			Window* win = (Window*)glfwGetWindowUserPointer(window);
-			win->m_Keys[key] = action != GLFW_RELEASE;
+			win->s_Keys[key] = action != GLFW_RELEASE;
+			ImGui_ImplGlfw_KeyCallback(window, key, scancode, action, mods);
 		}
 
 		static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
 			Window* win = (Window*)glfwGetWindowUserPointer(window);
-			win->m_Buttons[button] = action != GLFW_RELEASE;
+			win->s_Buttons[button] = action != GLFW_RELEASE;
+			ImGui_ImplGlfw_MouseButtonCallback(window, button, action, mods);
 		}
 
 		static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
 			Window* win = (Window*)glfwGetWindowUserPointer(window);
-			win->mx = xpos;
-			win->my = ypos;
+			win->s_MouseXDelta = xpos - win->s_MouseX;
+			win->s_MouseYDelta = ypos - win->s_MouseY;
+			win->s_MouseX = xpos;
+			win->s_MouseY = ypos;
 		}
 
 		static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
 			Window* win = (Window*)glfwGetWindowUserPointer(window);
-			win->scrollX = xoffset;
-			win->scrollY = yoffset;
+			win->s_ScrollX = xoffset;
+			win->s_ScrollY = yoffset;
+			ImGui_ImplGlfw_ScrollCallback(window, xoffset, yoffset);
+		}
+
+		static void char_callback(GLFWwindow* window, unsigned int c) {
+			ImGui_ImplGlfw_CharCallback(window, c);
 		}
 
 		Window::Window(const char* title, int width, int height) {
 			m_Title = title;
 			m_Width = width;
 			m_Height = height;
-
+			s_ScrollX = s_ScrollY = 0;
+			s_MouseXDelta = s_MouseYDelta = 0;
 
 			if (!init()) {
 				utils::Logger::getInstance().error("logged_files/window_creation.txt", "Window Initialization", "Could not initialize window class");
@@ -48,11 +64,14 @@ namespace engine {
 				glfwTerminate();
 			}
 
-			memset(m_Keys, 0, sizeof(bool) * MAX_KEYS);
-			memset(m_Buttons, 0, sizeof(bool) * MAX_BUTTONS);
+			memset(s_Keys, 0, sizeof(bool) * MAX_KEYS);
+			memset(s_Buttons, 0, sizeof(bool) * MAX_BUTTONS);
 		}
 
 		Window::~Window() {
+			ImGui_ImplOpenGL3_Shutdown();
+			ImGui_ImplGlfw_Shutdown();
+			ImGui::DestroyContext();
 			glfwDestroyWindow(m_Window);
 			glfwTerminate();
 		}
@@ -95,6 +114,8 @@ namespace engine {
 			glfwSetMouseButtonCallback(m_Window, mouse_button_callback);
 			glfwSetCursorPosCallback(m_Window, cursor_position_callback);
 			glfwSetScrollCallback(m_Window, scroll_callback);
+			glfwSetCharCallback(m_Window, char_callback);
+			glfwGetCursorPos(m_Window, &s_MouseX, &s_MouseY);
 
 
 			// Check to see if v-sync was enabled and act accordingly
@@ -114,17 +135,36 @@ namespace engine {
 			}
 			std::cout << "OpenGL " << glGetString(GL_VERSION) << std::endl;
 
+			// Setup ImGui bindings
+			ImGui::CreateContext();
+			ImGui_ImplGlfw_InitForOpenGL(m_Window, false);
+			const char* glsl_version = "#version 450";
+			ImGui_ImplOpenGL3_Init(glsl_version);
+			
+			ImGui::StyleColorsDark();
+
 			// Everything was successful so return true
 			return 1;
 		}
 
 		void Window::update() {
+			//// ImGui new frame
+			//ImGui_ImplOpenGL3_NewFrame();
+			//ImGui_ImplGlfw_NewFrame();
+			//ImGui::NewFrame();
+
+			//ImGui::ShowDemoWindow();
+
+			//ImGui::Render(); 
+			//ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
 			GLenum error = glGetError();
 			if (error != GL_NO_ERROR) {
 				std::cout << "OpenGL Error: " << error << std::endl;
 			}
 
 			glfwSwapBuffers(m_Window);
+			s_MouseXDelta = s_MouseYDelta = 0;
 			glfwPollEvents();
 		}
 
@@ -147,26 +187,26 @@ namespace engine {
 			m_Height = mode->height;
 		}
 
-		/*                   Getters                    */
-		bool Window::isKeyPressed(unsigned int keycode) const {
+		/*                   Static Funciton                    */
+		bool Window::isKeyPressed(unsigned int keycode) {
 			if (keycode >= MAX_KEYS) {
 				utils::Logger::getInstance().error("logged_files/input_errors.txt", "Input Check", "Key checked is out of bounds (ie not supported)");
 				std::cout << "Max key overflow in Window" << std::endl;
 				return false;
 			}
 			else {
-				return m_Keys[keycode];
+				return s_Keys[keycode];
 			}
 		}
 
-		bool Window::isMouseButtonPressed(unsigned int keycode) const {
+		bool Window::isMouseButtonPressed(unsigned int keycode) {
 			if (keycode >= MAX_BUTTONS) {
 				utils::Logger::getInstance().error("logged_files/input_errors.txt", "Input Check", "Key checked is out of bounds (ie not supported)");
 				std::cout << "Max mouse button overflow in window" << std::endl;
 				return false;
 			}
 			else {
-				return m_Buttons[keycode];
+				return s_Buttons[keycode];
 			}
 		}
 

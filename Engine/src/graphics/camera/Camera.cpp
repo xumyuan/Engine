@@ -30,6 +30,28 @@ namespace engine {
 			return glm::lookAt(m_Position, m_Position + m_Front, m_Up);
 		}
 
+		void Camera::processInput(GLfloat deltaTime) {
+			// Keyboard input
+			if (Window::isKeyPressed(GLFW_KEY_W))
+				processKeyboard(engine::graphics::FORWARD, deltaTime);
+			if (Window::isKeyPressed(GLFW_KEY_S))
+				processKeyboard(engine::graphics::BACKWARD, deltaTime);
+			if (Window::isKeyPressed(GLFW_KEY_A))
+				processKeyboard(engine::graphics::LEFT, deltaTime);
+			if (Window::isKeyPressed(GLFW_KEY_D))
+				processKeyboard(engine::graphics::RIGHT, deltaTime);
+			if (Window::isKeyPressed(GLFW_KEY_SPACE))
+				processKeyboard(engine::graphics::UPWARDS, deltaTime);
+			if (Window::isKeyPressed(GLFW_KEY_LEFT_CONTROL))
+				processKeyboard(engine::graphics::DOWNWARDS, deltaTime);
+
+			// Mouse scrolling
+			processMouseScroll(Window::getScrollY() * 6);
+
+			// Mouse movement
+			processMouseMovement(Window::getMouseXDelta(), -Window::getMouseYDelta(), true);
+		}
+
 		void Camera::processKeyboard(Camera_Movement direction, GLfloat deltaTime) {
 			GLfloat velocity = m_MovementSpeed * deltaTime;
 			switch (direction) {

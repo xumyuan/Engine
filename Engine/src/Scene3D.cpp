@@ -6,7 +6,7 @@
 
 namespace engine {
 	Scene3D::Scene3D(graphics::Camera* camera, graphics::Window* window)
-		: m_TerrainShader("src/shaders/basic.vert", "src/shaders/terrain.frag"), m_ModelShader("src/shaders/basic.vert", "src/shaders/model.frag"), m_Camera(camera), m_Window(window),
+		: m_TerrainShader("src/shaders/basic.vert", "src/shaders/terrain.frag"), m_ModelShader("src/shaders/basic.vert", "src/shaders/model.frag"), m_Camera(camera),
 		m_OutlineShader("src/shaders/basic.vert", "src/shaders/basic.frag"),
 		m_DynamicLightManager()
 	{
@@ -72,7 +72,7 @@ namespace engine {
 		skyboxFilePaths.push_back("res/skybox/bottom.png");
 		skyboxFilePaths.push_back("res/skybox/back.png");
 		skyboxFilePaths.push_back("res/skybox/front.png");
-		m_Skybox = new graphics::Skybox(skyboxFilePaths, m_Camera, m_Window);
+		m_Skybox = new graphics::Skybox(skyboxFilePaths, m_Camera);
 	}
 
 	void Scene3D::onUpdate(float deltaTime) {
@@ -84,7 +84,7 @@ namespace engine {
 		//setup
 		// Í¶Ó°¾ØÕó
 		glm::mat4 projectionMat = glm::perspective(glm::radians(m_Camera->getFOV()),
-			(float)m_Window->getHeight() / (float)m_Window->getHeight(), NEAR_PLANE, FAR_PLANE);
+			(float)graphics::Window::getWidth() / (float)graphics::Window::getHeight(), NEAR_PLANE, FAR_PLANE);
 
 		m_DynamicLightManager.setSpotLightDirection(m_Camera->getFront());
 		m_DynamicLightManager.setSpotLightPosition(m_Camera->getPosition());

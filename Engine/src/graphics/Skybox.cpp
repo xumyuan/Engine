@@ -3,7 +3,7 @@
 namespace engine {
 	namespace graphics {
 
-		Skybox::Skybox(const std::vector<const char*>& filePaths, Camera* camera, Window* window) : m_SkyboxShader("src/shaders/skybox.vert", "src/shaders/skybox.frag"), m_Camera(camera), m_Window(window)
+		Skybox::Skybox(const std::vector<const char*>& filePaths, Camera* camera) : m_SkyboxShader("src/shaders/skybox.vert", "src/shaders/skybox.frag"), m_Camera(camera)
 		{
 			m_SkyboxCubemap = opengl::Utility::loadCubemapFromFiles(filePaths);
 
@@ -54,7 +54,7 @@ namespace engine {
 			glBindTexture(GL_TEXTURE_CUBE_MAP, m_SkyboxCubemap);
 
 			m_SkyboxShader.setUniformMat4("view", m_Camera->getViewMatrix());
-			m_SkyboxShader.setUniformMat4("projection", glm::perspective(glm::radians(m_Camera->getFOV()), (float)m_Window->getWidth() / (float)m_Window->getHeight(), 0.1f, 1000.0f));
+			m_SkyboxShader.setUniformMat4("projection", glm::perspective(glm::radians(m_Camera->getFOV()), (float)Window::getWidth() / (float)Window::getHeight(), 0.1f, 1000.0f));
 
 			glDepthFunc(GL_LEQUAL);
 			m_SkyboxVAO.bind();

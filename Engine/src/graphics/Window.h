@@ -5,6 +5,9 @@
 #include <iostream>
 #include "../utils/Logger.h"
 #include "../Defs.h"
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
 
 namespace engine {
 	namespace graphics {
@@ -15,14 +18,14 @@ namespace engine {
 		class Window {
 		private:
 			const char* m_Title;
-			int m_Width, m_Height;
 			GLFWwindow* m_Window;
 
+			static int m_Width, m_Height;
+			static bool s_Keys[MAX_KEYS];
+			static bool s_Buttons[MAX_BUTTONS];
+			static double s_MouseX, s_MouseY, s_MouseXDelta, s_MouseYDelta;
+			static double s_ScrollX, s_ScrollY;
 
-			bool m_Keys[MAX_KEYS];
-			bool m_Buttons[MAX_BUTTONS];
-			double mx, my;
-			double scrollX, scrollY;
 		public:
 			Window(const char* title, int width, int height);
 			~Window();
@@ -30,17 +33,21 @@ namespace engine {
 			void clear() const;
 			void close() const;
 			bool closed() const;
-			bool isKeyPressed(unsigned int keycode) const;
-			bool isMouseButtonPressed(unsigned int keycode) const;
 
-			inline double getMouseX() const { return mx; }
-			inline double getMouseY() const { return my; }
-			inline double getScrollX() const { return scrollX; }
-			inline double getScrollY() const { return scrollY; }
-			inline void resetScroll() { scrollX = 0; scrollY = 0; }
-			inline void getMousePosition(double& x, double& y) { x = mx; y = my; }
-			inline int getWidth() const { return m_Width; }
-			inline int getHeight() const { return m_Height; }
+			static bool isKeyPressed(unsigned int keycode);
+			static bool isMouseButtonPressed(unsigned int keycode);
+
+			static inline double getMouseX() { return s_MouseX; }
+			static inline double getMouseY() { return s_MouseY; }
+			static inline double getMouseXDelta() { return s_MouseXDelta; }
+			static inline double getMouseYDelta() { return s_MouseYDelta; }
+			static inline double getScrollX() { return s_ScrollX; }
+			static inline double getScrollY() { return s_ScrollY; }
+			static inline void resetScroll() { s_ScrollX = 0; s_ScrollY = 0; }
+			static inline void getMousePosition(double& x, double& y) { x = s_MouseX; y = s_MouseY; }
+			static inline int getWidth() { return m_Width; }
+			static inline int getHeight() { return m_Height; }
+
 		private:
 			bool init();
 			void setFullScreenResolution();
@@ -50,6 +57,7 @@ namespace engine {
 			static friend void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 			static friend void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
 			static friend void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+			static friend void char_callback(GLFWwindow* window, unsigned int c);
 		};
 
 	}

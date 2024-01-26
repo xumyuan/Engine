@@ -131,11 +131,11 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 fragToCam)
 
 // ¾Û¹âµÆ
 vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 fragToCam) {
-	vec3 lightDirection = normalize(light.position - fragPos);
+	vec3 fragToLight = normalize(light.position - fragPos);
 
-	float diff = max(dot(lightDirection, normal), 0.0);
+	float diff = max(dot(fragToLight, normal), 0.0);
 
-	vec3 halfwayDir = normalize(fragToCam + lightDirection);
+	vec3 halfwayDir = normalize(fragToCam + fragToLight);
 	float spec = pow(max(dot(halfwayDir, normal), 0.0), material.shininess);
 
 	// Attenuation calculation
@@ -143,7 +143,7 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 fragToCam) {
 	float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * distance * distance);
 
 	// Check if it is in the spotlight's circle
-	float theta = dot(normalize(light.direction), -fragToCam);
+	float theta = dot(normalize(light.direction), -fragToLight);
 	float difference = light.cutOff - light.outerCutOff;
 	float intensity = clamp((theta - light.outerCutOff) / difference, 0.0, 1.0);
 
