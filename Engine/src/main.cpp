@@ -15,7 +15,8 @@
 #include "terrain\Terrain.h"
 #include "Scene3D.h"
 #include "platform/OpenGL/Framebuffers/Framebuffer.h"
-#include "graphics\mesh\MeshFactory.h"
+#include "graphics/mesh/common/Quad.h"
+#include "graphics/renderer/GLCache.h"
 
 GLfloat yaw = -90.0f;
 GLfloat pitch = 0.0f;
@@ -26,6 +27,7 @@ int main() {
 
 	//创建场景
 	engine::Scene3D scene(&camera, &window);
+	engine::graphics::GLCache* glCache = engine::graphics::GLCache::getInstance();
 
 	// 创建帧缓冲
 	engine::opengl::Framebuffer framebuffer(window.getWidth(), window.getHeight());
@@ -36,16 +38,17 @@ int main() {
 
 	engine::graphics::Shader framebufferShader("src/shaders/postprocess.vert", "src/shaders/postprocess.frag");
 
-	engine::graphics::MeshFactory meshFactory;
-	engine::graphics::Mesh* colorBufferMesh = meshFactory.CreateScreenQuad(blitFramebuffer.getColorBufferTexture());
+	engine::graphics::Quad screenQuad;
+	screenQuad.getMaterial().setDiffuseMapId(blitFramebuffer.getColorBufferTexture());
+
+	// Setup post processing information
+	glCache->switchShader(framebufferShader.getShaderID());
+	framebufferShader.setUniform2f("readOffset", glm::vec2(1.0f / (float)window.getWidth(), 1.0f / (float)window.getHeight()));
 
 	glEnable(GL_DEPTH_TEST);
 
 	engine::Timer fpsTimer;
 	int frames = 0;
-
-	framebufferShader.enable();
-	framebufferShader.setUniform2f("readOffset", glm::vec2(1.0f / window.getWidth(), 1.0f / window.getHeight()));
 
 	engine::Time deltaTime;
 
@@ -105,10 +108,9 @@ int main() {
 		framebuffer.unbind();
 		glDisable(GL_BLEND);
 		window.clear();
-		framebufferShader.enable();
-		colorBufferMesh->getMaterial().BindMaterialInformation(framebufferShader);
-		colorBufferMesh->Draw();
-		framebufferShader.disable();
+		glCache->switchShader(framebufferShader.getShaderID());
+		screenQuad.getMaterial().BindMaterialInformation(framebufferShader);
+		screenQuad.Draw();
 
 		window.update();
 		if (fpsTimer.elapsed() >= 1) {

@@ -9,7 +9,7 @@ namespace engine {
 
 		void Material::BindMaterialInformation(Shader& shader) const {
 			int currentTextureUnit = 0;
-
+			// Todo:这里修复贴图bug的方式不太行？
 			if (m_DiffuseMap > 0) {
 				glActiveTexture(GL_TEXTURE0);
 				shader.setUniform1i("material.texture_diffuse", currentTextureUnit++);

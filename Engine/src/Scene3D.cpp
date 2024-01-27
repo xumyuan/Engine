@@ -4,6 +4,10 @@
 #include <iostream>
 #include <glm/glm.hpp>
 
+#include "graphics/mesh/common/Cube.h"
+#include "graphics/mesh/common/Sphere.h"
+#include "graphics/mesh/common/Quad.h"
+
 namespace engine {
 	Scene3D::Scene3D(graphics::Camera* camera, graphics::Window* window)
 		: m_TerrainShader("src/shaders/basic.vert", "src/shaders/terrain.frag"), m_ModelShader("src/shaders/basic.vert", "src/shaders/model.frag"), m_Camera(camera),
@@ -33,10 +37,12 @@ namespace engine {
 		glEnable(GL_CULL_FACE);
 
 
-		std::vector<graphics::Mesh> meshes;
-		meshes.push_back(*m_meshFactory.CreateQuad("res/textures/window.png", false));
+		graphics::Quad windowPane;
+		windowPane.getMaterial().setDiffuseMapId(opengl::Utility::loadTextureFromFile("res/textures/window.png", true));
+		windowPane.getMaterial().setSpecularMapId(opengl::Utility::loadTextureFromFile("res/textures/fullSpec.png", true));
+		graphics::Model* glass = new graphics::Model(windowPane);
 
-		Add(new graphics::Renderable3D(
+		/*Add(new graphics::Renderable3D(
 			glm::vec3(90.0f, -10.0f, 90.0f),
 			glm::vec3(3.0f, 3.0f, 3.0f),
 			glm::vec3(0.0f, 1.0f, 0.0f),
@@ -49,7 +55,7 @@ namespace engine {
 			glm::vec3(0.2f, 0.2f, 0.2f),
 			glm::vec3(0.0f, 1.0f, 0.0f),
 			0,
-			new engine::graphics::Model("res/3D_Models/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX"), nullptr, false));
+			new engine::graphics::Model("res/3D_Models/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX"), nullptr, false));*/
 
 		/*Add(new graphics::Renderable3D(
 			glm::vec3(60.0f, 20.0f, 60.0f),
@@ -58,26 +64,13 @@ namespace engine {
 			0,
 			new engine::graphics::Model("res/3D_Models/Sponza/sponza.obj"), nullptr, false));*/
 
-		Add(new graphics::Renderable3D(
-			glm::vec3(40, 20, 40),
-			glm::vec3(15, 15, 15),
-			glm::vec3(1.0, 0.0, 0.0),
-			glm::radians(90.0f),
-			new graphics::Model(meshes), nullptr, false, true));
+		Add(new graphics::Renderable3D(glm::vec3(40, 20, 40), glm::vec3(15, 15, 15), glm::vec3(0.0, 1.0, 0.0), glm::radians(180.0f), glass, nullptr, false, true));
+		Add(new graphics::Renderable3D(glm::vec3(80, 20, 80), glm::vec3(15, 15, 15), glm::vec3(0.0, 1.0, 0.0), glm::radians(180.0f), glass, nullptr, false, true));
+		Add(new graphics::Renderable3D(glm::vec3(120, 20, 120), glm::vec3(15, 15, 15), glm::vec3(0.0, 1.0, 0.0), glm::radians(180.0f), glass, nullptr, false, true));
 
-		Add(new graphics::Renderable3D(
-			glm::vec3(80, 20, 80),
-			glm::vec3(15, 15, 15),
-			glm::vec3(1.0, 0.0, 0.0),
-			glm::radians(90.0f),
-			new graphics::Model(meshes), nullptr, false, true));
-
-		Add(new graphics::Renderable3D(
-			glm::vec3(120, 20, 120),
-			glm::vec3(15, 15, 15),
-			glm::vec3(1.0, 0.0, 0.0),
-			glm::radians(90.0f),
-			new graphics::Model(meshes), nullptr, false, true));
+		Add(new graphics::Renderable3D(glm::vec3(20, 20, 20), glm::vec3(10, 10, 10), glm::vec3(1, 0, 0), 0, new graphics::Model(graphics::Cube()), nullptr, false, false));
+		Add(new graphics::Renderable3D(glm::vec3(140, 20, 140), glm::vec3(10, 10, 10), glm::vec3(1, 0, 0), 0, new graphics::Model(graphics::Sphere()), nullptr, false, false));
+		Add(new graphics::Renderable3D(glm::vec3(-20, 20, -20), glm::vec3(10, 10, 10), glm::vec3(1, 0, 0), 0, new graphics::Model(graphics::Quad()), nullptr, false, false));
 
 		// µØÐÎshaderÉèÖÃ
 		m_GLCache->switchShader(m_TerrainShader.getShaderID());

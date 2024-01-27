@@ -19,9 +19,9 @@ namespace engine {
 
 
 		void Mesh::Draw() const {
-			glBindVertexArray(vao);
+			glBindVertexArray(m_VAO);
 			if (m_Indices.size() > 0) {
-				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
 				GLenum error = glGetError();
 				if (error != GL_NO_ERROR) {
 					std::cout << "OpenGL Error: " << error << std::endl;
@@ -128,17 +128,17 @@ namespace engine {
 			if (m_Bitangents.size() > 0)
 				bufferComponentCount += 3;
 
-			glGenVertexArrays(1, &vao);
-			glGenBuffers(1, &vbo);
-			glGenBuffers(1, &ebo);
+			glGenVertexArrays(1, &m_VAO);
+			glGenBuffers(1, &m_VBO);
+			glGenBuffers(1, &m_IBO);
 
 			// 加载数据到index buffer 和vertex buffer
-			glBindVertexArray(vao);
-			glBindBuffer(GL_ARRAY_BUFFER, vbo);
+			glBindVertexArray(m_VAO);
+			glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
 			glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(float), &data[0], GL_STATIC_DRAW);
 			if (m_Indices.size() > 0)
 			{
-				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
 				glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_Indices.size() * sizeof(unsigned int), &m_Indices[0], GL_STATIC_DRAW);
 			}
 

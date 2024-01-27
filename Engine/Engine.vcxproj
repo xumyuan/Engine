@@ -131,6 +131,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\graphics\mesh\common\Cube.h" />
+    <ClInclude Include="src\graphics\mesh\common\Quad.h" />
+    <ClInclude Include="src\graphics\mesh\common\Sphere.h" />
     <ClInclude Include="src\graphics\renderer\PostProcessor.h" />
     <ClInclude Include="src\graphics\mesh\MeshLoader.h" />
     <ClInclude Include="src\graphics\renderer\GLCache.h" />
@@ -166,6 +169,9 @@
     <ClInclude Include="src\platform\OpenGL\Utility.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\graphics\mesh\common\Cube.cpp" />
+    <ClCompile Include="src\graphics\mesh\common\Quad.cpp" />
+    <ClCompile Include="src\graphics\mesh\common\Sphere.cpp" />
     <ClCompile Include="src\graphics\renderer\PostProcessor.cpp" />
     <ClCompile Include="src\graphics\renderer\GLCache.cpp" />
     <ClCompile Include="src\platform\OpenGL\Framebuffers\ShadowMap.cpp" />
