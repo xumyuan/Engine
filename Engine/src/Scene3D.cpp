@@ -51,6 +51,13 @@ namespace engine {
 			0,
 			new engine::graphics::Model("res/3D_Models/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX"), nullptr, false));
 
+		/*Add(new graphics::Renderable3D(
+			glm::vec3(60.0f, 20.0f, 60.0f),
+			glm::vec3(0.2f, 0.2f, 0.2f),
+			glm::vec3(0.0f, 1.0f, 0.0f),
+			0,
+			new engine::graphics::Model("res/3D_Models/Sponza/sponza.obj"), nullptr, false));*/
+
 		Add(new graphics::Renderable3D(
 			glm::vec3(40, 20, 40),
 			glm::vec3(15, 15, 15),

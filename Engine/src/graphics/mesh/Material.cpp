@@ -7,7 +7,7 @@ namespace engine {
 			: m_DiffuseMap(diffuseMap), m_SpecularMap(specularMap), m_NormalMap(normalMap), m_EmissionMap(emissionMap), m_Shininess(shininess) {}
 
 
-		void Material::BindMaterialInformation(Shader &shader) const {
+		void Material::BindMaterialInformation(Shader& shader) const {
 			int currentTextureUnit = 0;
 
 			if (m_DiffuseMap > 0) {
@@ -19,6 +19,9 @@ namespace engine {
 				glActiveTexture(GL_TEXTURE0 + currentTextureUnit);
 				shader.setUniform1i("material.texture_specular", currentTextureUnit++);
 				glBindTexture(GL_TEXTURE_2D, m_SpecularMap);
+			}
+			else {
+				shader.setUniform1i("material.texture_specular", 0);
 			}
 			if (m_NormalMap > 0) {
 				glActiveTexture(GL_TEXTURE0 + currentTextureUnit);
