@@ -1,10 +1,12 @@
 #pragma once
-#include "../Model.h"
+#include <deque>
+#include <glm\gtx\norm.hpp>
+
+#include "../mesh/Model.h"
 #include "../camera/Camera.h"
 #include "Renderable3D.h"
 #include "GLCache.h"
-#include <deque>
-#include <glm\gtx\norm.hpp>
+
 
 namespace engine {
 	namespace graphics {

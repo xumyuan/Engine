@@ -42,18 +42,35 @@ namespace engine {
 			glm::vec3(0.0f, 1.0f, 0.0f),
 			0,
 			new engine::graphics::Model("res/3D_Models/nanosuit_model/nanosuit.obj"),
-			nullptr, true, false));
+			nullptr, false, false));
 
 		Add(new graphics::Renderable3D(
 			glm::vec3(60.0f, 20.0f, 60.0f),
-			glm::vec3(0.2f, 0.2f, 0.2f), 
-			glm::vec3(0.0f, 1.0f, 0.0f), 
-			0, 
+			glm::vec3(0.2f, 0.2f, 0.2f),
+			glm::vec3(0.0f, 1.0f, 0.0f),
+			0,
 			new engine::graphics::Model("res/3D_Models/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX"), nullptr, false));
 
-		Add(new graphics::Renderable3D(glm::vec3(40, 20, 40), glm::vec3(15, 15, 15), glm::vec3(1.0, 0.0, 0.0), glm::radians(90.0f), new graphics::Model(meshes), nullptr, false, true));
-		Add(new graphics::Renderable3D(glm::vec3(80, 20, 80), glm::vec3(15, 15, 15), glm::vec3(1.0, 0.0, 0.0), glm::radians(90.0f), new graphics::Model(meshes), nullptr, false, true));
-		Add(new graphics::Renderable3D(glm::vec3(120, 20, 120), glm::vec3(15, 15, 15), glm::vec3(1.0, 0.0, 0.0), glm::radians(90.0f), new graphics::Model(meshes), nullptr, false, true));
+		Add(new graphics::Renderable3D(
+			glm::vec3(40, 20, 40),
+			glm::vec3(15, 15, 15),
+			glm::vec3(1.0, 0.0, 0.0),
+			glm::radians(90.0f),
+			new graphics::Model(meshes), nullptr, false, true));
+
+		Add(new graphics::Renderable3D(
+			glm::vec3(80, 20, 80),
+			glm::vec3(15, 15, 15),
+			glm::vec3(1.0, 0.0, 0.0),
+			glm::radians(90.0f),
+			new graphics::Model(meshes), nullptr, false, true));
+
+		Add(new graphics::Renderable3D(
+			glm::vec3(120, 20, 120),
+			glm::vec3(15, 15, 15),
+			glm::vec3(1.0, 0.0, 0.0),
+			glm::radians(90.0f),
+			new graphics::Model(meshes), nullptr, false, true));
 
 		// 地形shader设置
 		m_GLCache->switchShader(m_TerrainShader.getShaderID());
@@ -116,13 +133,13 @@ namespace engine {
 
 		m_Renderer->flushOpaque(m_ModelShader, m_OutlineShader);
 
-		
+
 		// 地形
 		glStencilMask(0x00); // Don't update the stencil buffer
 		m_GLCache->switchShader(m_TerrainShader.getShaderID());
 		m_DynamicLightManager.setupLightingUniforms(m_TerrainShader);
 		m_TerrainShader.setUniform3f("viewPos", m_Camera->getPosition());
-		
+
 		glm::mat4 modelMatrix(1);
 		modelMatrix = glm::translate(modelMatrix, m_Terrain->getPosition());
 		m_TerrainShader.setUniformMat4("model", modelMatrix);

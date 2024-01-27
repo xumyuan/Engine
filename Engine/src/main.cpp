@@ -7,14 +7,15 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+
 #include "utils\Time.h"
 #include "graphics\camera\Camera.h"
 #include "utils\Logger.h"
-#include "graphics\Model.h"
+#include "graphics\mesh\Model.h"
 #include "terrain\Terrain.h"
 #include "Scene3D.h"
 #include "platform/OpenGL/Framebuffers/Framebuffer.h"
-#include "graphics/MeshFactory.h"
+#include "graphics\mesh\MeshFactory.h"
 
 GLfloat yaw = -90.0f;
 GLfloat pitch = 0.0f;
@@ -33,7 +34,7 @@ int main() {
 	engine::opengl::Framebuffer blitFramebuffer(window.getWidth(), window.getHeight());
 	blitFramebuffer.addColorAttachment(false).addDepthStencilRBO(false).createFramebuffer();
 
-	engine::graphics::Shader framebufferShader("src/shaders/framebuffer.vert", "src/shaders/framebuffer.frag");
+	engine::graphics::Shader framebufferShader("src/shaders/postprocess.vert", "src/shaders/postprocess.frag");
 
 	engine::graphics::MeshFactory meshFactory;
 	engine::graphics::Mesh* colorBufferMesh = meshFactory.CreateScreenQuad(blitFramebuffer.getColorBufferTexture());
@@ -105,7 +106,8 @@ int main() {
 		glDisable(GL_BLEND);
 		window.clear();
 		framebufferShader.enable();
-		colorBufferMesh->Draw(framebufferShader);
+		colorBufferMesh->getMaterial().BindMaterialInformation(framebufferShader);
+		colorBufferMesh->Draw();
 		framebufferShader.disable();
 
 		window.update();

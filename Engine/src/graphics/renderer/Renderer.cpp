@@ -91,12 +91,13 @@ namespace engine {
 			glm::mat4 rotate = glm::toMat4(renderable->getOrientation());
 			glm::mat4 scale = glm::scale(glm::mat4(1.0f), renderable->getScale() * scaleFactor);
 
-			if (!renderable->getParent()) {
-				model = translate * rotate * scale;
-			}
-			else {
+			if (renderable->getParent()) {
 				// Only apply scale locally
 				model = glm::translate(glm::mat4(1.0f), renderable->getParent()->getPosition()) * glm::toMat4(renderable->getParent()->getOrientation()) * translate * rotate * scale;
+			}
+			else {
+				model = translate * rotate * scale;
+
 			}
 
 			shader.setUniformMat4("model", model);

@@ -131,9 +131,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\graphics\renderer\PostProcessor.h" />
+    <ClInclude Include="src\graphics\mesh\MeshLoader.h" />
     <ClInclude Include="src\graphics\renderer\GLCache.h" />
     <ClInclude Include="src\platform\OpenGL\Framebuffers\ShadowMap.h" />
-    <ClInclude Include="src\graphics\Material.h" />
+    <ClInclude Include="src\graphics\mesh\Material.h" />
     <ClInclude Include="src\graphics\dynamic lights\DynamicLightManager.h" />
     <ClInclude Include="src\graphics\dynamic lights\DirectionalLight.h" />
     <ClInclude Include="src\graphics\dynamic lights\DynamicLight.h" />
@@ -142,14 +144,14 @@
     <ClInclude Include="src\Defs.h" />
     <ClInclude Include="src\graphics\Skybox.h" />
     <ClInclude Include="src\platform\OpenGL\Framebuffers\Framebuffer.h" />
-    <ClInclude Include="src\graphics\MeshFactory.h" />
+    <ClInclude Include="src\graphics\mesh\MeshFactory.h" />
     <ClInclude Include="src\graphics\renderer\Renderer.h" />
     <ClInclude Include="src\graphics\renderer\Renderable3D.h" />
     <ClInclude Include="src\Scene3D.h" />
     <ClInclude Include="src\platform\OpenGL\IndexBuffer.h" />
     <ClInclude Include="src\platform\OpenGL\Buffer.h" />
-    <ClInclude Include="src\graphics\Model.h" />
-    <ClInclude Include="src\graphics\Mesh.h" />
+    <ClInclude Include="src\graphics\mesh\Model.h" />
+    <ClInclude Include="src\graphics\mesh\Mesh.h" />
     <ClInclude Include="dependencies\stb_image.h" />
     <ClInclude Include="src\utils\Logger.h" />
     <ClInclude Include="src\graphics\camera\Camera.h" />
@@ -164,9 +166,10 @@
     <ClInclude Include="src\platform\OpenGL\Utility.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\graphics\renderer\PostProcessor.cpp" />
     <ClCompile Include="src\graphics\renderer\GLCache.cpp" />
     <ClCompile Include="src\platform\OpenGL\Framebuffers\ShadowMap.cpp" />
-    <ClCompile Include="src\graphics\Material.cpp" />
+    <ClCompile Include="src\graphics\mesh\Material.cpp" />
     <ClCompile Include="src\graphics\dynamic lights\DynamicLightManager.cpp" />
     <ClCompile Include="src\graphics\dynamic lights\DirectionalLight.cpp" />
     <ClCompile Include="src\graphics\dynamic lights\DynamicLight.cpp" />
@@ -174,14 +177,14 @@
     <ClCompile Include="src\graphics\dynamic lights\SpotLight.cpp" />
     <ClCompile Include="src\graphics\Skybox.cpp" />
     <ClCompile Include="src\platform\OpenGL\Framebuffers\Framebuffer.cpp" />
-    <ClCompile Include="src\graphics\MeshFactory.cpp" />
+    <ClCompile Include="src\graphics\mesh\MeshFactory.cpp" />
     <ClCompile Include="src\graphics\renderer\Renderer.cpp" />
     <ClCompile Include="src\graphics\renderer\Renderable3D.cpp" />
     <ClCompile Include="src\Scene3D.cpp" />
     <ClCompile Include="src\platform\OpenGL\IndexBuffer.cpp" />
     <ClCompile Include="src\platform\OpenGL\Buffer.cpp" />
-    <ClCompile Include="src\graphics\Model.cpp" />
-    <ClCompile Include="src\graphics\Mesh.cpp" />
+    <ClCompile Include="src\graphics\mesh\Model.cpp" />
+    <ClCompile Include="src\graphics\mesh\Mesh.cpp" />
     <ClCompile Include="src\utils\Logger.cpp" />
     <ClCompile Include="src\graphics\camera\Camera.cpp" />
     <ClCompile Include="src\graphics\shader.cpp" />
@@ -197,8 +200,8 @@
   <ItemGroup>
     <None Include="src\shaders\basic.vert" />
     <None Include="src\shaders\basic.frag" />
-    <None Include="src\shaders\framebuffer.frag" />
-    <None Include="src\shaders\framebuffer.vert" />
+    <None Include="src\shaders\postprocess.frag" />
+    <None Include="src\shaders\postprocess.vert" />
     <None Include="src\shaders\model.frag" />
     <None Include="src\shaders\modelReflection.frag" />
     <None Include="src\shaders\modelRefraciton.frag" />

@@ -8,9 +8,10 @@ namespace engine {
 		{
 			m_ModelMatrix = glm::translate(glm::mat4(1), worldPosition);
 
-			std::vector<graphics::Vertex> vertices;
+			std::vector<glm::vec3> positions;
+			std::vector<glm::vec2> uvs;
+			std::vector<glm::vec3> normals;
 			std::vector<unsigned int> indices;
-			std::vector<graphics::Texture> textures;
 
 
 
@@ -30,13 +31,9 @@ namespace engine {
 			// ¶¥µãÉú³É
 			for (GLuint z = 0; z < m_VertexSideCount; z++) {
 				for (GLuint x = 0; x < m_VertexSideCount; x++) {
-					graphics::Vertex vertex;
-
-					vertex.Position = glm::vec3(x * m_TerrainSize, getVertexHeight(x, z, heightMapImage), z * m_TerrainSize);
-					vertex.Normal = calculateNormal(x, z, heightMapImage);
-					vertex.TexCoords = glm::vec2((GLfloat)x / ((GLfloat)m_VertexSideCount - 1.0f), (GLfloat)z / ((GLfloat)m_VertexSideCount - 1.0f));
-
-					vertices.push_back(vertex);
+					positions.push_back(glm::vec3(x * m_TerrainSize, getVertexHeight(x, z, heightMapImage), z * m_TerrainSize));
+					uvs.push_back(glm::vec2((float)x / ((float)m_VertexSideCount - 1.0f), (float)z / ((float)m_VertexSideCount - 1.0f)));
+					normals.push_back(calculateNormal(x, z, heightMapImage));
 				}
 			}
 
@@ -63,25 +60,26 @@ namespace engine {
 			graphics::Texture texture;
 			texture.id = opengl::Utility::loadTextureFromFile("res/terrain/grass.png");
 			texture.type = "texture_diffuse";
-			textures.push_back(texture);
+			m_Textures[0] = texture;
 
-				texture.id = opengl::Utility::loadTextureFromFile("res/terrain/dirt.png");
+			texture.id = opengl::Utility::loadTextureFromFile("res/terrain/dirt.png");
 			texture.type = "texture_diffuse";
-			textures.push_back(texture);
+			m_Textures[1] = texture;
 
 			texture.id = opengl::Utility::loadTextureFromFile("res/terrain/sand.png");
 			texture.type = "texture_diffuse";
-			textures.push_back(texture);
+			m_Textures[2] = texture;
 
 			texture.id = opengl::Utility::loadTextureFromFile("res/terrain/stone.png");
 			texture.type = "texture_diffuse";
-			textures.push_back(texture);
+			m_Textures[3] = texture;
 
 			texture.id = opengl::Utility::loadTextureFromFile("res/terrain/blendMap.png");
 			texture.type = "texture_diffuse";
-			textures.push_back(texture);
+			m_Textures[4] = texture;
 
-			m_Mesh = new graphics::Mesh(vertices, indices, textures);
+			m_Mesh = new graphics::Mesh(positions, uvs, normals, indices);
+			m_Mesh->LoadData(true);
 		}
 
 		Terrain::~Terrain() {
@@ -89,8 +87,27 @@ namespace engine {
 		}
 
 		void Terrain::Draw(graphics::Shader& shader) const {
+			glActiveTexture(GL_TEXTURE0);
+			shader.setUniform1i("material.texture_diffuse1", 0);
+			glBindTexture(GL_TEXTURE_2D, m_Textures[0].id);
+
+			glActiveTexture(GL_TEXTURE1);
+			shader.setUniform1i("material.texture_diffuse2", 1);
+			glBindTexture(GL_TEXTURE_2D, m_Textures[1].id);
+
+			glActiveTexture(GL_TEXTURE2);
+			shader.setUniform1i("material.texture_diffuse3", 2);
+			glBindTexture(GL_TEXTURE_2D, m_Textures[2].id);
+
+			glActiveTexture(GL_TEXTURE3);
+			shader.setUniform1i("material.texture_diffuse4", 3);
+			glBindTexture(GL_TEXTURE_2D, m_Textures[3].id);
+
+			glActiveTexture(GL_TEXTURE4);
+			shader.setUniform1i("material.texture_diffuse5", 4);
+			glBindTexture(GL_TEXTURE_2D, m_Textures[4].id);
 			shader.setUniformMat4("model", m_ModelMatrix);
-			m_Mesh->Draw(shader);
+			m_Mesh->Draw();
 		}
 
 		glm::vec3 Terrain::calculateNormal(int x, int z, unsigned char* heightMapData) {

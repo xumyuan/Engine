@@ -1,5 +1,5 @@
 #pragma once
-#include "../Model.h"
+#include "../mesh/Model.h"
 #include <glm/glm.hpp>
 
 namespace engine {

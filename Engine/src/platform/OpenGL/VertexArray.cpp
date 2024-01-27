@@ -26,6 +26,8 @@ namespace engine {
 			unbind();
 		}
 
+		
+
 		void VertexArray::bind() const {
 			glBindVertexArray(m_VertexArrayID);
 		}

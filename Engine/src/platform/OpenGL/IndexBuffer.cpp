@@ -22,7 +22,6 @@ namespace engine {
 
 			bind();
 			glBufferData(GL_ELEMENT_ARRAY_BUFFER, amount * sizeof(GLuint), data, GL_STATIC_DRAW);
-			unbind();
 		}
 
 		void IndexBuffer::bind() const {

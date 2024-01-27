@@ -6,11 +6,16 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#include "Shader.h"
+#include "../Shader.h"
 #include "Mesh.h"
 
 namespace engine {
 	namespace graphics {
+		struct Texture {
+			unsigned int id;
+			std::string type;
+			aiString path; //用于标识纹理 TODO: change to a proper texture loading system
+		};
 
 		class Model {
 		public:
@@ -19,7 +24,7 @@ namespace engine {
 
 			void Draw(Shader& shader) const;
 		private:
-			std::vector<Texture> m_LoadedTextures; // 使用同样的纹理数据，避免重复加载
+			static std::vector<Texture> m_LoadedTextures;  // 使用同样的纹理数据，避免重复加载
 			std::vector<Mesh> m_Meshes;
 			std::string m_Directory;
 
@@ -27,7 +32,7 @@ namespace engine {
 			void loadModel(const std::string& path);
 			void processNode(aiNode* node, const aiScene* scene);
 			Mesh processMesh(aiMesh* mesh, const aiScene* scene);
-			std::vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, const char* typeName);
+			unsigned int loadMaterialTexture(aiMaterial* mat, aiTextureType type, const char* typeName);
 		};
 
 	}

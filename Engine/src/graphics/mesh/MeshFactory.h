@@ -2,7 +2,8 @@
 
 #include <vector>
 #include "Mesh.h"
-#include "../platform/OpenGL/Utility.h"
+#include "Model.h"
+#include "../../platform/OpenGL/Utility.h"
 
 namespace engine {
 	namespace graphics {
