@@ -43,7 +43,7 @@ namespace engine {
 				// 各向异性过滤
 				GLfloat maxAnisotropy;
 				glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAnisotropy);
-				GLfloat anistropyAmount = glm::min(maxAnisotropy, ANISOTROPIC_FILTERING);
+				GLfloat anistropyAmount = glm::min(maxAnisotropy, ANISOTROPIC_FILTERING_LEVEL);
 				glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, anistropyAmount);
 				
 				// 释放内存

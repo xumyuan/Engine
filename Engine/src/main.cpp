@@ -46,9 +46,10 @@ int main() {
 	framebufferShader.setUniform2f("readOffset", glm::vec2(1.0f / (float)window.getWidth(), 1.0f / (float)window.getHeight()));
 
 	glEnable(GL_DEPTH_TEST);
-
-	engine::Timer fpsTimer;
-	int frames = 0;
+#if DEBUG_ENABLED
+	engine::Timer timer;
+	float postProcessTime = 0.0f;
+#endif
 
 	engine::Time deltaTime;
 
@@ -62,48 +63,30 @@ int main() {
 		window.clear();
 		deltaTime.update();
 
-		// Check to see if the mouse hasn't been moved yet
-		if (firstMove && (lastX != window.getMouseX() || lastY != window.getMouseY())) {
-			lastX = window.getMouseX();
-			lastY = window.getMouseY();
-			firstMove = false;
-		}
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
 
-		camera.processMouseMovement(window.getMouseX() - lastX, lastY - window.getMouseY(), true);
-		lastX = window.getMouseX();
-		lastY = window.getMouseY();
+		camera.processInput(deltaTime.getDeltaTime());
 
 		if (window.isKeyPressed(GLFW_KEY_ESCAPE))
 			window.close();
 
-		if (window.isKeyPressed(GLFW_KEY_W))
-			camera.processKeyboard(engine::graphics::FORWARD, deltaTime.getDeltaTime());
-		if (window.isKeyPressed(GLFW_KEY_S))
-			camera.processKeyboard(engine::graphics::BACKWARD, deltaTime.getDeltaTime());
-		if (window.isKeyPressed(GLFW_KEY_A))
-			camera.processKeyboard(engine::graphics::LEFT, deltaTime.getDeltaTime());
-		if (window.isKeyPressed(GLFW_KEY_D))
-			camera.processKeyboard(engine::graphics::RIGHT, deltaTime.getDeltaTime());
-		if (window.isKeyPressed(GLFW_KEY_SPACE))
-			camera.processKeyboard(engine::graphics::UPWARDS, deltaTime.getDeltaTime());
-		if (window.isKeyPressed(GLFW_KEY_LEFT_CONTROL))
-			camera.processKeyboard(engine::graphics::DOWNWARDS, deltaTime.getDeltaTime());
-
-		camera.processMouseScroll(window.getScrollY() * 6);
-		window.resetScroll();
-
 		//绘制到自定义多重采样缓冲区
 		framebuffer.bind();
 		window.clear();
-
 		scene.onUpdate(deltaTime.getDeltaTime());
 		scene.onRender();
+
+#if DEBUG_ENABLED
+		glFinish();
+		timer.reset();
+#endif
 
 		// 将多重采样缓冲区blit到非多重采样缓冲区
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffer.getFramebuffer());
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, blitFramebuffer.getFramebuffer());
 		glBlitFramebuffer(0, 0, window.getWidth(), window.getHeight(), 0, 0, window.getWidth(), window.getHeight(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
-
 		// 绘制到默认缓冲区
 		framebuffer.unbind();
 		glDisable(GL_BLEND);
@@ -111,17 +94,26 @@ int main() {
 		glCache->switchShader(framebufferShader.getShaderID());
 		screenQuad.getMaterial().BindMaterialInformation(framebufferShader);
 		screenQuad.Draw();
+#if DEBUG_ENABLED
+		glFinish();
+		postProcessTime = timer.elapsed();
+#endif
 
+		{
+			ImGui::SetWindowPos(ImVec2(100.f, 50.f));
+			ImGui::Begin("Runtime Analytics", nullptr);
+
+
+			ImGui::Text("Frametime: %.3f ms (FPS %.1f)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+#if DEBUG_ENABLED
+			ImGui::Text("Post Process: %.6f ms", 1000.0f * postProcessTime);
+#endif
+			ImGui::End();
+		}
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+		window.resetScroll();
 		window.update();
-		if (fpsTimer.elapsed() >= 1) {
-			std::cout << "FPS: " << frames << "\n";
-			std::cout << "AVG Frame Time: " << (1.0 / frames) * 1000.0 << "ms \n";
-			frames = 0;
-			fpsTimer.reset();
-		}
-		else {
-			frames++;
-		}
 	}
 
 	return 0;

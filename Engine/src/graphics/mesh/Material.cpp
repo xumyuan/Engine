@@ -15,6 +15,10 @@ namespace engine {
 				shader.setUniform1i("material.texture_diffuse", currentTextureUnit++);
 				glBindTexture(GL_TEXTURE_2D, m_DiffuseMap);
 			}
+			else {
+				shader.setUniform1i("material.texture_diffuse", 0);
+			}
+
 			if (m_SpecularMap > 0) {
 				glActiveTexture(GL_TEXTURE0 + currentTextureUnit);
 				shader.setUniform1i("material.texture_specular", currentTextureUnit++);
@@ -23,6 +27,7 @@ namespace engine {
 			else {
 				shader.setUniform1i("material.texture_specular", 0);
 			}
+
 			if (m_NormalMap > 0) {
 				glActiveTexture(GL_TEXTURE0 + currentTextureUnit);
 				shader.setUniform1i("material.texture_normal", currentTextureUnit++);
