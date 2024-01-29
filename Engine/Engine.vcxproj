@@ -135,7 +135,7 @@
     <ClInclude Include="src\graphics\mesh\common\Quad.h" />
     <ClInclude Include="src\graphics\mesh\common\Sphere.h" />
     <ClInclude Include="src\graphics\renderer\PostProcessor.h" />
-    <ClInclude Include="src\graphics\mesh\MeshLoader.h" />
+    <ClInclude Include="src\utils\loaders\MeshLoader.h" />
     <ClInclude Include="src\graphics\renderer\GLCache.h" />
     <ClInclude Include="src\platform\OpenGL\Framebuffers\ShadowMap.h" />
     <ClInclude Include="src\graphics\mesh\Material.h" />
@@ -147,7 +147,6 @@
     <ClInclude Include="src\Defs.h" />
     <ClInclude Include="src\graphics\Skybox.h" />
     <ClInclude Include="src\platform\OpenGL\Framebuffers\Framebuffer.h" />
-    <ClInclude Include="src\graphics\mesh\MeshFactory.h" />
     <ClInclude Include="src\graphics\renderer\Renderer.h" />
     <ClInclude Include="src\graphics\renderer\Renderable3D.h" />
     <ClInclude Include="src\Scene3D.h" />
@@ -167,6 +166,8 @@
     <ClInclude Include="src\terrain\Terrain.h" />
     <ClInclude Include="src\platform\OpenGL\VertexArray.h" />
     <ClInclude Include="src\platform\OpenGL\Utility.h" />
+    <ClInclude Include="src\utils\loaders\TextureLoader.h" />
+    <ClInclude Include="src\graphics\texture\Texture.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\graphics\mesh\common\Cube.cpp" />
@@ -183,7 +184,6 @@
     <ClCompile Include="src\graphics\dynamic lights\SpotLight.cpp" />
     <ClCompile Include="src\graphics\Skybox.cpp" />
     <ClCompile Include="src\platform\OpenGL\Framebuffers\Framebuffer.cpp" />
-    <ClCompile Include="src\graphics\mesh\MeshFactory.cpp" />
     <ClCompile Include="src\graphics\renderer\Renderer.cpp" />
     <ClCompile Include="src\graphics\renderer\Renderable3D.cpp" />
     <ClCompile Include="src\Scene3D.cpp" />
@@ -191,6 +191,7 @@
     <ClCompile Include="src\platform\OpenGL\Buffer.cpp" />
     <ClCompile Include="src\graphics\mesh\Model.cpp" />
     <ClCompile Include="src\graphics\mesh\Mesh.cpp" />
+    <ClCompile Include="src\utils\loaders\MeshLoader.cpp" />
     <ClCompile Include="src\utils\Logger.cpp" />
     <ClCompile Include="src\graphics\camera\Camera.cpp" />
     <ClCompile Include="src\graphics\shader.cpp" />
@@ -202,6 +203,8 @@
     <ClCompile Include="src\terrain\Terrain.cpp" />
     <ClCompile Include="src\platform\OpenGL\VertexArray.cpp" />
     <ClCompile Include="src\platform\OpenGL\Utility.cpp" />
+    <ClCompile Include="src\utils\loaders\TextureLoader.cpp" />
+    <ClCompile Include="src\graphics\texture\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\shaders\basic.vert" />

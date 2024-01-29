@@ -33,6 +33,12 @@ namespace engine {
 			while (!m_OpaqueRenderQueue.empty()) {
 				Renderable3D* current = m_OpaqueRenderQueue.front();
 
+				m_GLCache->setStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+				m_GLCache->setStencilFunc(GL_ALWAYS, 1, 0xFF);
+				if (current->getShouldOutline()) m_GLCache->setStencilWriteMask(0xFF);
+				else m_GLCache->setStencilWriteMask(0x00);
+
+
 				setupModelMatrix(current, shader);
 				current->draw(shader);
 
@@ -48,9 +54,9 @@ namespace engine {
 
 		// 透明物体渲染
 		void Renderer::flushTransparent(Shader& shader, Shader& outlineShader) {
-
 			// 关闭背面剔除，否则会导致透明物体的背面也被剔除
 			m_GLCache->setCull(false);
+			m_GLCache->setStencilTest(true);
 			//排序后从后往前渲染，没有考虑缩放和旋转
 			std::sort(m_TransparentRenderQueue.begin(), m_TransparentRenderQueue.end(), [this](Renderable3D* a, Renderable3D* b)->bool {
 				return glm::length2(m_Camera->getPosition() - a->getPosition()) > glm::length2(m_Camera->getPosition() - b->getPosition());
@@ -109,11 +115,9 @@ namespace engine {
 			m_GLCache->setStencilFunc(GL_NOTEQUAL, 1, 0xFF);
 
 			setupModelMatrix(renderable, outlineShader, 1.025f);
-
 			renderable->draw(outlineShader);
 
 			m_GLCache->setDepthTest(true);
-
 			glClear(GL_STENCIL_BUFFER_BIT);
 		}
 	}

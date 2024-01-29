@@ -4,6 +4,7 @@
 #include <GLFW\glfw3.h>
 #include "../../../utils/Logger.h"
 #include "../../../Defs.h"
+#include "../../../utils/loaders/TextureLoader.h"
 
 namespace engine {
 	namespace opengl {
@@ -21,9 +22,10 @@ namespace engine {
 			void unbind();
 
 			inline GLuint getFramebuffer() { return m_FBO; }
-			inline GLuint getColorBufferTexture() { return m_ColorTexture; }
+			inline graphics::Texture* getColorBufferTexture() { return m_ColorTexture; }
 		private:
-			GLuint m_FBO, m_ColorTexture, m_DepthStencilRBO;
+			unsigned int m_FBO, m_DepthStencilRBO;
+			graphics::Texture* m_ColorTexture;
 
 			bool m_Created;
 			unsigned int m_Width, m_Height;

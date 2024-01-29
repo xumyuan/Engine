@@ -13,8 +13,6 @@ namespace engine {
 			std::vector<glm::vec3> normals;
 			std::vector<unsigned int> indices;
 
-
-
 			GLint mapWidth, mapHeight;
 			unsigned char* heightMapImage = stbi_load("res/terrain/heightMap.png", &mapWidth, &mapHeight, 0, SOIL_LOAD_L);
 			if (mapWidth != mapHeight) {
@@ -57,26 +55,11 @@ namespace engine {
 			}
 
 			// Textures
-			graphics::Texture texture;
-			texture.id = opengl::Utility::loadTextureFromFile("res/terrain/grass.png");
-			texture.type = "texture_diffuse";
-			m_Textures[0] = texture;
-
-			texture.id = opengl::Utility::loadTextureFromFile("res/terrain/dirt.png");
-			texture.type = "texture_diffuse";
-			m_Textures[1] = texture;
-
-			texture.id = opengl::Utility::loadTextureFromFile("res/terrain/sand.png");
-			texture.type = "texture_diffuse";
-			m_Textures[2] = texture;
-
-			texture.id = opengl::Utility::loadTextureFromFile("res/terrain/stone.png");
-			texture.type = "texture_diffuse";
-			m_Textures[3] = texture;
-
-			texture.id = opengl::Utility::loadTextureFromFile("res/terrain/blendMap.png");
-			texture.type = "texture_diffuse";
-			m_Textures[4] = texture;
+			m_Textures[0] = utils::TextureLoader::Load2DTexture(std::string("res/terrain/grass.png"));
+			m_Textures[1] = utils::TextureLoader::Load2DTexture(std::string("res/terrain/dirt.png"));
+			m_Textures[2] = utils::TextureLoader::Load2DTexture(std::string("res/terrain/sand.png"));
+			m_Textures[3] = utils::TextureLoader::Load2DTexture(std::string("res/terrain/stone.png"));
+			m_Textures[4] = utils::TextureLoader::Load2DTexture(std::string("res/terrain/blendMap.png"));
 
 			m_Mesh = new graphics::Mesh(positions, uvs, normals, indices);
 			m_Mesh->LoadData(true);
@@ -87,25 +70,22 @@ namespace engine {
 		}
 
 		void Terrain::Draw(graphics::Shader& shader) const {
-			glActiveTexture(GL_TEXTURE0);
+			m_Textures[0]->Bind(0);
 			shader.setUniform1i("material.texture_diffuse1", 0);
-			glBindTexture(GL_TEXTURE_2D, m_Textures[0].id);
 
-			glActiveTexture(GL_TEXTURE1);
+			m_Textures[1]->Bind(1);
 			shader.setUniform1i("material.texture_diffuse2", 1);
-			glBindTexture(GL_TEXTURE_2D, m_Textures[1].id);
 
-			glActiveTexture(GL_TEXTURE2);
+			m_Textures[2]->Bind(2);
 			shader.setUniform1i("material.texture_diffuse3", 2);
-			glBindTexture(GL_TEXTURE_2D, m_Textures[2].id);
 
-			glActiveTexture(GL_TEXTURE3);
+			m_Textures[3]->Bind(3);
 			shader.setUniform1i("material.texture_diffuse4", 3);
-			glBindTexture(GL_TEXTURE_2D, m_Textures[3].id);
 
-			glActiveTexture(GL_TEXTURE4);
+			m_Textures[4]->Bind(4);
 			shader.setUniform1i("material.texture_diffuse5", 4);
-			glBindTexture(GL_TEXTURE_2D, m_Textures[4].id);
+
+
 			shader.setUniformMat4("model", m_ModelMatrix);
 			m_Mesh->Draw();
 		}

@@ -10,6 +10,7 @@
 #include "graphics\Skybox.h"
 #include "graphics\dynamic lights\DynamicLightManager.h"
 #include "graphics\mesh\Mesh.h"
+#include "utils\loaders\TextureLoader.h"
 
 namespace engine {
 

@@ -10,8 +10,6 @@
 namespace engine {
 	namespace graphics {
 
-		std::vector<Texture> Model::m_LoadedTextures;
-
 		Model::Model(const char* path) {
 			loadModel(path);
 		}
@@ -33,7 +31,7 @@ namespace engine {
 
 		void Model::loadModel(const std::string& path) {
 			Assimp::Importer import;
-			const aiScene * scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
+			const aiScene * scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
 
 			if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
 				utils::Logger::getInstance().error("logged_files/model_loading.txt", "model initialization", import.GetErrorString());
@@ -87,6 +85,8 @@ namespace engine {
 				positions.push_back(glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z));
 				uvs.push_back(glm::vec2(uvCoord.x, uvCoord.y));
 				normals.push_back(glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z));
+				tangents.push_back(glm::vec3(mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z));
+				bitangents.push_back(glm::vec3(mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z));
 			}
 
 			// Process Indices
@@ -97,16 +97,16 @@ namespace engine {
 					indices.push_back(face.mIndices[j]);
 				}
 			}
-			Mesh newMesh(positions, uvs, normals, indices);
+			Mesh newMesh(positions, uvs, normals, tangents, bitangents, indices);
 			newMesh.LoadData();
 			// Process Materials (textures in this case)
 			if (mesh->mMaterialIndex >= 0) {
 				aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
-				newMesh.m_Material.setDiffuseMapId(loadMaterialTexture(material, aiTextureType_DIFFUSE, "texture_diffuse"));
-				newMesh.m_Material.setSpecularMapId(loadMaterialTexture(material, aiTextureType_SPECULAR, "texture_specular"));
-				newMesh.m_Material.setNormalMapId(loadMaterialTexture(material, aiTextureType_NORMALS, "texture_normal"));
-				newMesh.m_Material.setEmissionMapId(loadMaterialTexture(material, aiTextureType_EMISSIVE, "texture_emission"));
+				newMesh.m_Material.setDiffuseMap(loadMaterialTexture(material, aiTextureType_DIFFUSE));
+				newMesh.m_Material.setSpecularMap(loadMaterialTexture(material, aiTextureType_SPECULAR));
+				newMesh.m_Material.setNormalMap(loadMaterialTexture(material, aiTextureType_NORMALS));
+				newMesh.m_Material.setEmissionMap(loadMaterialTexture(material, aiTextureType_EMISSIVE));
 				float shininess = 0.0f;
 				material->Get(AI_MATKEY_SHININESS, shininess); // Assimp 将镜面反射指数缩放 4 倍，因为大多数渲染器都是这样处理的。如果未指定，值默认为 0（即无镜面高光）
 				newMesh.m_Material.setShininess(shininess);
@@ -116,33 +116,21 @@ namespace engine {
 
 		}
 
-		unsigned int Model::loadMaterialTexture(aiMaterial* mat, aiTextureType type, const char* typeName) {
+		Texture* Model::loadMaterialTexture(aiMaterial* mat, aiTextureType type) {
 			// Log material constraints are being violated (1 texture per type for the standard shader)
 			if (mat->GetTextureCount(type) > 1)
-				utils::Logger::getInstance().error("logged_files/material_creation.txt", "Mesh Loading", "Mesh's default material contains more than 1 " + std::string(typeName) + " map, which currently isn't supported by the standard shader");
+				utils::Logger::getInstance().error("logged_files/material_creation.txt", "Mesh Loading", "Mesh's default material contains more than 1 texture for the same type, which currently isn't supported by the standard shader");
 
 			// 加载某种类型的纹理，假定只有一个
 			if (mat->GetTextureCount(type) > 0) {
 				aiString str;
 				mat->GetTexture(type, 0, &str); // 只获取一个纹理，标准着色器只支持每种类型一个纹理
 
-				// 如果纹理已经加载，就不用重复加载了
-				for (unsigned int j = 0; j < Model::m_LoadedTextures.size(); ++j) {
-					if (std::strcmp(str.C_Str(), Model::m_LoadedTextures[j].path.C_Str()) == 0) {
-						return Model::m_LoadedTextures[j].id;
-					}
-				}
-
-				// 没被加载则进行加载
-				Texture texture;
-				texture.id = opengl::Utility::loadTextureFromFile((m_Directory + "/" + std::string(str.C_Str())).c_str()); // 假定材质与模型在同一目录
-				texture.type = typeName;
-				texture.path = str;
-				Model::m_LoadedTextures.push_back(texture); // 添加到已加载纹理，不会重复加载纹理
-				return Model::m_LoadedTextures[m_LoadedTextures.size() - 1].id;
+				std::string fileToSearch = (m_Directory + "/" + std::string(str.C_Str())).c_str();
+				return utils::TextureLoader::Load2DTexture(fileToSearch);
 			}
 
-			return 0;
+			return nullptr;
 		}
 	}
 }

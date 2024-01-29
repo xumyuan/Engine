@@ -16,7 +16,7 @@ namespace engine {
 
 		class Utility {
 		public:
-			static GLuint loadTextureFromFile(const char* path, bool containsTransparencyOnSides = false);
+			//static GLuint loadTextureFromFile(const char* path, bool containsTransparencyOnSides = false);
 
 			static GLuint loadCubemapFromFiles(const std::vector<const char*>& vec);
 		};

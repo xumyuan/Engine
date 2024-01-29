@@ -22,10 +22,6 @@ namespace engine {
 			glBindVertexArray(m_VAO);
 			if (m_Indices.size() > 0) {
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
-				GLenum error = glGetError();
-				if (error != GL_NO_ERROR) {
-					std::cout << "OpenGL Error: " << error << std::endl;
-				}
 				glDrawElements(GL_TRIANGLES, m_Indices.size(), GL_UNSIGNED_INT, 0);
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 			}
@@ -36,7 +32,6 @@ namespace engine {
 		}
 
 		void Mesh::LoadData(bool interleaved) {
-
 			// 检查网格初始化错误
 			{
 				unsigned int vertexCount = m_Positions.size();

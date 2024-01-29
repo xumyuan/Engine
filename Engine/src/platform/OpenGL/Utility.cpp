@@ -4,59 +4,59 @@
 namespace engine {
 	namespace opengl {
 
-		GLuint Utility::loadTextureFromFile(const char* path, bool containsTransparencyOnSides) {
-			GLuint textureID;
-			glGenTextures(1, &textureID);
+		//GLuint Utility::loadTextureFromFile(const char* path, bool containsTransparencyOnSides) {
+		//	GLuint textureID;
+		//	glGenTextures(1, &textureID);
 
-			int width, height, nrComponents;
-			unsigned char* data = stbi_load(path, &width, &height, &nrComponents, 0);
-			if (data) {
-				GLenum format;
-				switch (nrComponents) {
-				case 1: format = GL_RED;  break;
-				case 3: format = GL_RGB;  break;
-				case 4: format = GL_RGBA; break;
-				}
+		//	int width, height, nrComponents;
+		//	unsigned char* data = stbi_load(path, &width, &height, &nrComponents, 0);
+		//	if (data) {
+		//		GLenum format;
+		//		switch (nrComponents) {
+		//		case 1: format = GL_RED;  break;
+		//		case 3: format = GL_RGB;  break;
+		//		case 4: format = GL_RGBA; break;
+		//		}
 
-				glBindTexture(GL_TEXTURE_2D, textureID);
-				glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+		//		glBindTexture(GL_TEXTURE_2D, textureID);
+		//		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
 
-				// Texture wrapping
-				if (containsTransparencyOnSides) {
-					// Can't use GL_REPEAT or interpolation will mess with the transparency
-					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-				}
-				else {
-					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-				}
+		//		// Texture wrapping
+		//		if (containsTransparencyOnSides) {
+		//			// Can't use GL_REPEAT or interpolation will mess with the transparency
+		//			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		//			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		//		}
+		//		else {
+		//			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		//			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		//		}
 
-				// Texture filtering
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);//三线性插值
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // 放大不能使用mipmap，使用双线性插值
+		//		// Texture filtering
+		//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);//三线性插值
+		//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // 放大不能使用mipmap，使用双线性插值
 
-				// Mipmapping
-				glGenerateMipmap(GL_TEXTURE_2D);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, 0);
+		//		// Mipmapping
+		//		glGenerateMipmap(GL_TEXTURE_2D);
+		//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, 0);
 
-				// 各向异性过滤
-				GLfloat maxAnisotropy;
-				glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAnisotropy);
-				GLfloat anistropyAmount = glm::min(maxAnisotropy, ANISOTROPIC_FILTERING_LEVEL);
-				glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, anistropyAmount);
-				
-				// 释放内存
-				stbi_image_free(data);
-			}
-			else {
-				std::cout << "Texture failed to load at path: " << path << std::endl;
-				utils::Logger::getInstance().error("logged_files/texture_loading.txt", "texture load (OpenGL) fail path:", path);
-				stbi_image_free(data);
-			}
+		//		// 各向异性过滤
+		//		GLfloat maxAnisotropy;
+		//		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAnisotropy);
+		//		GLfloat anistropyAmount = glm::min(maxAnisotropy, ANISOTROPIC_FILTERING_LEVEL);
+		//		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, anistropyAmount);
+		//		
+		//		// 释放内存
+		//		stbi_image_free(data);
+		//	}
+		//	else {
+		//		std::cout << "Texture failed to load at path: " << path << std::endl;
+		//		utils::Logger::getInstance().error("logged_files/texture_loading.txt", "texture load (OpenGL) fail path:", path);
+		//		stbi_image_free(data);
+		//	}
 
-			return textureID;
-		}
+		//	return textureID;
+		//}
 
 
 		//加载立方体贴图

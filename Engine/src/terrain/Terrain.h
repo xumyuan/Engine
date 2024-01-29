@@ -9,6 +9,7 @@
 
 #include "..\graphics\mesh\Mesh.h"
 #include "../graphics/mesh/Model.h"
+#include "../utils/loaders/TextureLoader.h"
 #include "..\graphics\Shader.h"
 
 #include "../platform/OpenGL/Utility.h"
@@ -38,7 +39,7 @@ namespace engine {
 			glm::mat4 m_ModelMatrix;
 			glm::vec3 m_Position;
 			graphics::Mesh* m_Mesh;
-			std::array<graphics::Texture, 5> m_Textures; 
+			std::array<graphics::Texture*, 5> m_Textures;
 		};
 
 	}

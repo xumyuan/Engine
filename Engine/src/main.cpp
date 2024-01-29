@@ -28,6 +28,7 @@ int main() {
 	//创建场景
 	engine::Scene3D scene(&camera, &window);
 	engine::graphics::GLCache* glCache = engine::graphics::GLCache::getInstance();
+	engine::utils::TextureLoader::InitializeDefaultTextures();
 
 	// 创建帧缓冲
 	engine::opengl::Framebuffer framebuffer(window.getWidth(), window.getHeight());
@@ -39,7 +40,7 @@ int main() {
 	engine::graphics::Shader framebufferShader("src/shaders/postprocess.vert", "src/shaders/postprocess.frag");
 
 	engine::graphics::Quad screenQuad;
-	screenQuad.getMaterial().setDiffuseMapId(blitFramebuffer.getColorBufferTexture());
+	screenQuad.getMaterial().setDiffuseMap(blitFramebuffer.getColorBufferTexture());
 
 	// Setup post processing information
 	glCache->switchShader(framebufferShader.getShaderID());
@@ -52,11 +53,6 @@ int main() {
 #endif
 
 	engine::Time deltaTime;
-
-	bool firstMove = true;
-	GLfloat lastX = window.getMouseX();
-	GLfloat lastY = window.getMouseY();
-
 	while (!window.closed()) {
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);  // 场景背景色
 
