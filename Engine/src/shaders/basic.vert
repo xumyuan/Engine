@@ -11,6 +11,7 @@ out vec3 Normal;
 out vec3 FragPos;
 out vec2 TexCoords;
 
+uniform mat3 normalMatrix;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
@@ -20,7 +21,6 @@ void main() {
 
 	FragPos = vec3(model * vec4(position, 1.0f));
 	TexCoords = texCoords;
-	//使用法线矩阵保证非均匀缩放的法向量正确性，
-	//这个操作应该直接从外面传递过来，而不是在着色器中计算
-	Normal = mat3(transpose(inverse(model))) * normal;
+	// 用发现矩阵来保证法向量的变换正确性
+	Normal = normalMatrix * normal;
 }

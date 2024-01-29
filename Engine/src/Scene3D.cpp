@@ -10,7 +10,7 @@
 
 namespace engine {
 	Scene3D::Scene3D(graphics::Camera* camera, graphics::Window* window)
-		: m_TerrainShader("src/shaders/basic.vert", "src/shaders/terrain.frag"), 
+		: m_TerrainShader("src/shaders/basic.vert", "src/shaders/terrain.frag"),
 		m_ModelShader("src/shaders/model.vert", "src/shaders/model.frag"), m_Camera(camera),
 		m_OutlineShader("src/shaders/basic.vert", "src/shaders/basic.frag"),
 		m_ShadowmapShader("src/shaders/shadowmap.vert", "src/shaders/shadowmap.frag"),
@@ -37,8 +37,9 @@ namespace engine {
 		windowPane.getMaterial().setSpecularMap(utils::TextureLoader::load2DTexture(std::string("res/textures/default/fullSpec.png")));
 		graphics::Model* glass = new graphics::Model(windowPane);
 
-		Add(new graphics::Renderable3D(glm::vec3(30.0f, -10.0f, 30.0), glm::vec3(0.2f, 0.2f, 0.2f), glm::vec3(0.0f, 1.0f, 0.0f), 0, new engine::graphics::Model("res/3D_Models/Overwatch/Reaper/Reaper.obj"), nullptr, true));
-		Add(new graphics::Renderable3D(glm::vec3(60.0f, -10.0f, 60.0f), glm::vec3(0.2f, 0.2f, 0.2f), glm::vec3(0.0f, 1.0f, 0.0f), 0, new engine::graphics::Model("res/3D_Models/Overwatch/McCree/McCree.obj"), nullptr, false));
+		/*Add(new graphics::Renderable3D(glm::vec3(30.0f, -10.0f, 30.0), glm::vec3(0.2f, 0.2f, 0.2f), glm::vec3(0.0f, 1.0f, 0.0f), 0, new engine::graphics::Model("res/3D_Models/Overwatch/Reaper/Reaper.obj"), nullptr, true));
+
+		Add(new graphics::Renderable3D(glm::vec3(60.0f, -10.0f, 60.0f), glm::vec3(0.2f, 0.2f, 0.2f), glm::vec3(0.0f, 1.0f, 0.0f), 0, new engine::graphics::Model("res/3D_Models/Overwatch/McCree/McCree.obj"), nullptr, false));*/
 
 		Add(new graphics::Renderable3D(
 			glm::vec3(90.0f, -10.0f, 90.0f),
@@ -48,23 +49,23 @@ namespace engine {
 			new engine::graphics::Model("res/3D_Models/nanosuit_model/nanosuit.obj"),
 			nullptr, false, false));
 
-		Add(new graphics::Renderable3D(
+		/*Add(new graphics::Renderable3D(
 			glm::vec3(60.0f, 60.0f, 60.0f),
 			glm::vec3(0.2f, 0.2f, 0.2f),
 			glm::vec3(0.0f, 1.0f, 0.0f),
 			0,
-			new engine::graphics::Model("res/3D_Models/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX"), nullptr, false));
+			new engine::graphics::Model("res/3D_Models/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX"), nullptr, false));*/
 
-		/*Add(new graphics::Renderable3D(
-			glm::vec3(60.0f, 20.0f, 60.0f),
-			glm::vec3(0.2f, 0.2f, 0.2f),
-			glm::vec3(0.0f, 1.0f, 0.0f),
-			0,
-			new engine::graphics::Model("res/3D_Models/Sponza/sponza.obj"), nullptr, false));*/
+			/*Add(new graphics::Renderable3D(
+				glm::vec3(60.0f, 20.0f, 60.0f),
+				glm::vec3(0.2f, 0.2f, 0.2f),
+				glm::vec3(0.0f, 1.0f, 0.0f),
+				0,
+				new engine::graphics::Model("res/3D_Models/Sponza/sponza.obj"), nullptr, false));*/
 
-			/*Add(new graphics::Renderable3D(glm::vec3(40, 20, 40), glm::vec3(15, 15, 15), glm::vec3(0.0, 1.0, 0.0), glm::radians(180.0f), glass, nullptr, false, true));
-			Add(new graphics::Renderable3D(glm::vec3(80, 20, 80), glm::vec3(15, 15, 15), glm::vec3(0.0, 1.0, 0.0), glm::radians(180.0f), glass, nullptr, false, true));
-			Add(new graphics::Renderable3D(glm::vec3(120, 20, 120), glm::vec3(15, 15, 15), glm::vec3(0.0, 1.0, 0.0), glm::radians(180.0f), glass, nullptr, false, true));*/
+		Add(new graphics::Renderable3D(glm::vec3(40, 20, 40), glm::vec3(15, 15, 15), glm::vec3(0.0, 1.0, 0.0), glm::radians(180.0f), glass, nullptr, false, true));
+		Add(new graphics::Renderable3D(glm::vec3(80, 20, 80), glm::vec3(15, 15, 15), glm::vec3(0.0, 1.0, 0.0), glm::radians(180.0f), glass, nullptr, false, true));
+		Add(new graphics::Renderable3D(glm::vec3(120, 20, 120), glm::vec3(15, 15, 15), glm::vec3(0.0, 1.0, 0.0), glm::radians(180.0f), glass, nullptr, false, true));
 
 		Add(new graphics::Renderable3D(glm::vec3(20, 20, 20), glm::vec3(10, 10, 10), glm::vec3(1, 0, 0), 0, new graphics::Model(graphics::Cube()), nullptr, false, false));
 		Add(new graphics::Renderable3D(glm::vec3(140, 20, 140), glm::vec3(10, 10, 10), glm::vec3(1, 0, 0), 0, new graphics::Model(graphics::Sphere()), nullptr, false, false));
@@ -90,8 +91,10 @@ namespace engine {
 		m_ShadowmapShader.setUniformMat4("lightSpaceViewProjectionMatrix", directionalLightMatrix);
 	}
 
+	float rotAmount = 0.0f;
 	void Scene3D::onUpdate(float deltaTime) {
-		//m_Renderables[0]->setRadianRotation(m_Renderables[0]->getRadianRotation() + deltaTime);
+		m_Renderables[0]->setOrientation(rotAmount, glm::vec3(0.0f, 1.0f, 0.0f));
+		rotAmount += deltaTime;
 	}
 
 	// ≥°æ∞‰÷»æ

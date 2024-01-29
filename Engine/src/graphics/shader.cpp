@@ -141,6 +141,10 @@ namespace engine {
 			glUniformMatrix4fv(glGetUniformLocation(m_ShaderID, name), 1, GL_FALSE, glm::value_ptr(matrix));
 		}
 
+		void Shader::setUniformMat3(const char* name, const glm::mat3& matrix) {
+			glUniformMatrix3fv(glGetUniformLocation(m_ShaderID, name), 1, GL_FALSE, glm::value_ptr(matrix));
+		}
+
 		void Shader::enable() const {
 			glUseProgram(m_ShaderID);
 		}

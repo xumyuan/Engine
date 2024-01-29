@@ -10,15 +10,12 @@ out mat3 TBN;
 out vec3 FragPos;
 out vec2 TexCoords;
 
+uniform mat3 normalMatrix;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
 void main() {
-	// 使用法线矩阵保证非均匀缩放的法向量正确性，
-	// 这个操作应该直接从外面传递过来，而不是在着色器中计算
-	mat3 normalMatrix = mat3(transpose(inverse(model)));
-
 	vec3 T = normalize(normalMatrix * tangent);
 	vec3 B = normalize(normalMatrix * bitangent);
     vec3 N = normalize(normalMatrix * normal);
