@@ -137,9 +137,9 @@
     <ClInclude Include="src\graphics\mesh\common\Quad.h" />
     <ClInclude Include="src\graphics\mesh\common\Sphere.h" />
     <ClInclude Include="src\graphics\renderer\PostProcessor.h" />
+    <ClInclude Include="src\platform\OpenGL\Framebuffers\RenderTarget.h" />
     <ClInclude Include="src\utils\loaders\MeshLoader.h" />
     <ClInclude Include="src\graphics\renderer\GLCache.h" />
-    <ClInclude Include="src\platform\OpenGL\Framebuffers\ShadowMap.h" />
     <ClInclude Include="src\graphics\mesh\Material.h" />
     <ClInclude Include="src\graphics\dynamic lights\DynamicLightManager.h" />
     <ClInclude Include="src\graphics\dynamic lights\DirectionalLight.h" />
@@ -148,7 +148,6 @@
     <ClInclude Include="src\graphics\dynamic lights\SpotLight.h" />
     <ClInclude Include="src\Defs.h" />
     <ClInclude Include="src\graphics\Skybox.h" />
-    <ClInclude Include="src\platform\OpenGL\Framebuffers\Framebuffer.h" />
     <ClInclude Include="src\graphics\renderer\Renderer.h" />
     <ClInclude Include="src\graphics\renderer\Renderable3D.h" />
     <ClInclude Include="src\Scene3D.h" />
@@ -177,7 +176,6 @@
     <ClCompile Include="src\graphics\mesh\common\Sphere.cpp" />
     <ClCompile Include="src\graphics\renderer\PostProcessor.cpp" />
     <ClCompile Include="src\graphics\renderer\GLCache.cpp" />
-    <ClCompile Include="src\platform\OpenGL\Framebuffers\ShadowMap.cpp" />
     <ClCompile Include="src\graphics\mesh\Material.cpp" />
     <ClCompile Include="src\graphics\dynamic lights\DynamicLightManager.cpp" />
     <ClCompile Include="src\graphics\dynamic lights\DirectionalLight.cpp" />
@@ -185,7 +183,7 @@
     <ClCompile Include="src\graphics\dynamic lights\PointLight.cpp" />
     <ClCompile Include="src\graphics\dynamic lights\SpotLight.cpp" />
     <ClCompile Include="src\graphics\Skybox.cpp" />
-    <ClCompile Include="src\platform\OpenGL\Framebuffers\Framebuffer.cpp" />
+    <ClCompile Include="src\platform\OpenGL\Framebuffers\RenderTarget.cpp" />
     <ClCompile Include="src\graphics\renderer\Renderer.cpp" />
     <ClCompile Include="src\graphics\renderer\Renderable3D.cpp" />
     <ClCompile Include="src\Scene3D.cpp" />

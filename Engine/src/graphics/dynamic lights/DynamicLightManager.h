@@ -21,7 +21,9 @@ namespace engine {
 			inline void setSpotLightDirection(const glm::vec3& dir) { m_SpotLight.direction = dir; }
 			inline void setDirectionalLightDirection(const glm::vec3& dir) { m_DirectionalLight.direction = dir; }
 			inline void setPointLightPosition(int index, const glm::vec3& pos) { m_PointLights[index].position = pos; }
-		private:
+
+			inline const glm::vec3& getDirectionalLightDirection() { return m_DirectionalLight.direction; }
+			
 			void init();
 
 			DirectionalLight m_DirectionalLight;

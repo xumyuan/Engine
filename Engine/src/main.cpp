@@ -14,7 +14,7 @@
 #include "graphics\mesh\Model.h"
 #include "terrain\Terrain.h"
 #include "Scene3D.h"
-#include "platform/OpenGL/Framebuffers/Framebuffer.h"
+#include "platform/OpenGL/Framebuffers/RenderTarget.h"
 #include "graphics/mesh/common/Quad.h"
 #include "graphics/renderer/GLCache.h"
 
@@ -31,10 +31,14 @@ int main() {
 	engine::utils::TextureLoader::initializeDefaultTextures();
 
 	// 创建帧缓冲
-	engine::opengl::Framebuffer framebuffer(window.getWidth(), window.getHeight());
+	engine::opengl::RenderTarget framebuffer(window.getWidth(), window.getHeight());
 	framebuffer.addColorAttachment(true).addDepthStencilRBO(true).createFramebuffer();
 
-	engine::opengl::Framebuffer blitFramebuffer(window.getWidth(), window.getHeight());
+	// TODO: MAKE MULTISAMPLE OPTION WORK OR INVESTIGATE
+	engine::opengl::RenderTarget shadowmap(SHADOWMAP_RESOLUTION_X, SHADOWMAP_RESOLUTION_Y);
+	shadowmap.addDepthAttachment(false).createFramebuffer();
+
+	engine::opengl::RenderTarget blitFramebuffer(window.getWidth(), window.getHeight());
 	blitFramebuffer.addColorAttachment(false).addDepthStencilRBO(false).createFramebuffer();
 
 	engine::graphics::Shader framebufferShader("src/shaders/postprocess.vert", "src/shaders/postprocess.frag");
@@ -70,16 +74,27 @@ int main() {
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
+		// Shadowmap Pass
+		glViewport(0, 0, shadowmap.getWidth(), shadowmap.getHeight());
+		shadowmap.bind();
+		shadowmap.clear();
+		scene.shadowmapPass();
+
+
 		camera.processInput(deltaTime.getDeltaTime());
 
 		if (window.isKeyPressed(GLFW_KEY_ESCAPE))
 			window.close();
 
+
 		//绘制到自定义多重采样缓冲区
+		glViewport(0, 0, framebuffer.getWidth(), framebuffer.getHeight());
+
 		framebuffer.bind();
-		window.clear();
+		framebuffer.clear();
 		scene.onUpdate(deltaTime.getDeltaTime());
-		scene.onRender();
+		scene.onRender(shadowmap.getDepthTexture());
+
 
 #if DEBUG_ENABLED
 		glFinish();
@@ -90,17 +105,18 @@ int main() {
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffer.getFramebuffer());
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, blitFramebuffer.getFramebuffer());
 		glBlitFramebuffer(0, 0, window.getWidth(), window.getHeight(), 0, 0, window.getWidth(), window.getHeight(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
 #if DEBUG_ENABLED
 		if (wireframeMode)
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 #endif
 		// 绘制到默认缓冲区
 		framebuffer.unbind();
-		glDisable(GL_BLEND);
 		window.clear();
 		glCache->switchShader(framebufferShader.getShaderID());
 		screenQuad.getMaterial().BindMaterialInformation(framebufferShader);
 		screenQuad.Draw();
+
 #if DEBUG_ENABLED
 		glFinish();
 		postProcessTime = timer.elapsed();

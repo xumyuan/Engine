@@ -18,16 +18,13 @@ namespace engine {
 			void submitOpaque(Renderable3D* renderable);
 			void submitTransparent(Renderable3D* renderable);
 
-			void flushOpaque(Shader& shader, Shader& outlineShader, RenderPass pass);
-			void flushTransparent(Shader& shader, Shader& outlineShader, RenderPass pass);
+			void flushOpaque(Shader& shader, RenderPass pass);
+			void flushTransparent(Shader& shader, RenderPass pass);
 
-			void flushOpaque(Shader& shader, Shader& outlineShader);
-			void flushTransparent(Shader& shader, Shader& outlineShader);
 
 		private:
-			void setupModelMatrix(Renderable3D* renderable, Shader& shader, float scaleFactor = 1.0f);
+			void setupModelMatrix(Renderable3D* renderable, Shader& shader, RenderPass pass);
 
-			void drawOutline(Shader& outlineShader, Renderable3D* renderable);
 
 			std::deque<Renderable3D*> m_OpaqueRenderQueue;
 			std::deque<Renderable3D*> m_TransparentRenderQueue;

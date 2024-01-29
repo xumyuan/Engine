@@ -1,27 +1,35 @@
-#include "Framebuffer.h"
+#include "RenderTarget.h"
 
 namespace engine {
 	namespace opengl {
 
-		Framebuffer::Framebuffer(int width, int height)
-			: m_Width(width), m_Height(height), m_Created(false), m_FBO(0), m_ColorTexture(0)
+		RenderTarget::RenderTarget(unsigned int width, unsigned int height)
+			: m_Width(width), m_Height(height), m_FBO(0), m_ColorTexture(nullptr), m_DepthStencilRBO(0), m_DepthTexture(0)
 		{
 			glGenFramebuffers(1, &m_FBO);
 		}
 
-		Framebuffer::~Framebuffer() {
+		RenderTarget::~RenderTarget() {
 			glDeleteFramebuffers(1, &m_FBO);
 		}
 
-		void Framebuffer::createFramebuffer() {
+		void RenderTarget::createFramebuffer() {
+			bind();
+			if (m_ColorTexture == nullptr) {
+				// Indicate that there won't be a colour buffer for this FBO
+				glDrawBuffer(GL_NONE);
+				glReadBuffer(GL_NONE);
+			}
+
 			// Check if the creation failed
 			if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
 				utils::Logger::getInstance().error("logged_files/error.txt", "Framebuffer initialization", "Could not initialize the framebuffer");
 				return;
 			}
+			unbind();
 		}
 
-		Framebuffer& Framebuffer::addColorAttachment(bool multisampledBuffer) {
+		RenderTarget& RenderTarget::addColorAttachment(bool multisampledBuffer) {
 			bind();
 			m_ColorTexture = new graphics::Texture();
 
@@ -49,7 +57,7 @@ namespace engine {
 			return *this;
 		}
 
-		Framebuffer& Framebuffer::addDepthStencilRBO(bool multisampledBuffer) {
+		RenderTarget& RenderTarget::addDepthStencilRBO(bool multisampledBuffer) {
 			bind();
 
 			// Generate depth+stencil rbo attachment
@@ -67,12 +75,38 @@ namespace engine {
 			return *this;
 		}
 
-		void Framebuffer::bind() {
+		RenderTarget& RenderTarget::addDepthAttachment(bool multisampled) {
+			bind();
+
+			// Generate depth attachment
+			glGenTextures(1, &m_DepthTexture);
+			glBindTexture(GL_TEXTURE_2D, m_DepthTexture);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, m_Width, m_Height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			float borderColour[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+			glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColour);
+			glBindTexture(GL_TEXTURE_2D, 0);
+
+			// Attach depthmap
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_DepthTexture, 0);
+
+			unbind();
+			return *this;
+		}
+
+		void RenderTarget::bind() {
 			glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
 		}
 
-		void Framebuffer::unbind() {
+		void RenderTarget::unbind() {
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		}
+
+		void RenderTarget::clear() {
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		}
 
 	}

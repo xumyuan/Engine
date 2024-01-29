@@ -69,9 +69,6 @@
     <ClInclude Include="src\graphics\renderer\Renderer.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\platform\OpenGL\Framebuffers\Framebuffer.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="src\graphics\Skybox.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -94,9 +91,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\graphics\mesh\Material.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\platform\OpenGL\Framebuffers\ShadowMap.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\graphics\renderer\GLCache.h">
@@ -127,6 +121,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\graphics\renderer\RenderPass.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\platform\OpenGL\Framebuffers\RenderTarget.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -182,7 +179,7 @@
     <ClCompile Include="src\graphics\renderer\Renderer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\platform\OpenGL\Framebuffers\Framebuffer.cpp">
+    <ClCompile Include="src\platform\OpenGL\Framebuffers\RenderTarget.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\graphics\Skybox.cpp">
@@ -204,9 +201,6 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\graphics\mesh\Material.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="src\platform\OpenGL\Framebuffers\ShadowMap.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\graphics\renderer\GLCache.cpp">

@@ -11,7 +11,7 @@ namespace engine {
 			m_FaceToCull = GL_BACK;
 			m_Multisample = false;;
 			setDepthTest(true);
-			setCull(true);
+			setFaceCull(true);
 		}
 
 		GLCache::~GLCache() {
@@ -63,7 +63,7 @@ namespace engine {
 			}
 		}
 
-		void GLCache::setCull(bool choice) {
+		void GLCache::setFaceCull(bool choice) {
 			if (m_Cull != choice) {
 				m_Cull = choice;
 				if (m_Cull)

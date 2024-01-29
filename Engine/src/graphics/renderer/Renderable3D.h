@@ -14,7 +14,7 @@ namespace engine {
 				glm::vec3& rotationAxis,
 				float radianRotation,
 				Model* model,
-				Renderable3D* parent, bool shouldOutline = false, bool transparent = false);
+				Renderable3D* parent, bool transparent = false);
 
 			Renderable3D(
 				const glm::vec3& position,
@@ -22,7 +22,7 @@ namespace engine {
 				const glm::vec3& rotationAxis,
 				float radianRotation,
 				Model* model,
-				Renderable3D* parent, bool shouldOutline = false, bool transparent = false);
+				Renderable3D* parent, bool transparent = false);
 
 
 			~Renderable3D();
@@ -35,14 +35,12 @@ namespace engine {
 			inline const glm::vec3& getScale() const { return m_Scale; }
 			inline const glm::quat& getOrientation() const { return m_Orientation; }
 			inline const Renderable3D* getParent() const { return m_Parent; }
-			inline bool getShouldOutline() const { return m_ShouldOutline; }
 			inline bool getTransparent() const { return m_Transparent; }
 
 			inline void setPosition(glm::vec3& other) { m_Position = other; }
 			inline void setScale(glm::vec3& other) { m_Scale = other; }
 			inline void setOrientation(float radianRotation, glm::vec3 rotationAxis) { m_Orientation = glm::angleAxis(radianRotation, rotationAxis); }
 
-			inline void setShouldOutline(bool choice) { m_ShouldOutline = choice; }
 			inline void setTransparent(bool choice) { m_Transparent = choice; }
 		private:
 			glm::vec3 m_Position, m_Scale;
@@ -50,7 +48,7 @@ namespace engine {
 			Renderable3D* m_Parent;
 
 			// Graphic features
-			bool m_ShouldOutline, m_Transparent;
+			bool m_Transparent;
 
 			Model* m_Model;
 		};

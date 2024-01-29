@@ -144,6 +144,9 @@ namespace engine {
 			}
 			std::cout << "OpenGL " << glGetString(GL_VERSION) << std::endl;
 
+			// Setup default OpenGL viewport
+			glViewport(0, 0, m_Width, m_Height);
+
 			// Setup ImGui bindings
 			ImGui::CreateContext();
 			ImGui_ImplGlfw_InitForOpenGL(m_Window, false);

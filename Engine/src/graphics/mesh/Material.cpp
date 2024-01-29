@@ -9,7 +9,8 @@ namespace engine {
 
 
 		void Material::BindMaterialInformation(Shader& shader) const {
-			int currentTextureUnit = 0;
+			// 纹理单元0留给shadowmap
+			int currentTextureUnit = 1;
 
 			shader.setUniform1i("material.texture_diffuse", currentTextureUnit);
 			if (m_DiffuseMap) {
