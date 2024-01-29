@@ -2,7 +2,6 @@
 
 // Developer Options
 #define DEBUG_ENABLED 1
-#define SHOW_MOUSE 0
 
 #define MSAA_SAMPLE_AMOUNT 4
 

@@ -8,6 +8,7 @@ namespace engine {
 		double Window::s_MouseX, Window::s_MouseY, Window::s_MouseXDelta, Window::s_MouseYDelta;
 		double Window::s_ScrollX, Window::s_ScrollY;
 
+
 		/*              Callback Functions              */
 		static void error_callback(int error, const char* description) {
 			std::cout << "Error:" << std::endl << description << std::endl;
@@ -24,6 +25,13 @@ namespace engine {
 			Window* win = (Window*)glfwGetWindowUserPointer(window);
 			win->s_Keys[key] = action != GLFW_RELEASE;
 			ImGui_ImplGlfw_KeyCallback(window, key, scancode, action, mods);
+#if DEBUG_ENABLED
+			if (key == GLFW_KEY_P && action == GLFW_RELEASE) {
+				win->m_HideCursor = !win->m_HideCursor;
+				GLenum cursorOption = win->m_HideCursor ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL;
+				glfwSetInputMode(win->m_Window, GLFW_CURSOR, cursorOption);
+			}
+#endif
 		}
 
 		static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
@@ -57,6 +65,7 @@ namespace engine {
 			m_Height = height;
 			s_ScrollX = s_ScrollY = 0;
 			s_MouseXDelta = s_MouseYDelta = 0;
+			m_HideCursor = true;
 
 			if (!init()) {
 				utils::Logger::getInstance().error("logged_files/window_creation.txt", "Window Initialization", "Could not initialize window class");
@@ -102,7 +111,7 @@ namespace engine {
 			}
 
 			// Setup the mouse settings
-			if (!SHOW_MOUSE)
+			if (m_HideCursor)
 				glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 			// Set up contexts and callbacks
@@ -140,7 +149,7 @@ namespace engine {
 			ImGui_ImplGlfw_InitForOpenGL(m_Window, false);
 			const char* glsl_version = "#version 450";
 			ImGui_ImplOpenGL3_Init(glsl_version);
-			
+
 			ImGui::StyleColorsDark();
 
 			// Everything was successful so return true

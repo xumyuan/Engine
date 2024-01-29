@@ -47,6 +47,8 @@ int main() {
 	framebufferShader.setUniform2f("readOffset", glm::vec2(1.0f / (float)window.getWidth(), 1.0f / (float)window.getHeight()));
 
 	glEnable(GL_DEPTH_TEST);
+
+	bool wireframeMode = false;
 #if DEBUG_ENABLED
 	engine::Timer timer;
 	float postProcessTime = 0.0f;
@@ -55,10 +57,15 @@ int main() {
 	engine::Time deltaTime;
 	while (!window.closed()) {
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);  // 场景背景色
-
-		window.clear();
 		deltaTime.update();
 
+#if DEBUG_ENABLED
+		if (wireframeMode)
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		else
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+#endif
+		window.clear();
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
@@ -83,6 +90,10 @@ int main() {
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffer.getFramebuffer());
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, blitFramebuffer.getFramebuffer());
 		glBlitFramebuffer(0, 0, window.getWidth(), window.getHeight(), 0, 0, window.getWidth(), window.getHeight(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
+#if DEBUG_ENABLED
+		if (wireframeMode)
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+#endif
 		// 绘制到默认缓冲区
 		framebuffer.unbind();
 		glDisable(GL_BLEND);
@@ -96,15 +107,21 @@ int main() {
 #endif
 
 		{
-			ImGui::SetWindowPos(ImVec2(100.f, 50.f));
+
 			ImGui::Begin("Runtime Analytics", nullptr);
-
-
 			ImGui::Text("Frametime: %.3f ms (FPS %.1f)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 #if DEBUG_ENABLED
 			ImGui::Text("Post Process: %.6f ms", 1000.0f * postProcessTime);
 #endif
 			ImGui::End();
+
+#if DEBUG_ENABLED
+
+			ImGui::Begin("Debug Controls", nullptr);
+			ImGui::Text("Hit \"P\" to show/hide the cursor");
+			ImGui::Checkbox("Wireframe Mode", &wireframeMode);
+			ImGui::End();
+#endif
 		}
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
