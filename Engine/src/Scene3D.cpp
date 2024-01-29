@@ -10,9 +10,10 @@
 
 namespace engine {
 	Scene3D::Scene3D(graphics::Camera* camera, graphics::Window* window)
-		: m_TerrainShader("src/shaders/oldBasic.vert", "src/shaders/terrain.frag"), 
-		m_ModelShader("src/shaders/basic.vert", "src/shaders/model.frag"), m_Camera(camera),
-		m_OutlineShader("src/shaders/oldBasic.vert", "src/shaders/basic.frag"),
+		: m_TerrainShader("src/shaders/basic.vert", "src/shaders/terrain.frag"), 
+		m_ModelShader("src/shaders/model.vert", "src/shaders/model.frag"), m_Camera(camera),
+		m_OutlineShader("src/shaders/basic.vert", "src/shaders/basic.frag"),
+		m_ShadowmapShader("src/shaders/shadowmap.vert", "src/shaders/shadowmap.frag"),
 		m_DynamicLightManager()
 	{
 		m_Renderer = new graphics::Renderer(camera);
@@ -28,19 +29,12 @@ namespace engine {
 	}
 
 	void Scene3D::init() {
-		glEnable(GL_MULTISAMPLE);
-
-		//开启深度测试和模板测试
-		glEnable(GL_DEPTH_TEST);
-		glEnable(GL_STENCIL_TEST);
-
-		//开启背面剔除
-		glEnable(GL_CULL_FACE);
+		m_GLCache->setMultisample(true);
 
 
 		graphics::Quad windowPane;
-		windowPane.getMaterial().setDiffuseMap(utils::TextureLoader::Load2DTexture(std::string("res/textures/window.png")));
-		windowPane.getMaterial().setSpecularMap(utils::TextureLoader::Load2DTexture(std::string("res/textures/default/fullSpec.png")));
+		windowPane.getMaterial().setDiffuseMap(utils::TextureLoader::load2DTexture(std::string("res/textures/window.png")));
+		windowPane.getMaterial().setSpecularMap(utils::TextureLoader::load2DTexture(std::string("res/textures/default/fullSpec.png")));
 		graphics::Model* glass = new graphics::Model(windowPane);
 
 		Add(new graphics::Renderable3D(glm::vec3(30.0f, -10.0f, 30.0), glm::vec3(0.2f, 0.2f, 0.2f), glm::vec3(0.0f, 1.0f, 0.0f), 0, new engine::graphics::Model("res/3D_Models/Overwatch/Reaper/Reaper.obj"), nullptr, true));
@@ -76,16 +70,9 @@ namespace engine {
 		Add(new graphics::Renderable3D(glm::vec3(140, 20, 140), glm::vec3(10, 10, 10), glm::vec3(1, 0, 0), 0, new graphics::Model(graphics::Sphere()), nullptr, false, false));
 		Add(new graphics::Renderable3D(glm::vec3(-20, 20, -20), glm::vec3(10, 10, 10), glm::vec3(1, 0, 0), 0, new graphics::Model(graphics::Quad()), nullptr, false, false));
 
-		// 地形shader设置
-		m_GLCache->switchShader(m_TerrainShader.getShaderID());
-		m_TerrainShader.setUniform1f("material.shininess", 128.0f);
-
-		// 模型shader
-		m_GLCache->switchShader(m_ModelShader.getShaderID());
-		m_ModelShader.setUniform1f("material.shininess", 128.0f);
 
 		// Skybox
-		std::vector<const char*> skyboxFilePaths;
+		std::vector<std::string> skyboxFilePaths;
 		skyboxFilePaths.push_back("res/skybox/right.png");
 		skyboxFilePaths.push_back("res/skybox/left.png");
 		skyboxFilePaths.push_back("res/skybox/top.png");
@@ -93,6 +80,14 @@ namespace engine {
 		skyboxFilePaths.push_back("res/skybox/back.png");
 		skyboxFilePaths.push_back("res/skybox/front.png");
 		m_Skybox = new graphics::Skybox(skyboxFilePaths, m_Camera);
+	}
+
+	void Scene3D::shadowmapGeneration() {
+		m_GLCache->switchShader(m_ShadowmapShader.getShaderID());
+		glm::mat4 directionalLightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, SHADOWMAP_NEAR_PLANE, SHADOWMAP_FAR_PLANE);
+		glm::mat4 directionalLightView = glm::lookAt(glm::vec3(0.0f, 50.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::mat4 directionalLightMatrix = directionalLightProjection * directionalLightView;
+		m_ShadowmapShader.setUniformMat4("lightSpaceViewProjectionMatrix", directionalLightMatrix);
 	}
 
 	void Scene3D::onUpdate(float deltaTime) {
@@ -134,7 +129,8 @@ namespace engine {
 			iter++;
 		}
 
-		m_Renderer->flushOpaque(m_ModelShader, m_OutlineShader);
+		// Opaque objects
+		m_Renderer->flushOpaque(m_ModelShader, m_OutlineShader, graphics::RenderPass::LightingPass);
 
 
 		// 地形
@@ -155,7 +151,8 @@ namespace engine {
 
 		//透明物体渲染
 		m_GLCache->switchShader(m_ModelShader.getShaderID());
-		m_Renderer->flushTransparent(m_ModelShader, m_OutlineShader);
+
+		m_Renderer->flushTransparent(m_ModelShader, m_OutlineShader, graphics::RenderPass::LightingPass);
 	}
 
 

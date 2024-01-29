@@ -131,6 +131,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\graphics\renderer\RenderPass.h" />
+    <ClInclude Include="src\graphics\texture\Cubemap.h" />
     <ClInclude Include="src\graphics\mesh\common\Cube.h" />
     <ClInclude Include="src\graphics\mesh\common\Quad.h" />
     <ClInclude Include="src\graphics\mesh\common\Sphere.h" />
@@ -165,11 +167,11 @@
     <ClInclude Include="src\utils\Time.h" />
     <ClInclude Include="src\terrain\Terrain.h" />
     <ClInclude Include="src\platform\OpenGL\VertexArray.h" />
-    <ClInclude Include="src\platform\OpenGL\Utility.h" />
     <ClInclude Include="src\utils\loaders\TextureLoader.h" />
     <ClInclude Include="src\graphics\texture\Texture.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\graphics\texture\Cubemap.cpp" />
     <ClCompile Include="src\graphics\mesh\common\Cube.cpp" />
     <ClCompile Include="src\graphics\mesh\common\Quad.cpp" />
     <ClCompile Include="src\graphics\mesh\common\Sphere.cpp" />
@@ -202,7 +204,6 @@
     <ClCompile Include="src\utils\Timer.cpp" />
     <ClCompile Include="src\terrain\Terrain.cpp" />
     <ClCompile Include="src\platform\OpenGL\VertexArray.cpp" />
-    <ClCompile Include="src\platform\OpenGL\Utility.cpp" />
     <ClCompile Include="src\utils\loaders\TextureLoader.cpp" />
     <ClCompile Include="src\graphics\texture\Texture.cpp" />
   </ItemGroup>
@@ -210,7 +211,7 @@
     <None Include="src\shaders\basic.vert" />
     <None Include="src\shaders\basic.frag" />
     <None Include="src\shaders\oldModel.frag" />
-    <None Include="src\shaders\oldBasic.vert" />
+    <None Include="src\shaders\model.vert" />
     <None Include="src\shaders\postprocess.frag" />
     <None Include="src\shaders\postprocess.vert" />
     <None Include="src\shaders\model.frag" />

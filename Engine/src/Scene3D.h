@@ -27,7 +27,7 @@ namespace engine {
 		//要渲染的3d对象列表
 		std::vector<graphics::Renderable3D*> m_Renderables;
 
-		graphics::Shader m_TerrainShader, m_ModelShader, m_OutlineShader;
+		graphics::Shader m_TerrainShader, m_ModelShader, m_OutlineShader, m_ShadowmapShader;
 	public:
 		Scene3D(graphics::Camera* camera, graphics::Window* window);
 		~Scene3D();
@@ -35,6 +35,7 @@ namespace engine {
 
 		void Add(graphics::Renderable3D* renderable);
 
+		void shadowmapGeneration();
 		void onUpdate(float deltaTime);
 		void onRender();
 

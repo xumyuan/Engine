@@ -4,11 +4,28 @@ namespace engine {
 	namespace graphics {
 
 		GLCache::GLCache() : m_ActiveShaderID(0) {
-
+			// 初始化缓存值以确保错误数据不会扰乱 GL 状态
+			m_StencilTest = false;
+			m_Blend = false;
+			m_Cull = false;
+			m_FaceToCull = GL_BACK;
+			m_Multisample = false;;
+			setDepthTest(true);
+			setCull(true);
 		}
 
 		GLCache::~GLCache() {
 
+		}
+
+		void GLCache::setMultisample(bool choice) {
+			if (m_Multisample != choice) {
+				m_Multisample = choice;
+				if (m_Multisample)
+					glEnable(GL_MULTISAMPLE);
+				else
+					glDisable(GL_MULTISAMPLE);
+			}
 		}
 
 		GLCache* GLCache::getInstance() {

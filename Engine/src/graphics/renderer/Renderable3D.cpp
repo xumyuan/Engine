@@ -1,4 +1,6 @@
 #include "Renderable3D.h"
+#include "Renderer.h"
+
 namespace engine {
 	namespace graphics {
 		Renderable3D::Renderable3D(
@@ -31,8 +33,8 @@ namespace engine {
 
 		Renderable3D::~Renderable3D() {}
 
-		void Renderable3D::draw(Shader& shader) const {
-			m_Model->Draw(shader);
+		void Renderable3D::draw(Shader& shader, RenderPass pass) const {
+			m_Model->Draw(shader, pass);
 		}
 	}
 }

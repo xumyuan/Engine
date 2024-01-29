@@ -57,9 +57,6 @@
     <ClInclude Include="src\platform\OpenGL\VertexArray.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\platform\OpenGL\Utility.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="src\utils\Singleton.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -126,6 +123,12 @@
     <ClInclude Include="src\graphics\texture\Texture.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="src\graphics\texture\Cubemap.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\graphics\renderer\RenderPass.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\graphics\shader.cpp">
@@ -168,9 +171,6 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\platform\OpenGL\VertexArray.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="src\platform\OpenGL\Utility.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\Scene3D.cpp">
@@ -233,6 +233,9 @@
     <ClCompile Include="src\graphics\texture\Texture.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\graphics\texture\Cubemap.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\shaders\basic.vert" />
@@ -247,7 +250,7 @@
     <None Include="src\shaders\modelReflection.frag" />
     <None Include="src\shaders\shadowmap.vert" />
     <None Include="src\shaders\shadowmap.frag" />
-    <None Include="src\shaders\oldBasic.vert" />
+    <None Include="src\shaders\model.vert" />
     <None Include="src\shaders\oldModel.frag" />
   </ItemGroup>
   <ItemGroup>

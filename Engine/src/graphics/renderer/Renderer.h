@@ -6,6 +6,7 @@
 #include "../camera/Camera.h"
 #include "Renderable3D.h"
 #include "GLCache.h"
+#include "RenderPass.h"
 
 
 namespace engine {
@@ -16,6 +17,9 @@ namespace engine {
 
 			void submitOpaque(Renderable3D* renderable);
 			void submitTransparent(Renderable3D* renderable);
+
+			void flushOpaque(Shader& shader, Shader& outlineShader, RenderPass pass);
+			void flushTransparent(Shader& shader, Shader& outlineShader, RenderPass pass);
 
 			void flushOpaque(Shader& shader, Shader& outlineShader);
 			void flushTransparent(Shader& shader, Shader& outlineShader);

@@ -9,10 +9,11 @@
 #include "../Shader.h"
 #include "Mesh.h"
 #include "../../utils/loaders/TextureLoader.h"
+#include "../renderer/RenderPass.h"
 
 namespace engine {
 	namespace graphics {
-
+		class Renderer;
 
 		class Model {
 		public:
@@ -20,7 +21,7 @@ namespace engine {
 			Model(const Mesh& mesh);
 			Model(const std::vector<Mesh>& meshes);
 
-			void Draw(Shader& shader) const;
+			void Draw(Shader& shader, RenderPass pass) const;
 		private:
 			std::vector<Mesh> m_Meshes;
 			std::string m_Directory;

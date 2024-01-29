@@ -19,6 +19,7 @@ namespace engine {
 			void setStencilTest(bool choice);
 			void setBlend(bool choice);
 			void setCull(bool choice);
+			void setMultisample(bool choice);
 
 			void setDepthFunc(GLenum depthFunc);
 			void setStencilFunc(GLenum testFunc, GLint stencilFragValue, GLuint stencilBitmask);
@@ -34,6 +35,7 @@ namespace engine {
 			bool m_StencilTest;
 			bool m_Blend;
 			bool m_Cull;
+			bool m_Multisample;
 
 			// …Ó∂» State
 			GLenum m_DepthFunc;

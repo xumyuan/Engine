@@ -1,9 +1,11 @@
 #pragma once
 #include "../mesh/Model.h"
 #include <glm/glm.hpp>
+#include "RenderPass.h"
 
 namespace engine {
 	namespace graphics {
+
 		class Renderable3D {
 		public:
 			Renderable3D(
@@ -25,7 +27,9 @@ namespace engine {
 
 			~Renderable3D();
 
-			void draw(Shader& shader) const;
+			// TODO: 添加枚举来控制渲染通道，就像它是阴影贴图通道一样，以避免绑定等
+
+			void draw(Shader& shader, RenderPass pass) const;
 
 			inline const glm::vec3& getPosition() const { return m_Position; }
 			inline const glm::vec3& getScale() const { return m_Scale; }

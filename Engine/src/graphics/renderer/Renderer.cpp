@@ -21,7 +21,7 @@ namespace engine {
 		}
 
 		// 不透明物渲染
-		void Renderer::flushOpaque(Shader& shader, Shader& outlineShader) {
+		void Renderer::flushOpaque(Shader& shader, Shader& outlineShader, RenderPass pass) {
 			m_GLCache->switchShader(shader.getShaderID());
 			m_GLCache->setCull(true);
 			m_GLCache->setDepthTest(true);
@@ -40,7 +40,7 @@ namespace engine {
 
 
 				setupModelMatrix(current, shader);
-				current->draw(shader);
+				current->draw(shader, RenderPass::LightingPass);
 
 				// 绘制外轮廓
 				if (current->getShouldOutline()) {
@@ -53,7 +53,7 @@ namespace engine {
 		}
 
 		// 透明物体渲染
-		void Renderer::flushTransparent(Shader& shader, Shader& outlineShader) {
+		void Renderer::flushTransparent(Shader& shader, Shader& outlineShader, RenderPass pass) {
 			// 关闭背面剔除，否则会导致透明物体的背面也被剔除
 			m_GLCache->setCull(false);
 			m_GLCache->setStencilTest(true);
@@ -76,7 +76,7 @@ namespace engine {
 				m_GLCache->setBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 				setupModelMatrix(current, shader);
-				current->draw(shader);
+				current->draw(shader, RenderPass::LightingPass);
 
 				// 绘制外轮廓
 				if (current->getShouldOutline()) {
@@ -115,7 +115,7 @@ namespace engine {
 			m_GLCache->setStencilFunc(GL_NOTEQUAL, 1, 0xFF);
 
 			setupModelMatrix(renderable, outlineShader, 1.025f);
-			renderable->draw(outlineShader);
+			renderable->draw(outlineShader, RenderPass::ShadowmapPass); // Use this to avoid binding useless info
 
 			m_GLCache->setDepthTest(true);
 			glClear(GL_STENCIL_BUFFER_BIT);

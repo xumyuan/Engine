@@ -12,7 +12,6 @@
 #include "../utils/loaders/TextureLoader.h"
 #include "..\graphics\Shader.h"
 
-#include "../platform/OpenGL/Utility.h"
 
 namespace engine {
 	namespace terrain {

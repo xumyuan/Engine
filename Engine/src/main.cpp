@@ -28,7 +28,7 @@ int main() {
 	//创建场景
 	engine::Scene3D scene(&camera, &window);
 	engine::graphics::GLCache* glCache = engine::graphics::GLCache::getInstance();
-	engine::utils::TextureLoader::InitializeDefaultTextures();
+	engine::utils::TextureLoader::initializeDefaultTextures();
 
 	// 创建帧缓冲
 	engine::opengl::Framebuffer framebuffer(window.getWidth(), window.getHeight());
