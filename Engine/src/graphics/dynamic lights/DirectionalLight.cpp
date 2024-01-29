@@ -9,10 +9,10 @@ namespace engine {
 		// TODO: 添加多方向光支持
 		void DirectionalLight::setupUniforms(Shader& shader, int currentLightIndex) {
 			if (isActive) {
+				shader.setUniform3f("dirLight.direction", direction);
 				shader.setUniform3f("dirLight.ambient", ambient);
 				shader.setUniform3f("dirLight.diffuse", diffuse);
 				shader.setUniform3f("dirLight.specular", specular);
-				shader.setUniform3f("dirLight.direction", direction);
 			}
 		}
 

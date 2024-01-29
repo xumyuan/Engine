@@ -12,11 +12,11 @@ namespace engine {
 		// TODO: 添加多聚光支持
 		void SpotLight::setupUniforms(Shader& shader, int currentLightIndex) {
 			if (isActive) {
+				shader.setUniform3f("spotLight.position", position);
+				shader.setUniform3f("spotLight.direction", direction);
 				shader.setUniform3f("spotLight.ambient", ambient);
 				shader.setUniform3f("spotLight.diffuse", diffuse);
 				shader.setUniform3f("spotLight.specular", specular);
-				shader.setUniform3f("spotLight.position", position);
-				shader.setUniform3f("spotLight.direction", direction);
 				shader.setUniform1f("spotLight.cutOff", cutOff);
 				shader.setUniform1f("spotLight.outerCutOff", outerCutOff);
 				shader.setUniform1f("spotLight.constant", constant);

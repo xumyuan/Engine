@@ -16,8 +16,8 @@ namespace engine {
 			// Setup lighting configurations
 			m_DirectionalLight.isActive = true;
 			m_DirectionalLight.direction = glm::vec3(-0.3f, -1.0f, -0.3f);
-			m_DirectionalLight.ambient = glm::vec3(0.1f, 0.1f, 0.1f);
-			m_DirectionalLight.diffuse = glm::vec3(0.6f, 0.6f, 0.6f);
+			m_DirectionalLight.ambient = glm::vec3(0.3f, 0.3f, 0.3f);
+			m_DirectionalLight.diffuse = glm::vec3(0.8f, 0.8f, 0.8f);
 			m_DirectionalLight.specular = glm::vec3(0.5f, 0.5f, 0.5f);
 
 			m_SpotLight.isActive = true;

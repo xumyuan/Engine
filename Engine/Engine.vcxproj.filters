@@ -72,9 +72,6 @@
     <ClInclude Include="src\graphics\renderer\Renderer.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\graphics\mesh\MeshFactory.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="src\platform\OpenGL\Framebuffers\Framebuffer.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -108,10 +105,25 @@
     <ClInclude Include="src\graphics\renderer\GLCache.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\graphics\mesh\MeshLoader.h">
+    <ClInclude Include="src\graphics\renderer\PostProcessor.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\graphics\renderer\PostProcessor.h">
+    <ClInclude Include="src\graphics\mesh\common\Cube.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\graphics\mesh\common\Quad.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\graphics\mesh\common\Sphere.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\loaders\MeshLoader.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\loaders\TextureLoader.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\graphics\texture\Texture.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -170,9 +182,6 @@
     <ClCompile Include="src\graphics\renderer\Renderer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\graphics\mesh\MeshFactory.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="src\platform\OpenGL\Framebuffers\Framebuffer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -206,6 +215,24 @@
     <ClCompile Include="src\graphics\renderer\PostProcessor.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\graphics\mesh\common\Cube.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\graphics\mesh\common\Quad.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\graphics\mesh\common\Sphere.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\loaders\MeshLoader.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\loaders\TextureLoader.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\graphics\texture\Texture.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\shaders\basic.vert" />
@@ -220,6 +247,8 @@
     <None Include="src\shaders\modelReflection.frag" />
     <None Include="src\shaders\shadowmap.vert" />
     <None Include="src\shaders\shadowmap.frag" />
+    <None Include="src\shaders\oldBasic.vert" />
+    <None Include="src\shaders\oldModel.frag" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\awesomeface.png">

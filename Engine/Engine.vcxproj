@@ -209,6 +209,8 @@
   <ItemGroup>
     <None Include="src\shaders\basic.vert" />
     <None Include="src\shaders\basic.frag" />
+    <None Include="src\shaders\oldModel.frag" />
+    <None Include="src\shaders\oldBasic.vert" />
     <None Include="src\shaders\postprocess.frag" />
     <None Include="src\shaders\postprocess.vert" />
     <None Include="src\shaders\model.frag" />

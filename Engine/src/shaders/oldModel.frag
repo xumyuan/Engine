@@ -4,8 +4,6 @@
 struct Material {
 	sampler2D texture_diffuse;
 	sampler2D texture_specular;
-	sampler2D texture_normal;
-
 	float shininess;
 };
 
@@ -46,20 +44,21 @@ struct SpotLight {
 
 #define MAX_POINT_LIGHTS 5
 
-in mat3 TBN;
-in vec3 FragPos;
 in vec2 TexCoords;
+in vec3 Normal;
+in vec3 FragPos;
 
 out vec4 color;
 
-uniform vec3 viewPos;
-uniform Material material;
-uniform float time;
 
 uniform int numPointLights;
-uniform PointLight pointLights[MAX_POINT_LIGHTS];
 uniform DirLight dirLight;
+uniform PointLight pointLights[MAX_POINT_LIGHTS];
 uniform SpotLight spotLight;
+uniform float time;
+
+uniform Material material;
+uniform vec3 viewPos;
 
 // function prototypes
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 fragToCam);
@@ -67,16 +66,10 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 fragToCam)
 vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 fragToCam);
 
 void main() {
-
-	// 透明度太低直接丢弃
+	// Check if the fragment is too transparent, and if so just discard it
 	float textureAlpha = texture(material.texture_diffuse, TexCoords).w;
-	//if(textureAlpha < 0.1) discard;
 
-	// Normal mapping code. Opted out of tangent space normal mapping since I would have to convert all of my lights to tangent space
-	vec3 norm = texture(material.texture_normal, TexCoords).rgb;
-	norm = normalize(norm * 2.0f - 1.0f);
-	norm = normalize(TBN * norm);
-
+	vec3 norm = normalize(Normal);
 	vec3 fragToCam = normalize(viewPos - FragPos);
 
 	vec3 result = CalcDirLight(dirLight, norm, fragToCam);
@@ -86,10 +79,9 @@ void main() {
 	result += CalcSpotLight(spotLight, norm, FragPos, fragToCam);
 
 	// Result
-	color = vec4(result, textureAlpha); 
+	color = vec4(result, textureAlpha); // Use the diffuse texture for transparency
 }
 
-// 平行光
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 fragToCam) {
 	vec3 lightDirection = normalize(-light.direction);
 
@@ -103,16 +95,15 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 fragToCam) {
 	vec3 specular = light.specular * spec * texture(material.texture_specular, TexCoords).rgb;
 	//vec3 emission = texture(material.emission, TexCoords).rgb * clamp((sin(time) * 2) - 1, 0, 1);
 
-	return (ambient + diffuse + specular );
+	return (ambient + diffuse + specular);
 }
 
-// 点光源
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 fragToCam) {
 	vec3 lightDirection = normalize(light.position - fragPos);
 
 	float diff = max(dot(lightDirection, normal), 0.0);
 
-	vec3 halfwayDir = normalize(fragToCam + lightDirection);
+	vec3 halfwayDir = normalize(lightDirection + fragToCam);
 	float spec = pow(max(dot(halfwayDir, normal), 0.0), material.shininess);
 
 	// Attenuation calculation
@@ -129,16 +120,15 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 fragToCam)
 	diffuse *= attenuation;
 	specular *= attenuation;
 
-	return (ambient + diffuse + specular );
+	return (ambient + diffuse + specular);
 }
 
-// 聚光灯
 vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 fragToCam) {
 	vec3 fragToLight = normalize(light.position - fragPos);
 
 	float diff = max(dot(fragToLight, normal), 0.0);
 
-	vec3 halfwayDir = normalize(fragToCam + fragToLight);
+	vec3 halfwayDir = normalize(fragToLight + fragToCam);
 	float spec = pow(max(dot(halfwayDir, normal), 0.0), material.shininess);
 
 	// Attenuation calculation
@@ -160,5 +150,5 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 fragToCam) {
 	diffuse *= attenuation * intensity;
 	specular *= attenuation * intensity;
 
-	return (ambient + diffuse + specular );
+	return (ambient + diffuse + specular);
 }

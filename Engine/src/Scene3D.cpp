@@ -10,8 +10,9 @@
 
 namespace engine {
 	Scene3D::Scene3D(graphics::Camera* camera, graphics::Window* window)
-		: m_TerrainShader("src/shaders/basic.vert", "src/shaders/terrain.frag"), m_ModelShader("src/shaders/basic.vert", "src/shaders/model.frag"), m_Camera(camera),
-		m_OutlineShader("src/shaders/basic.vert", "src/shaders/basic.frag"),
+		: m_TerrainShader("src/shaders/oldBasic.vert", "src/shaders/terrain.frag"), 
+		m_ModelShader("src/shaders/basic.vert", "src/shaders/model.frag"), m_Camera(camera),
+		m_OutlineShader("src/shaders/oldBasic.vert", "src/shaders/basic.frag"),
 		m_DynamicLightManager()
 	{
 		m_Renderer = new graphics::Renderer(camera);
