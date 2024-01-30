@@ -29,13 +29,7 @@ namespace engine {
 			m_GLCache->setBlend(false);
 			m_GLCache->setStencilTest(false);
 			m_GLCache->setFaceCull(true);
-
-
-			// 只绘制背面防止阴影失真
-			if (pass == RenderPass::ShadowmapPass)
-				m_GLCache->setCullFace(GL_FRONT);
-			else
-				m_GLCache->setCullFace(GL_BACK);
+			m_GLCache->setCullFace(GL_BACK);
 
 			//不透明物体渲染队列
 			while (!m_OpaqueRenderQueue.empty()) {
@@ -61,7 +55,7 @@ namespace engine {
 				m_GLCache->setCullFace(GL_FRONT);
 			else
 				m_GLCache->setFaceCull(false);
-
+			m_GLCache->setFaceCull(false);
 
 
 			//排序后从后往前渲染，没有考虑缩放和旋转

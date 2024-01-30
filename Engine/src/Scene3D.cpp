@@ -85,7 +85,7 @@ namespace engine {
 
 	void Scene3D::shadowmapPass() {
 		glm::vec3 dirLightShadowmapLookAtPos = m_Camera->getPosition() + (glm::normalize(glm::vec3(m_Camera->getFront().x, 0.0f, m_Camera->getFront().z)) * 50.0f);
-		glm::vec3 dirLightShadowmapEyePos = dirLightShadowmapLookAtPos + (-m_DynamicLightManager.getDirectionalLightDirection() * 50.0f);
+		glm::vec3 dirLightShadowmapEyePos = dirLightShadowmapLookAtPos + (-m_DynamicLightManager.getDirectionalLightDirection() * 100.0f);
 
 		m_GLCache->switchShader(m_ShadowmapShader.getShaderID());
 		glm::mat4 directionalLightProjection = glm::ortho(-100.0f, 100.0f, -100.0f, 100.0f, SHADOWMAP_NEAR_PLANE, SHADOWMAP_FAR_PLANE);
@@ -98,9 +98,9 @@ namespace engine {
 
 		m_Renderer->flushOpaque(m_ShadowmapShader, graphics::RenderPass::ShadowmapPass);
 		m_Renderer->flushTransparent(m_ShadowmapShader, graphics::RenderPass::ShadowmapPass);
+		m_Terrain->Draw(m_ShadowmapShader, graphics::RenderPass::ShadowmapPass);
 
 		m_GLCache->switchShader(m_TerrainShader.getShaderID());
-		m_Terrain->Draw(m_TerrainShader, graphics::RenderPass::ShadowmapPass);
 		m_TerrainShader.setUniformMat4("lightSpaceViewProjectionMatrix", directionalLightViewProjMatrix);
 
 		m_GLCache->switchShader(m_ModelShader.getShaderID());

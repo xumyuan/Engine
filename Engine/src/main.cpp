@@ -55,7 +55,7 @@ int main() {
 	bool wireframeMode = false;
 #if DEBUG_ENABLED
 	engine::Timer timer;
-	float postProcessTime = 0.0f;
+	float postProcessTime = 0.0f, shadowmapGenerationTime = 0.0f;
 #endif
 
 	engine::Time deltaTime;
@@ -73,13 +73,19 @@ int main() {
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
-
+#if DEBUG_ENABLED
+		glFinish();
+		timer.reset();
+#endif
 		// Shadowmap Pass
 		glViewport(0, 0, shadowmap.getWidth(), shadowmap.getHeight());
 		shadowmap.bind();
 		shadowmap.clear();
 		scene.shadowmapPass();
-
+#if DEBUG_ENABLED
+		glFinish();
+		shadowmapGenerationTime = timer.elapsed();
+#endif
 
 		camera.processInput(deltaTime.getDeltaTime());
 
@@ -128,6 +134,7 @@ int main() {
 			ImGui::Text("Frametime: %.3f ms (FPS %.1f)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 #if DEBUG_ENABLED
 			ImGui::Text("Post Process: %.6f ms", 1000.0f * postProcessTime);
+			ImGui::Text("Shadowmap Generation: %.6f ms", 1000.0f * shadowmapGenerationTime);
 #endif
 			ImGui::End();
 
