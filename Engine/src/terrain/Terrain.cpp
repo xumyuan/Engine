@@ -54,15 +54,15 @@ namespace engine {
 			}
 
 			// Textures
-			m_Textures[0] = utils::TextureLoader::load2DTexture(std::string("res/terrain/grass.png"));
-			m_Textures[1] = utils::TextureLoader::load2DTexture(std::string("res/terrain/dirt.png"));
-			m_Textures[2] = utils::TextureLoader::load2DTexture(std::string("res/terrain/sand.png"));
-			m_Textures[3] = utils::TextureLoader::load2DTexture(std::string("res/terrain/stone.png"));
-			m_Textures[4] = utils::TextureLoader::load2DTexture(std::string("res/terrain/blendMap.png"));
-			m_Textures[5] = utils::TextureLoader::load2DTexture(std::string("res/terrain/grass_normal.png"));
-			m_Textures[6] = utils::TextureLoader::load2DTexture(std::string("res/terrain/dirt_normal.png"));
-			m_Textures[7] = utils::TextureLoader::load2DTexture(std::string("res/terrain/sand_normal.png"));
-			m_Textures[8] = utils::TextureLoader::load2DTexture(std::string("res/terrain/stone_normal.png"));
+			m_Textures[0] = utils::TextureLoader::load2DTexture(std::string("res/terrain/grass.png"), true);
+			m_Textures[1] = utils::TextureLoader::load2DTexture(std::string("res/terrain/dirt.png"), true);
+			m_Textures[2] = utils::TextureLoader::load2DTexture(std::string("res/terrain/sand.png"), true);
+			m_Textures[3] = utils::TextureLoader::load2DTexture(std::string("res/terrain/stone.png"), true);
+			m_Textures[4] = utils::TextureLoader::load2DTexture(std::string("res/terrain/blendMap.png"), false);
+			m_Textures[5] = utils::TextureLoader::load2DTexture(std::string("res/terrain/grass_normal.png"), false);
+			m_Textures[6] = utils::TextureLoader::load2DTexture(std::string("res/terrain/dirt_normal.png"), false);
+			m_Textures[7] = utils::TextureLoader::load2DTexture(std::string("res/terrain/sand_normal.png"), false);
+			m_Textures[8] = utils::TextureLoader::load2DTexture(std::string("res/terrain/stone_normal.png"), false);
 
 			m_Mesh = new graphics::Mesh(positions, uvs, normals, indices);
 			m_Mesh->LoadData(true);
@@ -83,6 +83,8 @@ namespace engine {
 				m_Textures[2]->bind(3);
 				shader.setUniform1i("material.texture_diffuse3", 3);
 				m_Textures[3]->bind(4);
+				shader.setUniform1i("material.texture_diffuse4", 4);
+				m_Textures[4]->bind(5);
 				shader.setUniform1i("material.blendmap", 5);
 				m_Textures[5]->bind(6);
 				shader.setUniform1i("material.texture_normal1", 6);

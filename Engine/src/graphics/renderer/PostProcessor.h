@@ -26,6 +26,8 @@ namespace engine {
 
 			inline void EnableBlur(bool choice) { m_Blur = choice; }
 		private:
+			float m_GammaCorrection = 2.2f;
+
 			Renderer* m_Renderer;
 			Shader m_PostProcessShader;
 			Quad m_NDC_Plane;

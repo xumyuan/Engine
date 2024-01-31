@@ -32,8 +32,8 @@ namespace engine {
 
 
 		graphics::Quad windowPane;
-		windowPane.getMaterial().setDiffuseMap(utils::TextureLoader::load2DTexture(std::string("res/textures/window.png")));
-		windowPane.getMaterial().setSpecularMap(utils::TextureLoader::load2DTexture(std::string("res/textures/default/fullSpec.png")));
+		windowPane.getMaterial().setDiffuseMap(utils::TextureLoader::load2DTexture(std::string("res/textures/window.png"), true));
+		windowPane.getMaterial().setSpecularMap(utils::TextureLoader::load2DTexture(std::string("res/textures/default/fullSpec.png"), false));
 		graphics::Model* glass = new graphics::Model(windowPane);
 
 		/*add(new graphics::Renderable3D(glm::vec3(30.0f, -10.0f, 30.0), glm::vec3(0.2f, 0.2f, 0.2f), glm::vec3(0.0f, 1.0f, 0.0f), 0, new engine::graphics::Model("res/3D_Models/Overwatch/Reaper/Reaper.obj"), nullptr, true));

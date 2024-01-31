@@ -24,7 +24,7 @@ namespace engine {
 		void Model::Draw(Shader& shader, RenderPass pass) const {
 			// 仅在光照通道期间绑定网格物体材质信息
 			for (unsigned int i = 0; i < m_Meshes.size(); ++i) {
-				if (pass != RenderPass::ShadowmapPass){
+				if (pass != RenderPass::ShadowmapPass) {
 					m_Meshes[i].m_Material.BindMaterialInformation(shader);
 				}
 				m_Meshes[i].Draw();
@@ -105,10 +105,11 @@ namespace engine {
 			if (mesh->mMaterialIndex >= 0) {
 				aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
-				newMesh.m_Material.setDiffuseMap(loadMaterialTexture(material, aiTextureType_DIFFUSE));
-				newMesh.m_Material.setSpecularMap(loadMaterialTexture(material, aiTextureType_SPECULAR));
-				newMesh.m_Material.setNormalMap(loadMaterialTexture(material, aiTextureType_NORMALS));
-				newMesh.m_Material.setEmissionMap(loadMaterialTexture(material, aiTextureType_EMISSIVE));
+				// 颜色类型的贴图需要伽马矫正
+				newMesh.m_Material.setDiffuseMap(loadMaterialTexture(material, aiTextureType_DIFFUSE, true));
+				newMesh.m_Material.setSpecularMap(loadMaterialTexture(material, aiTextureType_SPECULAR, false));
+				newMesh.m_Material.setNormalMap(loadMaterialTexture(material, aiTextureType_NORMALS, false));
+				newMesh.m_Material.setEmissionMap(loadMaterialTexture(material, aiTextureType_EMISSIVE, true));
 				float shininess = 0.0f;
 				material->Get(AI_MATKEY_SHININESS, shininess); // Assimp 将镜面反射指数缩放 4 倍，因为大多数渲染器都是这样处理的。如果未指定，值默认为 0（即无镜面高光）
 				newMesh.m_Material.setShininess(shininess);
@@ -118,7 +119,8 @@ namespace engine {
 
 		}
 
-		Texture* Model::loadMaterialTexture(aiMaterial* mat, aiTextureType type) {
+		Texture* Model::loadMaterialTexture(aiMaterial* mat, aiTextureType type, bool isSRGB)
+		{
 			// Log material constraints are being violated (1 texture per type for the standard shader)
 			if (mat->GetTextureCount(type) > 1)
 				utils::Logger::getInstance().error("logged_files/material_creation.txt", "Mesh Loading", "Mesh's default material contains more than 1 texture for the same type, which currently isn't supported by the standard shader");
@@ -129,7 +131,7 @@ namespace engine {
 				mat->GetTexture(type, 0, &str); // 只获取一个纹理，标准着色器只支持每种类型一个纹理
 
 				std::string fileToSearch = (m_Directory + "/" + std::string(str.C_Str())).c_str();
-				return utils::TextureLoader::load2DTexture(fileToSearch);
+				return utils::TextureLoader::load2DTexture(fileToSearch, isSRGB);
 			}
 
 			return nullptr;

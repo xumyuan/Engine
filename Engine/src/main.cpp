@@ -35,8 +35,8 @@ int main() {
 	engine::graphics::PostProcessor postProcessor(scene.getRenderer());
 
 	// 准备ui
-	engine::ui::RuntimePane runtimePane(glm::vec2(100.0f, 50.0f));
-	engine::ui::DebugPane debugPane(glm::vec2(100.0f, 150.0f));
+	engine::ui::RuntimePane runtimePane(glm::vec2(256.0f, 90.0f));
+	engine::ui::DebugPane debugPane(glm::vec2(256.0f, 100.0f));
 
 	// 创建帧缓冲
 	engine::opengl::RenderTarget framebuffer(window.getWidth(), window.getHeight());
@@ -46,7 +46,7 @@ int main() {
 	engine::opengl::RenderTarget shadowmap(SHADOWMAP_RESOLUTION_X, SHADOWMAP_RESOLUTION_Y);
 	shadowmap.addDepthAttachment(false).createFramebuffer();
 
-	
+
 #if DEBUG_ENABLED
 	engine::Timer timer;
 #endif
@@ -106,7 +106,7 @@ int main() {
 		runtimePane.render();
 		debugPane.render();
 
-		
+
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		window.resetScroll();
