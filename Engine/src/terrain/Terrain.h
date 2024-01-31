@@ -38,7 +38,7 @@ namespace engine {
 			glm::mat4 m_ModelMatrix;
 			glm::vec3 m_Position;
 			graphics::Mesh* m_Mesh;
-			std::array<graphics::Texture*, 5> m_Textures;
+			std::array<graphics::Texture*, 9> m_Textures; // 表示地形纹理喷溅支持的所有纹理
 		};
 
 	}
