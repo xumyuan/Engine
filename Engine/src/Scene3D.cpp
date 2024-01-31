@@ -117,8 +117,7 @@ namespace engine {
 	void Scene3D::onRender(unsigned int shadowmap) {
 		//setup
 		// Í¶Ó°¾ØÕó
-		glm::mat4 projectionMat = glm::perspective(glm::radians(m_Camera->getFOV()),
-			(float)graphics::Window::getWidth() / (float)graphics::Window::getHeight(), NEAR_PLANE, FAR_PLANE);
+		glm::mat4 projectionMat = m_Camera->getProjectionMatrix();
 
 		m_DynamicLightManager.setSpotLightDirection(m_Camera->getFront());
 		m_DynamicLightManager.setSpotLightPosition(m_Camera->getPosition());

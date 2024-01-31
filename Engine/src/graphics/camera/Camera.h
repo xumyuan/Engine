@@ -44,6 +44,7 @@ namespace engine {
 			Camera(GLfloat xPos, GLfloat yPos, GLfloat zPos, GLfloat xUp, GLfloat yUp, GLfloat zUp, GLfloat yaw, GLfloat pitch);
 
 			glm::mat4 getViewMatrix();
+			glm::mat4 getProjectionMatrix();
 			void processInput(GLfloat deltaTime);
 
 			void processKeyboard(Camera_Movement direction, GLfloat deltaTime);

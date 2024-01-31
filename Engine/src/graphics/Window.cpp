@@ -91,9 +91,7 @@ namespace engine {
 				return false;
 			}
 
-			// 开启MSAA抗锯齿
-			glfwWindowHint(GLFW_SAMPLES, MSAA_SAMPLE_AMOUNT);
-
+			
 			// 创建窗口
 			if (FULLSCREEN_MODE) {
 				setFullScreenResolution();

@@ -53,7 +53,7 @@ namespace engine {
 			m_SkyboxShader.setUniform1i("skyboxCubemap", 0);
 
 			m_SkyboxShader.setUniformMat4("view", m_Camera->getViewMatrix());
-			m_SkyboxShader.setUniformMat4("projection", glm::perspective(glm::radians(m_Camera->getFOV()), (float)Window::getWidth() / (float)Window::getHeight(), 0.1f, 1000.0f));
+			m_SkyboxShader.setUniformMat4("projection", m_Camera->getProjectionMatrix());
 
 			glDepthFunc(GL_LEQUAL);
 			m_SkyboxVAO.bind();
