@@ -14,6 +14,8 @@ namespace engine {
 			m_Yaw = yaw;
 			m_Pitch = pitch;
 			updateCameraVectors();
+
+			ui::DebugPane::bindCameraPositionValue(&m_Position);
 		}
 
 		Camera::Camera(GLfloat xPos, GLfloat yPos, GLfloat zPos, GLfloat xUp, GLfloat yUp, GLfloat zUp, GLfloat yaw, GLfloat pitch)

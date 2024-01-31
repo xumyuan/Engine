@@ -36,11 +36,12 @@ int main() {
 
 	// 准备ui
 	engine::ui::RuntimePane runtimePane(glm::vec2(256.0f, 90.0f));
-	engine::ui::DebugPane debugPane(glm::vec2(256.0f, 100.0f));
+	engine::ui::DebugPane debugPane(glm::vec2(256.0f, 115.0f));
 
 	// 创建帧缓冲
+	bool shouldMultisample = MSAA_SAMPLE_AMOUNT > 1.0 ? true : false;
 	engine::opengl::RenderTarget framebuffer(window.getWidth(), window.getHeight());
-	framebuffer.addColorAttachment(true).addDepthStencilRBO(true).createFramebuffer();
+	framebuffer.addColorAttachment(shouldMultisample).addDepthStencilRBO(shouldMultisample).createFramebuffer();
 
 	// TODO: MAKE MULTISAMPLE OPTION WORK OR INVESTIGATE
 	engine::opengl::RenderTarget shadowmap(SHADOWMAP_RESOLUTION_X, SHADOWMAP_RESOLUTION_Y);

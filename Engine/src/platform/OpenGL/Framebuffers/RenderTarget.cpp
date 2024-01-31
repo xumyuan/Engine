@@ -37,7 +37,7 @@ namespace engine {
 
 			// Generate colour texture attachment
 			if (multisampledBuffer) {
-				m_ColorTexture->generate2DMultisampleTexture(m_Width, m_Height, GL_RGB, MSAA_SAMPLE_AMOUNT);
+				m_ColorTexture->generate2DMultisampleTexture(m_Width, m_Height, GL_RGBA16F, MSAA_SAMPLE_AMOUNT);
 
 				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, m_ColorTexture->getTextureId(), 0);
 			}
@@ -46,7 +46,7 @@ namespace engine {
 				m_ColorTexture->setTextureMagFilter(GL_LINEAR);
 				m_ColorTexture->setTextureWrapS(GL_CLAMP_TO_EDGE); // Both need to clamp to edge or you might see strange colours around the
 				m_ColorTexture->setTextureWrapT(GL_CLAMP_TO_EDGE); // border due to interpolation and how it works with GL_REPEAT
-				m_ColorTexture->generate2DTexture(m_Width, m_Height, GL_RGB, GL_RGB, nullptr);
+				m_ColorTexture->generate2DTexture(m_Width, m_Height, GL_RGBA16F, GL_RGB, nullptr);
 
 				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_ColorTexture->getTextureId(), 0);
 			}
