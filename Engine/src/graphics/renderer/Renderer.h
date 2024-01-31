@@ -7,6 +7,7 @@
 #include "Renderable3D.h"
 #include "GLCache.h"
 #include "RenderPass.h"
+#include "../mesh/common/Quad.h"
 
 
 namespace engine {
@@ -20,7 +21,8 @@ namespace engine {
 
 			void flushOpaque(Shader& shader, RenderPass pass);
 			void flushTransparent(Shader& shader, RenderPass pass);
-
+		public:
+			Quad NDC_Plane;
 
 		private:
 			void setupModelMatrix(Renderable3D* renderable, Shader& shader, RenderPass pass);

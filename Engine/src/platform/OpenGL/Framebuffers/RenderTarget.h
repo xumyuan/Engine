@@ -32,9 +32,12 @@ namespace engine {
 			inline unsigned int getFramebuffer() { return m_FBO; }
 			inline graphics::Texture* getColorBufferTexture() { return m_ColorTexture; }
 			inline unsigned int getDepthTexture() { return m_DepthTexture; }
+
+			inline bool isMultisampledColourBuffer() { return m_IsMultisampledColourBuffer; }
 		private:
 			unsigned int m_FBO;
 
+			bool m_IsMultisampledColourBuffer;
 			// Attachments
 			graphics::Texture* m_ColorTexture;
 			unsigned int m_DepthStencilRBO;

@@ -31,9 +31,9 @@ namespace engine {
 			Window(const char* title, int width, int height);
 			~Window();
 			void update();
-			void clear() const;
 			void close() const;
 			bool closed() const;
+			static void clear();
 
 			static bool isKeyPressed(unsigned int keycode);
 			static bool isMouseButtonPressed(unsigned int keycode);

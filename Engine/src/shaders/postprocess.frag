@@ -2,64 +2,46 @@
 
 out vec4 FragColor;
 
-in vec2 TexCoord;
+in vec2 TexCoords;
 
-struct Material {
-	sampler2D texture_diffuse;
-};
 
-uniform Material material;
-
-uniform vec2 readOffset;
+uniform sampler2D screen_texture;
+uniform vec2 read_offset;
+uniform bool blur_enabled;
 
 void main() {
-	// 后处理卷积核
+	// Sample the fragments around the current fragment for post processing using kernels (convulution matrices)
+	// Note: 后处理可能会导致锯齿，因为它使用位块传输帧缓冲区（非多重采样缓冲区）
 	vec2 readOffsets[9] = vec2[] (
-		vec2(-readOffset.x, readOffset.y),
-		vec2(0.0, readOffset.y),
-		vec2(readOffset.x, readOffset.y),
-		vec2(-readOffset.x, 0.0),
+		vec2(-read_offset.x, read_offset.y),
+		vec2(0.0, read_offset.y),
+		vec2(read_offset.x, read_offset.y),
+		vec2(-read_offset.x, 0.0),
 		vec2(0.0, 0.0),
-		vec2(readOffset.x, 0.0),
-		vec2(-readOffset.x, -readOffset.y),
-		vec2(0.0, -readOffset.y),
-		vec2(readOffset.x, -readOffset.y)
-	);
-
-	// 模糊卷积核
-	//float kernel[9] = float[] (
-	//	1.0 / 16.0, 2.0 / 16.0, 1.0 / 16.0,
-	//	2.0 / 16.0, 4.0 / 16.0, 2.0 / 16.0,
-	//	1.0 / 16.0, 2.0 / 16.0, 1.0 / 16.0
-	//);
-
-	// 锐化卷积核
-	//float kernel[9] = float[] (
-	//	-1, -1, -1,
-	//	-1,  9, -1,
-	//	-1, -1, -1
-	//);
-
-	// 边缘高亮
-	//float kernel[9] = float[] (
-	//	-2, -2, -2,
-	//	-2, 15, -2,
-	//	-2, -2, -2
-	//);
-
-	// 无处理
-	float kernel[9] = float[] (
-		0, 0, 0,
-		0, 1, 0,
-		0, 0, 0
+		vec2(read_offset.x, 0.0),
+		vec2(-read_offset.x, -read_offset.y),
+		vec2(0.0, -read_offset.y),
+		vec2(read_offset.x, -read_offset.y)
 	);
 
 	vec3 colour = vec3(0.0);
+	if (blur_enabled) {
+		// Blur kernel
+		float kernel[9] = float[] (
+			1.0 / 16.0, 2.0 / 16.0, 1.0 / 16.0,
+			2.0 / 16.0, 4.0 / 16.0, 2.0 / 16.0,
+			1.0 / 16.0, 2.0 / 16.0, 1.0 / 16.0
+		);
 
-	// Apply the kernel
-	for(int i = 0; i < 9; ++i) {
-		colour += texture(material.texture_diffuse, TexCoord + readOffsets[i]).rgb * kernel[i];
+		// Apply the kernel (post-processing effect)
+		for(int i = 0; i < 9; ++i) {
+			colour += texture(screen_texture, TexCoords + readOffsets[i]).rgb * kernel[i];
+		}
+	}
+	else {
+		colour = texture(screen_texture, TexCoords).rgb;
 	}
 
+	// Apply gamma correction and tone mapping (for HDR)
 	FragColor = vec4(colour, 1.0);
 }

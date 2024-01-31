@@ -126,6 +126,15 @@
     <ClInclude Include="src\platform\OpenGL\Framebuffers\RenderTarget.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="src\ui\Pane.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ui\RuntimePane.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ui\DebugPane.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\graphics\shader.cpp">
@@ -228,6 +237,15 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\graphics\texture\Cubemap.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ui\Pane.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ui\RuntimePane.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ui\DebugPane.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

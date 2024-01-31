@@ -17,6 +17,9 @@
 #include "platform/OpenGL/Framebuffers/RenderTarget.h"
 #include "graphics/mesh/common/Quad.h"
 #include "graphics/renderer/GLCache.h"
+#include "graphics/renderer/PostProcessor.h"
+#include "ui/RuntimePane.h"
+#include "ui/DebugPane.h"
 
 GLfloat yaw = -90.0f;
 GLfloat pitch = 0.0f;
@@ -29,6 +32,11 @@ int main() {
 	engine::Scene3D scene(&camera, &window);
 	engine::graphics::GLCache* glCache = engine::graphics::GLCache::getInstance();
 	engine::utils::TextureLoader::initializeDefaultTextures();
+	engine::graphics::PostProcessor postProcessor(scene.getRenderer());
+
+	// 准备ui
+	engine::ui::RuntimePane runtimePane(glm::vec2(100.0f, 50.0f));
+	engine::ui::DebugPane debugPane(glm::vec2(100.0f, 150.0f));
 
 	// 创建帧缓冲
 	engine::opengl::RenderTarget framebuffer(window.getWidth(), window.getHeight());
@@ -38,24 +46,9 @@ int main() {
 	engine::opengl::RenderTarget shadowmap(SHADOWMAP_RESOLUTION_X, SHADOWMAP_RESOLUTION_Y);
 	shadowmap.addDepthAttachment(false).createFramebuffer();
 
-	engine::opengl::RenderTarget blitFramebuffer(window.getWidth(), window.getHeight());
-	blitFramebuffer.addColorAttachment(false).addDepthStencilRBO(false).createFramebuffer();
-
-	engine::graphics::Shader framebufferShader("src/shaders/postprocess.vert", "src/shaders/postprocess.frag");
-
-	engine::graphics::Quad screenQuad;
-	screenQuad.getMaterial().setDiffuseMap(blitFramebuffer.getColorBufferTexture());
-
-	// Setup post processing information
-	glCache->switchShader(framebufferShader.getShaderID());
-	framebufferShader.setUniform2f("readOffset", glm::vec2(1.0f / (float)window.getWidth(), 1.0f / (float)window.getHeight()));
-
-	glEnable(GL_DEPTH_TEST);
-
-	bool wireframeMode = false;
+	
 #if DEBUG_ENABLED
 	engine::Timer timer;
-	float postProcessTime = 0.0f, shadowmapGenerationTime = 0.0f;
 #endif
 
 	engine::Time deltaTime;
@@ -64,7 +57,7 @@ int main() {
 		deltaTime.update();
 
 #if DEBUG_ENABLED
-		if (wireframeMode)
+		if (debugPane.getWireframeMode())
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		else
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -84,7 +77,7 @@ int main() {
 		scene.shadowmapPass();
 #if DEBUG_ENABLED
 		glFinish();
-		shadowmapGenerationTime = timer.elapsed();
+		runtimePane.setShadowmapTimer(timer.elapsed());
 #endif
 
 		camera.processInput(deltaTime.getDeltaTime());
@@ -106,46 +99,14 @@ int main() {
 		glFinish();
 		timer.reset();
 #endif
+		// Peform post processing
+		postProcessor.postLightingPostProcess(&framebuffer);
 
-		// 将多重采样缓冲区blit到非多重采样缓冲区
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffer.getFramebuffer());
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, blitFramebuffer.getFramebuffer());
-		glBlitFramebuffer(0, 0, window.getWidth(), window.getHeight(), 0, 0, window.getWidth(), window.getHeight(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
+		// Display panes
+		runtimePane.render();
+		debugPane.render();
 
-#if DEBUG_ENABLED
-		if (wireframeMode)
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-#endif
-		// 绘制到默认缓冲区
-		framebuffer.unbind();
-		window.clear();
-		glCache->switchShader(framebufferShader.getShaderID());
-		screenQuad.getMaterial().BindMaterialInformation(framebufferShader);
-		screenQuad.Draw();
-
-#if DEBUG_ENABLED
-		glFinish();
-		postProcessTime = timer.elapsed();
-#endif
-
-		{
-
-			ImGui::Begin("Runtime Analytics", nullptr);
-			ImGui::Text("Frametime: %.3f ms (FPS %.1f)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-#if DEBUG_ENABLED
-			ImGui::Text("Post Process: %.6f ms", 1000.0f * postProcessTime);
-			ImGui::Text("Shadowmap Generation: %.6f ms", 1000.0f * shadowmapGenerationTime);
-#endif
-			ImGui::End();
-
-#if DEBUG_ENABLED
-
-			ImGui::Begin("Debug Controls", nullptr);
-			ImGui::Text("Hit \"P\" to show/hide the cursor");
-			ImGui::Checkbox("Wireframe Mode", &wireframeMode);
-			ImGui::End();
-#endif
-		}
+		
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		window.resetScroll();

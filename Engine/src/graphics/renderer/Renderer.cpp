@@ -2,7 +2,8 @@
 namespace engine {
 	namespace graphics {
 
-		Renderer::Renderer(Camera* camera) : m_Camera(camera)
+		Renderer::Renderer(Camera* camera) :
+			m_Camera(camera), NDC_Plane()
 		{
 			m_GLCache = GLCache::getInstance();
 			m_GLCache->setDepthTest(true);

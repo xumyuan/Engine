@@ -131,6 +131,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\ui\DebugPane.h" />
+    <ClInclude Include="src\ui\Pane.h" />
+    <ClInclude Include="src\ui\RuntimePane.h" />
     <ClInclude Include="src\graphics\renderer\RenderPass.h" />
     <ClInclude Include="src\graphics\texture\Cubemap.h" />
     <ClInclude Include="src\graphics\mesh\common\Cube.h" />
@@ -170,6 +173,9 @@
     <ClInclude Include="src\graphics\texture\Texture.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\ui\DebugPane.cpp" />
+    <ClCompile Include="src\ui\Pane.cpp" />
+    <ClCompile Include="src\ui\RuntimePane.cpp" />
     <ClCompile Include="src\graphics\texture\Cubemap.cpp" />
     <ClCompile Include="src\graphics\mesh\common\Cube.cpp" />
     <ClCompile Include="src\graphics\mesh\common\Quad.cpp" />

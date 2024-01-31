@@ -8,7 +8,6 @@ namespace engine {
 		double Window::s_MouseX, Window::s_MouseY, Window::s_MouseXDelta, Window::s_MouseYDelta;
 		double Window::s_ScrollX, Window::s_ScrollY;
 
-
 		/*              Callback Functions              */
 		static void error_callback(int error, const char* description) {
 			std::cout << "Error:" << std::endl << description << std::endl;
@@ -180,7 +179,7 @@ namespace engine {
 			glfwPollEvents();
 		}
 
-		void Window::clear() const {
+		void Window::clear() {
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		}
 
