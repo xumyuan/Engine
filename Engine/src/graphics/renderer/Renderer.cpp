@@ -50,11 +50,6 @@ namespace engine {
 			m_GLCache->setBlend(true);
 			m_GLCache->setStencilTest(false);
 
-			// 只绘制背面防止阴影失真
-			if (pass == RenderPass::ShadowmapPass)
-				m_GLCache->setCullFace(GL_FRONT);
-			else
-				m_GLCache->setFaceCull(false);
 			m_GLCache->setFaceCull(false);
 
 

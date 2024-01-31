@@ -104,7 +104,7 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 fragToCam) {
 	vec3 diffuse = light.diffuse * diff;
 
 	return ambient + (diffuse * (1.0 - CalculateShadow(normal, fragToLight)));
-}
+} 
 
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 fragToCam) {
 	vec3 fragToLight = normalize(light.position - fragPos);
