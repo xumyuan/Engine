@@ -15,7 +15,7 @@ namespace engine {
 			// Setup lighting configurations
 			m_DirectionalLight.isActive = true;
 			m_DirectionalLight.direction = glm::vec3(-0.1f, -1.0f, -0.1f);
-			m_DirectionalLight.lightColor = glm::vec3(1.25f, 1.25f, 1.25f);
+			m_DirectionalLight.lightColor = glm::vec3(3.25f, 3.25f, 3.25f);
 
 			m_SpotLight.isActive = true;
 			m_SpotLight.lightColor = glm::vec3(100.0f, 100.0f, 100.0f);
@@ -24,9 +24,14 @@ namespace engine {
 			m_SpotLight.cutOff = glm::cos(glm::radians(12.5f));
 			m_SpotLight.outerCutOff = glm::cos(glm::radians(15.0f));
 
-			PointLight pointLight1(glm::vec3(10.0f, 10.0f, 10.0f), glm::vec3(120.0f, 75.0f, 120.0f));
-			pointLight1.isActive = true;
-			addPointLight(pointLight1);
+			PointLight pointLight2(glm::vec3(100.0f, 100.0f, 100.0f), glm::vec3(110.0f, 65.0f, 180.0f));
+			pointLight2.isActive = true;
+			addPointLight(pointLight2);
+
+			PointLight pointLight3(glm::vec3(1200.0f, 300.0f, 0.0f), glm::vec3(120.0f, 77.0f, 100.0f));
+			pointLight3.isActive = true;
+			addPointLight(pointLight3);
+
 
 		}
 

@@ -69,7 +69,7 @@ void main() {
 	vec3 albedo = texture(material.texture_albedo, TexCoords).rgb;
 	vec3 normal = texture(material.texture_normal, TexCoords).rgb;
 	float metallic = texture(material.texture_metallic, TexCoords).r;
-	float roughness = texture(material.texture_roughness, TexCoords).r;
+	float roughness = max(texture(material.texture_roughness, TexCoords).r, 0.04);
 	float ao = texture(material.texture_ao, TexCoords).r;
 
 	// Normal mapping code. Opted out of tangent space normal mapping since I would have to convert all of my lights to tangent space
@@ -89,13 +89,13 @@ void main() {
 	irradiance += CalculateDirectionalLightRadiance(albedo, normal, metallic, roughness, fragToView, baseReflectivity);
 
 	// Calculate per light radiance for all point lights
-	//irradiance += CalculatePointLightRadiance(albedo, normal, metallic, roughness, fragToView, baseReflectivity);
+	irradiance += CalculatePointLightRadiance(albedo, normal, metallic, roughness, fragToView, baseReflectivity);
 
 	// Calculate per light radiance for the spot light
 	//irradiance += CalculateSpotLightRadiance(albedo, normal, metallic, roughness, fragToView, baseReflectivity);
 
 	// Finally apply ambient lighting while taking into account the AO map for the material
-	vec3 ambient = vec3(0.03) * albedo * ao;
+	vec3 ambient = vec3(0.02) * albedo * ao;
 	color = vec4(ambient + irradiance, 1.0);
 }
 
@@ -116,7 +116,7 @@ vec3 CalculateDirectionalLightRadiance(vec3 albedo, vec3 normal, float metallic,
 
 	vec3 numerator = fresnel * normalDistribution * geometry;
 	float denominator = 4 * max(dot(fragToView, normal), 0.0) * max(dot(lightDir, normal), 0.0) + 0.001;  // Prevents any division by zero
-	vec3 specular = numerator / max(denominator, 0.001);
+	vec3 specular = numerator / denominator;
 
 	// Also calculate the diffuse, a lambertian calculation will be added onto the final radiance calculation
 	vec3 diffuse = diffuseRatio * albedo / PI;
@@ -162,12 +162,13 @@ vec3 CalculatePointLightRadiance(vec3 albedo, vec3 normal, float metallic, float
 
 // Approximates the amount of microfacets that are properly aligned with the halfway vector, thus determines the strength and area for specular light
 float NormalDistributionGGX(vec3 normal, vec3 halfway, float roughness) {
-	float roughness2 = roughness * roughness;
+	float a = roughness * roughness;
+	float a2 = a * a;
 	float normDotHalf = dot(normal, halfway);
 	float normDotHalf2 = normDotHalf * normDotHalf;
 
-	float numerator = roughness2;
-	float denominator = normDotHalf2 * (roughness2 - 1) + 1;
+	float numerator = a2;
+	float denominator = normDotHalf2 * (a2 - 1) + 1;
 	denominator = PI * denominator * denominator;
 
 	return numerator / denominator;
@@ -209,12 +210,17 @@ vec3 CalculateSpotLightRadiance(vec3 albedo, vec3 normal, float metallic, float 
 
 // Approximates the geometry obstruction and geometry shadowing respectively, on the microfacet level
 float GeometrySmith(vec3 normal, vec3 viewDir, vec3 lightDir, float roughness) {
-	return GeometrySchlickGGX(max(dot(normal, viewDir), 1.0), roughness) * GeometrySchlickGGX(max(dot(normal, lightDir), 1.0), roughness);
+	return GeometrySchlickGGX(max(dot(normal, viewDir), 0.0), roughness) * GeometrySchlickGGX(max(dot(normal, lightDir), 0.0), roughness);
 }
+
 float GeometrySchlickGGX(float cosTheta, float roughness) {
+	float r = (roughness + 1.0);
+	float k = (roughness * roughness) / 8.0;
+
 	float numerator = cosTheta;
-	float denominator = cosTheta * (1.0 - roughness) + roughness;
-	return numerator / denominator;
+	float denominator = cosTheta * (1.0 - k) + k;
+
+	return numerator / max(denominator, 0.001);
 }
 
 // Calculates the amount of specular (reflected) light. Since diffuse(refraction) and specular(reflection) are mutually exclusive, 
