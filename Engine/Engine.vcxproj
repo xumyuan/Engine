@@ -212,15 +212,16 @@
     <ClCompile Include="src\graphics\texture\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\shaders\basic.vert" />
-    <None Include="src\shaders\basic.frag" />
+    <None Include="src\shaders\terrain.vert" />
     <None Include="src\shaders\oldModel.frag" />
     <None Include="src\shaders\model.vert" />
+    <None Include="src\shaders\pbr_model.frag" />
     <None Include="src\shaders\postprocess.frag" />
     <None Include="src\shaders\postprocess.vert" />
     <None Include="src\shaders\model.frag" />
     <None Include="src\shaders\modelReflection.frag" />
     <None Include="src\shaders\modelRefraciton.frag" />
+    <None Include="src\shaders\pbr_model.vert" />
     <None Include="src\shaders\shadowmap.frag" />
     <None Include="src\shaders\shadowmap.vert" />
     <None Include="src\shaders\skybox.frag" />

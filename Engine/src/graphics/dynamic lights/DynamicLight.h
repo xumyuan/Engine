@@ -8,14 +8,12 @@ namespace engine {
 	namespace graphics {
 
 		struct DynamicLight {
-			DynamicLight(glm::vec3& amb, glm::vec3& diff, glm::vec3& spec);
-
-			DynamicLight(const glm::vec3& amb, const glm::vec3& diff, const glm::vec3& spec);
+			DynamicLight(const glm::vec3& lightColor);
 
 			virtual void setupUniforms(Shader& shader, int currentLightIndex) = 0;
 
 
-			glm::vec3 ambient, diffuse, specular;
+			glm::vec3 lightColor;
 			bool isActive;
 		};
 

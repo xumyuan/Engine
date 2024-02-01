@@ -9,9 +9,7 @@ namespace engine {
 
 		struct PointLight : public DynamicLight {
 		public:
-			PointLight(glm::vec3& amb, glm::vec3& diff, glm::vec3& spec, glm::vec3& pos, float cons, float lin, float quad);
-
-			PointLight(const glm::vec3& amb, const glm::vec3& diff, const glm::vec3& spec, const glm::vec3& pos, float cons, float lin, float quad);
+			PointLight(const glm::vec3& lightColor, const glm::vec3& pos);
 
 			virtual void setupUniforms(Shader& shader, int currentLightIndex) override;
 

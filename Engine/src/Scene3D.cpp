@@ -10,8 +10,7 @@
 
 namespace engine {
 	Scene3D::Scene3D(graphics::Camera* camera, graphics::Window* window)
-		: m_TerrainShader("src/shaders/basic.vert", "src/shaders/terrain.frag"),
-		m_ModelShader("src/shaders/model.vert", "src/shaders/model.frag"), m_Camera(camera),
+		: m_TerrainShader("src/shaders/terrain.vert", "src/shaders/terrain.frag"), m_ModelShader("src/shaders/pbr_model.vert", "src/shaders/pbr_model.frag"), m_Camera(camera),
 		m_ShadowmapShader("src/shaders/shadowmap.vert", "src/shaders/shadowmap.frag"),
 		m_DynamicLightManager()
 	{
@@ -31,45 +30,24 @@ namespace engine {
 		m_GLCache->setMultisample(true);
 
 
-		graphics::Quad windowPane;
-		windowPane.getMaterial().setDiffuseMap(utils::TextureLoader::load2DTexture(std::string("res/textures/window.png"), true));
-		windowPane.getMaterial().setSpecularMap(utils::TextureLoader::load2DTexture(std::string("res/textures/default/fullSpec.png"), false));
-		graphics::Model* glass = new graphics::Model(windowPane);
-
-		/*add(new graphics::Renderable3D(glm::vec3(30.0f, -10.0f, 30.0), glm::vec3(0.2f, 0.2f, 0.2f), glm::vec3(0.0f, 1.0f, 0.0f), 0, new engine::graphics::Model("res/3D_Models/Overwatch/Reaper/Reaper.obj"), nullptr, true));
-
-		add(new graphics::Renderable3D(glm::vec3(60.0f, -10.0f, 60.0f), glm::vec3(0.2f, 0.2f, 0.2f), glm::vec3(0.0f, 1.0f, 0.0f), 0, new engine::graphics::Model("res/3D_Models/Overwatch/McCree/McCree.obj"), nullptr, false));*/
 
 		// 纳米装模型
-		add(new graphics::Renderable3D(
+		/*add(new graphics::Renderable3D(
 			glm::vec3(90.0f, 60.0f, 90.0f),
 			glm::vec3(3.0f, 3.0f, 3.0f),
 			glm::vec3(0.0f, 1.0f, 0.0f),
 			0,
 			new engine::graphics::Model("res/3D_Models/nanosuit_model/nanosuit.obj"),
-			nullptr, false));
+			nullptr, false));*/
 
-		/*add(new graphics::Renderable3D(
-			glm::vec3(60.0f, 60.0f, 60.0f),
-			glm::vec3(0.2f, 0.2f, 0.2f),
-			glm::vec3(0.0f, 1.0f, 0.0f),
-			0,
-			new engine::graphics::Model("res/3D_Models/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX"), nullptr, false));*/
-
-			/*add(new graphics::Renderable3D(
-				glm::vec3(60.0f, 20.0f, 60.0f),
-				glm::vec3(0.2f, 0.2f, 0.2f),
-				glm::vec3(0.0f, 1.0f, 0.0f),
-				0,
-				new engine::graphics::Model("res/3D_Models/Sponza/sponza.obj"), nullptr, false));*/
-
-		add(new graphics::Renderable3D(glm::vec3(40, 60, 40), glm::vec3(15, 15, 15), glm::vec3(0.0, 1.0, 0.0), glm::radians(180.0f), glass, nullptr, true));
-		add(new graphics::Renderable3D(glm::vec3(80, 60, 80), glm::vec3(15, 15, 15), glm::vec3(0.0, 1.0, 0.0), glm::radians(180.0f), glass, nullptr, true));
-		add(new graphics::Renderable3D(glm::vec3(120, 60, 120), glm::vec3(15, 15, 15), glm::vec3(0.0, 1.0, 0.0), glm::radians(180.0f), glass, nullptr, true));
-
-		add(new graphics::Renderable3D(glm::vec3(20, 60, 20), glm::vec3(10, 10, 10), glm::vec3(1, 0, 0), 0, new graphics::Model(graphics::Cube()), nullptr, false));
-		add(new graphics::Renderable3D(glm::vec3(140, 60, 140), glm::vec3(10, 10, 10), glm::vec3(1, 0, 0), 0, new graphics::Model(graphics::Sphere()), nullptr, false));
-		add(new graphics::Renderable3D(glm::vec3(-20, 60, -20), glm::vec3(10, 10, 10), glm::vec3(1, 0, 0), 0, new graphics::Model(graphics::Quad()), nullptr, false));
+			//pbr 临时代码
+		graphics::Model* pbrGun = new engine::graphics::Model("res/3D_Models/Cerberus_Gun/Cerberus_LP.FBX");
+		add(new graphics::Renderable3D(glm::vec3(120.0f, 75.0f, 120.0f), glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(-90.0f), pbrGun, nullptr, false));
+		pbrGun->getMeshes()[0].getMaterial().setAlbedoMap(utils::TextureLoader::load2DTexture(std::string("res/3D_Models/Cerberus_Gun/Textures/Cerberus_A.tga"), true));
+		pbrGun->getMeshes()[0].getMaterial().setNormalMap(utils::TextureLoader::load2DTexture(std::string("res/3D_Models/Cerberus_Gun/Textures/Cerberus_N.tga"), false));
+		pbrGun->getMeshes()[0].getMaterial().setMetallicMap(utils::TextureLoader::load2DTexture(std::string("res/3D_Models/Cerberus_Gun/Textures/Cerberus_M.tga"), false));
+		pbrGun->getMeshes()[0].getMaterial().setRoughnessMap(utils::TextureLoader::load2DTexture(std::string("res/3D_Models/Cerberus_Gun/Textures/Cerberus_R.tga"), false));
+		pbrGun->getMeshes()[0].getMaterial().setAmbientOcclusionMap(utils::TextureLoader::load2DTexture(std::string("res/3D_Models/Cerberus_Gun/Textures/Cerberus_AO.tga"), false));
 
 
 		// Skybox
@@ -165,7 +143,7 @@ namespace engine {
 		//透明物体渲染
 		m_GLCache->switchShader(m_ModelShader.getShaderID());
 		m_Renderer->flushTransparent(m_ModelShader, graphics::RenderPass::LightingPass);
-		
+
 	}
 
 	void Scene3D::add(graphics::Renderable3D* renderable) {

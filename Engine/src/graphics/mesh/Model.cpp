@@ -106,13 +106,12 @@ namespace engine {
 				aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
 				// 颜色类型的贴图需要伽马矫正
-				newMesh.m_Material.setDiffuseMap(loadMaterialTexture(material, aiTextureType_DIFFUSE, true));
-				newMesh.m_Material.setSpecularMap(loadMaterialTexture(material, aiTextureType_SPECULAR, false));
+				newMesh.m_Material.setAlbedoMap(loadMaterialTexture(material, aiTextureType_DIFFUSE, true));
 				newMesh.m_Material.setNormalMap(loadMaterialTexture(material, aiTextureType_NORMALS, false));
+				//newMesh.m_Material.setSpecularMap(loadMaterialTexture(material, aiTextureType_SPECULAR, false));
+				//newMesh.m_Material.setSpecularMap(loadMaterialTexture(material, aiTextureType_SPECULAR, false));
+				newMesh.m_Material.setAmbientOcclusionMap(loadMaterialTexture(material, aiTextureType_AMBIENT, false));
 				newMesh.m_Material.setEmissionMap(loadMaterialTexture(material, aiTextureType_EMISSIVE, true));
-				float shininess = 0.0f;
-				material->Get(AI_MATKEY_SHININESS, shininess); // Assimp 将镜面反射指数缩放 4 倍，因为大多数渲染器都是这样处理的。如果未指定，值默认为 0（即无镜面高光）
-				newMesh.m_Material.setShininess(shininess);
 			}
 
 			return newMesh;

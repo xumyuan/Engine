@@ -22,6 +22,7 @@ namespace engine {
 			Model(const std::vector<Mesh>& meshes);
 
 			void Draw(Shader& shader, RenderPass pass) const;
+			inline std::vector<Mesh>& getMeshes() { return m_Meshes; }
 		private:
 			std::vector<Mesh> m_Meshes;
 			std::string m_Directory;

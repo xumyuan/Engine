@@ -250,8 +250,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\shaders\basic.vert" />
-    <None Include="src\shaders\basic.frag" />
+    <None Include="src\shaders\terrain.vert" />
     <None Include="src\shaders\model.frag" />
     <None Include="src\shaders\terrain.frag" />
     <None Include="src\shaders\postprocess.frag" />
@@ -264,6 +263,8 @@
     <None Include="src\shaders\shadowmap.frag" />
     <None Include="src\shaders\model.vert" />
     <None Include="src\shaders\oldModel.frag" />
+    <None Include="src\shaders\pbr_model.vert" />
+    <None Include="src\shaders\pbr_model.frag" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\awesomeface.png">
