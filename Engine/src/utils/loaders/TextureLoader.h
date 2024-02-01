@@ -25,14 +25,9 @@ namespace engine {
 
 			// isSRGB是否要线性化的标志
 			// 所有颜色纹理都应线性化，而法线、高度、金属贴图不用
-			static graphics::Texture* load2DTexture(const std::string& path, bool isSRGB);
-			static graphics::Cubemap* loadCubemapTexture(
-				const std::string& right, 
-				const std::string& left, 
-				const std::string& top, 
-				const std::string& bottom, 
-				const std::string& back, 
-				const std::string& front, bool isSRGB);
+			static graphics::Texture* load2DTexture(const std::string& path, bool isSRGB, graphics::TextureSettings* settings = nullptr);
+			
+			static graphics::Cubemap* loadCubemapTexture(const const std::string& right, const std::string& left, const std::string& top, const std::string& bottom, const std::string& back, const std::string& front, bool isSRGB, graphics::CubemapSettings* settings = nullptr);
 
 			inline static graphics::Texture* getDefaultDiffuse() { return m_DefaultTextures.m_DefaultDiffuse; }
 			inline static graphics::Texture* getDefaultSpecular() { return m_DefaultTextures.m_NoSpecular; }

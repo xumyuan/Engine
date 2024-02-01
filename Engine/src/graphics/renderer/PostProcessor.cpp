@@ -46,7 +46,8 @@ namespace engine {
 			m_PostProcessShader.setUniform1f("gamma_inverse", 1.0f / m_GammaCorrection);
 			m_PostProcessShader.setUniform1i("blur_enabled", m_Blur);
 			m_PostProcessShader.setUniform1i("screen_texture", 0);
-			target->getColorBufferTexture()->bind(0);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, target->getColorBufferTexture());
 
 			Window::clear();
 			m_Renderer->NDC_Plane.Draw();
