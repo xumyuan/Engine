@@ -32,7 +32,7 @@ namespace engine {
 
 
 		// 纳米装模型
-		/*add(new graphics::Renderable3D(
+		/*add(new scene::SceneNode(
 			glm::vec3(90.0f, 60.0f, 90.0f),
 			glm::vec3(3.0f, 3.0f, 3.0f),
 			glm::vec3(0.0f, 1.0f, 0.0f),
@@ -42,7 +42,7 @@ namespace engine {
 
 			//pbr 临时代码
 		graphics::Model* pbrGun = new engine::graphics::Model("res/3D_Models/Cerberus_Gun/Cerberus_LP.FBX");
-		add(new graphics::Renderable3D(glm::vec3(120.0f, 75.0f, 120.0f), glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(-90.0f), pbrGun, nullptr, false));
+		add(new scene::SceneNode(glm::vec3(120.0f, 75.0f, 120.0f), glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(-90.0f), pbrGun, nullptr, false));
 		pbrGun->getMeshes()[0].getMaterial().setAlbedoMap(utils::TextureLoader::load2DTexture(std::string("res/3D_Models/Cerberus_Gun/Textures/Cerberus_A.tga"), true));
 		pbrGun->getMeshes()[0].getMaterial().setNormalMap(utils::TextureLoader::load2DTexture(std::string("res/3D_Models/Cerberus_Gun/Textures/Cerberus_N.tga"), false));
 		pbrGun->getMeshes()[0].getMaterial().setMetallicMap(utils::TextureLoader::load2DTexture(std::string("res/3D_Models/Cerberus_Gun/Textures/Cerberus_M.tga"), false));
@@ -62,7 +62,7 @@ namespace engine {
 				mat.setAmbientOcclusionMap(utils::TextureLoader::load2DTexture(std::string("res/textures/default/white.png"), false));
 				mat.setMetallicMap(utils::TextureLoader::load2DTexture(std::string("res/3D_Models/Sphere/rustediron2_metallic.png"), false));
 				mat.setRoughnessMap(utils::TextureLoader::load2DTexture(std::string("res/3D_Models/Sphere/rustediron2_roughness.png"), false));
-				add(new graphics::Renderable3D(glm::vec3((float)(col - (nrColumns / 2)) * spacing,
+				add(new scene::SceneNode(glm::vec3((float)(col - (nrColumns / 2)) * spacing,
 					(float)(row - (nrRows / 2)) * spacing, 0.0f), glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(1.0f, 0.0f, 0.0f), 0.0f, sphere, nullptr, false));
 			}
 		}*/
@@ -164,14 +164,14 @@ namespace engine {
 
 	}
 
-	void Scene3D::add(graphics::Renderable3D* renderable) {
+	void Scene3D::add(scene::SceneNode* renderable) {
 		m_Renderables.push_back(renderable);
 	}
 
 	void Scene3D::addObjectsToRenderQueue() {
 		auto iter = m_Renderables.begin();
 		while (iter != m_Renderables.end()) {
-			graphics::Renderable3D* curr = *iter;
+			scene::SceneNode* curr = *iter;
 			if (curr->getTransparent()) {
 				m_MeshRenderer->submitTransparent(curr);
 			}

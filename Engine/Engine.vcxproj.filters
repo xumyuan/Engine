@@ -63,9 +63,6 @@
     <ClInclude Include="src\Scene3D.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\graphics\renderer\Renderable3D.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="src\graphics\renderer\MeshRenderer.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -141,6 +138,12 @@
     <ClInclude Include="src\graphics\ibl\EnvironmentProbeManager.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="src\scene\SceneNode.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\scene\SceneGraph.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\graphics\shader.cpp">
@@ -186,9 +189,6 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\Scene3D.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="src\graphics\renderer\Renderable3D.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\graphics\renderer\MeshRenderer.cpp">
@@ -258,6 +258,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\graphics\ibl\EnvironmentProbeManager.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\scene\SceneNode.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\scene\SceneGraph.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

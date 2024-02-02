@@ -4,7 +4,7 @@
 
 #include "../mesh/Model.h"
 #include "../camera/FPSCamera.h"
-#include "Renderable3D.h"
+#include "../../scene/SceneNode.h"
 #include "GLCache.h"
 #include "RenderPass.h"
 #include "../mesh/common/Quad.h"
@@ -16,8 +16,8 @@ namespace engine {
 		public:
 			MeshRenderer(FPSCamera* camera);
 
-			void submitOpaque(Renderable3D* renderable);
-			void submitTransparent(Renderable3D* renderable);
+			void submitOpaque(scene::SceneNode* renderable);
+			void submitTransparent(scene::SceneNode* renderable);
 
 			void flushOpaque(Shader& shader, RenderPass pass);
 			void flushTransparent(Shader& shader, RenderPass pass);
@@ -25,11 +25,11 @@ namespace engine {
 			Quad NDC_Plane;
 
 		private:
-			void setupModelMatrix(Renderable3D* renderable, Shader& shader, RenderPass pass);
+			void setupModelMatrix(scene::SceneNode* renderable, Shader& shader, RenderPass pass);
 
 
-			std::deque<Renderable3D*> m_OpaqueRenderQueue;
-			std::deque<Renderable3D*> m_TransparentRenderQueue;
+			std::deque<scene::SceneNode*> m_OpaqueRenderQueue;
+			std::deque<scene::SceneNode*> m_TransparentRenderQueue;
 
 			FPSCamera* m_Camera;
 			GLCache* m_GLCache;

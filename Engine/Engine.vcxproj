@@ -131,6 +131,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\scene\SceneGraph.h" />
+    <ClInclude Include="src\scene\SceneNode.h" />
     <ClInclude Include="src\graphics\ibl\EnvironmentProbe.h" />
     <ClInclude Include="src\graphics\ibl\EnvironmentProbeManager.h" />
     <ClInclude Include="src\ui\DebugPane.h" />
@@ -154,7 +156,6 @@
     <ClInclude Include="src\Defs.h" />
     <ClInclude Include="src\graphics\Skybox.h" />
     <ClInclude Include="src\graphics\renderer\MeshRenderer.h" />
-    <ClInclude Include="src\graphics\renderer\Renderable3D.h" />
     <ClInclude Include="src\Scene3D.h" />
     <ClInclude Include="src\platform\OpenGL\IndexBuffer.h" />
     <ClInclude Include="src\platform\OpenGL\Buffer.h" />
@@ -175,6 +176,8 @@
     <ClInclude Include="src\graphics\texture\Texture.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\scene\SceneGraph.cpp" />
+    <ClCompile Include="src\scene\SceneNode.cpp" />
     <ClCompile Include="src\graphics\ibl\EnvironmentProbe.cpp" />
     <ClCompile Include="src\graphics\ibl\EnvironmentProbeManager.cpp" />
     <ClCompile Include="src\ui\DebugPane.cpp" />
@@ -195,7 +198,6 @@
     <ClCompile Include="src\graphics\Skybox.cpp" />
     <ClCompile Include="src\platform\OpenGL\Framebuffers\RenderTarget.cpp" />
     <ClCompile Include="src\graphics\renderer\MeshRenderer.cpp" />
-    <ClCompile Include="src\graphics\renderer\Renderable3D.cpp" />
     <ClCompile Include="src\Scene3D.cpp" />
     <ClCompile Include="src\platform\OpenGL\IndexBuffer.cpp" />
     <ClCompile Include="src\platform\OpenGL\Buffer.cpp" />
