@@ -1,5 +1,5 @@
 #include "Renderable3D.h"
-#include "Renderer.h"
+#include "MeshRenderer.h"
 
 namespace engine {
 	namespace graphics {

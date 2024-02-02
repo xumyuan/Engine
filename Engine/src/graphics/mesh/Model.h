@@ -13,7 +13,7 @@
 
 namespace engine {
 	namespace graphics {
-		class Renderer;
+		class MeshRenderer;
 
 		class Model {
 		public:

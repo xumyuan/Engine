@@ -1,11 +1,11 @@
-#include "Camera.h"
+#include "FPSCamera.h"
 
 #include <iostream>
 
 namespace engine {
 	namespace graphics {
 
-		Camera::Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), GLfloat yaw = YAW, GLfloat pitch = PITCH)
+		FPSCamera::FPSCamera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), GLfloat yaw = YAW, GLfloat pitch = PITCH)
 			: m_Front(glm::vec3(0.0f, 0.0f, -1.0f)), m_MovementSpeed(SPEED), m_MouseSensitivity(SENSITIVITY), m_FOV(FOV)
 		{
 			m_Position = position;
@@ -18,7 +18,7 @@ namespace engine {
 			ui::DebugPane::bindCameraPositionValue(&m_Position);
 		}
 
-		Camera::Camera(GLfloat xPos, GLfloat yPos, GLfloat zPos, GLfloat xUp, GLfloat yUp, GLfloat zUp, GLfloat yaw, GLfloat pitch)
+		FPSCamera::FPSCamera(GLfloat xPos, GLfloat yPos, GLfloat zPos, GLfloat xUp, GLfloat yUp, GLfloat zUp, GLfloat yaw, GLfloat pitch)
 			: m_Front(glm::vec3(0.0f, 0.0f, -1.0f)), m_MovementSpeed(SPEED), m_MouseSensitivity(SENSITIVITY), m_FOV(FOV)
 		{
 			m_Position = glm::vec3(xPos, yPos, zPos);
@@ -28,15 +28,15 @@ namespace engine {
 			updateCameraVectors();
 		}
 
-		glm::mat4 Camera::getViewMatrix() {
+		glm::mat4 FPSCamera::getViewMatrix() {
 			return glm::lookAt(m_Position, m_Position + m_Front, m_Up);
 		}
 
-		glm::mat4 Camera::getProjectionMatrix() {
+		glm::mat4 FPSCamera::getProjectionMatrix() {
 			return glm::perspective(glm::radians(m_FOV), (float)graphics::Window::getWidth() / (float)graphics::Window::getHeight(), NEAR_PLANE, FAR_PLANE);
 		}
 
-		void Camera::processInput(GLfloat deltaTime) {
+		void FPSCamera::processInput(GLfloat deltaTime) {
 			// Keyboard input
 			if (Window::isKeyPressed(GLFW_KEY_W))
 				processKeyboard(engine::graphics::FORWARD, deltaTime);
@@ -64,7 +64,7 @@ namespace engine {
 			processMouseMovement(Window::getMouseXDelta(), -Window::getMouseYDelta(), true);
 		}
 
-		void Camera::processKeyboard(Camera_Movement direction, GLfloat deltaTime) {
+		void FPSCamera::processKeyboard(Camera_Movement direction, GLfloat deltaTime) {
 			GLfloat velocity = m_MovementSpeed * deltaTime;
 			switch (direction) {
 			case FORWARD:
@@ -88,7 +88,7 @@ namespace engine {
 			}
 		}
 
-		void Camera::processMouseMovement(GLfloat xOffset, GLfloat yOffset, GLboolean constrainPitch = true) {
+		void FPSCamera::processMouseMovement(GLfloat xOffset, GLfloat yOffset, GLboolean constrainPitch = true) {
 			xOffset *= m_MouseSensitivity;
 			yOffset *= m_MouseSensitivity;
 
@@ -108,7 +108,7 @@ namespace engine {
 			updateCameraVectors();
 		}
 
-		void Camera::processMouseScroll(GLfloat offset) {
+		void FPSCamera::processMouseScroll(GLfloat offset) {
 			if (offset != 0 && m_FOV >= 1.0f && m_FOV <= FOV) {
 				m_FOV -= offset;
 			}
@@ -120,7 +120,7 @@ namespace engine {
 			}
 		}
 
-		void Camera::updateCameraVectors() {
+		void FPSCamera::updateCameraVectors() {
 			glm::vec3 front;
 			front.x = cos(glm::radians(m_Yaw)) * cos(glm::radians(m_Pitch));
 			front.y = sin(glm::radians(m_Pitch));

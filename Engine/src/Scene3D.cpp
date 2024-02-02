@@ -9,12 +9,12 @@
 #include "graphics/mesh/common/Quad.h"
 
 namespace engine {
-	Scene3D::Scene3D(graphics::Camera* camera, graphics::Window* window)
+	Scene3D::Scene3D(graphics::FPSCamera* camera, graphics::Window* window)
 		: m_TerrainShader("src/shaders/terrain.vert", "src/shaders/terrain.frag"), m_ModelShader("src/shaders/pbr_model.vert", "src/shaders/pbr_model.frag"), m_Camera(camera),
 		m_ShadowmapShader("src/shaders/shadowmap.vert", "src/shaders/shadowmap.frag"),
 		m_DynamicLightManager()
 	{
-		m_Renderer = new graphics::Renderer(camera);
+		m_MeshRenderer = new graphics::MeshRenderer(camera);
 		m_GLCache = graphics::GLCache::getInstance();
 		glm::vec3 worldpos = glm::vec3(0.0f, -20.0f, 0.0f);
 		m_Terrain = new terrain::Terrain(worldpos);
@@ -92,8 +92,8 @@ namespace engine {
 		// Add objects to the renderer
 		addObjectsToRenderQueue();
 
-		m_Renderer->flushOpaque(m_ShadowmapShader, graphics::RenderPass::ShadowmapPass);
-		m_Renderer->flushTransparent(m_ShadowmapShader, graphics::RenderPass::ShadowmapPass);
+		m_MeshRenderer->flushOpaque(m_ShadowmapShader, graphics::RenderPass::ShadowmapPass);
+		m_MeshRenderer->flushTransparent(m_ShadowmapShader, graphics::RenderPass::ShadowmapPass);
 		m_Terrain->Draw(m_ShadowmapShader, graphics::RenderPass::ShadowmapPass);
 
 		m_GLCache->switchShader(m_TerrainShader.getShaderID());
@@ -134,7 +134,7 @@ namespace engine {
 		addObjectsToRenderQueue();
 
 		// Opaque objects
-		m_Renderer->flushOpaque(m_ModelShader, graphics::RenderPass::LightingPass);
+		m_MeshRenderer->flushOpaque(m_ModelShader, graphics::RenderPass::LightingPass);
 
 		// 地形
 		m_GLCache->switchShader(m_TerrainShader.getShaderID());
@@ -160,7 +160,7 @@ namespace engine {
 
 		//透明物体渲染
 		m_GLCache->switchShader(m_ModelShader.getShaderID());
-		m_Renderer->flushTransparent(m_ModelShader, graphics::RenderPass::LightingPass);
+		m_MeshRenderer->flushTransparent(m_ModelShader, graphics::RenderPass::LightingPass);
 
 	}
 
@@ -173,10 +173,10 @@ namespace engine {
 		while (iter != m_Renderables.end()) {
 			graphics::Renderable3D* curr = *iter;
 			if (curr->getTransparent()) {
-				m_Renderer->submitTransparent(curr);
+				m_MeshRenderer->submitTransparent(curr);
 			}
 			else {
-				m_Renderer->submitOpaque(curr);
+				m_MeshRenderer->submitOpaque(curr);
 			}
 
 			iter++;

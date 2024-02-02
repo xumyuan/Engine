@@ -10,7 +10,10 @@ namespace engine {
 
 		void Material::BindMaterialInformation(Shader& shader) const {
 			// 纹理单元0留给shadowmap
-			int currentTextureUnit = 1;
+			// 纹理单元 1 保留用于用于间接漫反射 IBL 的 irradianceMap
+			// 纹理单元 2 保留给 prefilterMap
+			// 纹理单元 3 保留给 brdfLUT
+			int currentTextureUnit = 4;
 
 			shader.setUniform1i("material.texture_albedo", currentTextureUnit);
 			if (m_AlbedoMap) {

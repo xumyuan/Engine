@@ -27,7 +27,7 @@
     <ClInclude Include="src\graphics\Window.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\graphics\camera\Camera.h">
+    <ClInclude Include="src\graphics\camera\FPSCamera.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\utils\Time.h">
@@ -66,7 +66,7 @@
     <ClInclude Include="src\graphics\renderer\Renderable3D.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\graphics\renderer\Renderer.h">
+    <ClInclude Include="src\graphics\renderer\MeshRenderer.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\graphics\Skybox.h">
@@ -135,6 +135,12 @@
     <ClInclude Include="src\ui\DebugPane.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="src\graphics\ibl\EnvironmentProbe.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\graphics\ibl\EnvironmentProbeManager.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\graphics\shader.cpp">
@@ -143,7 +149,7 @@
     <ClCompile Include="src\graphics\Window.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\graphics\camera\Camera.cpp">
+    <ClCompile Include="src\graphics\camera\FPSCamera.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\main.cpp">
@@ -185,7 +191,7 @@
     <ClCompile Include="src\graphics\renderer\Renderable3D.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\graphics\renderer\Renderer.cpp">
+    <ClCompile Include="src\graphics\renderer\MeshRenderer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\platform\OpenGL\Framebuffers\RenderTarget.cpp">
@@ -246,6 +252,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\ui\DebugPane.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\graphics\ibl\EnvironmentProbe.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\graphics\ibl\EnvironmentProbeManager.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

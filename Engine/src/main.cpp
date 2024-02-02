@@ -9,7 +9,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "utils\Time.h"
-#include "graphics\camera\Camera.h"
+#include "graphics\camera\FPSCamera.h"
 #include "utils\Logger.h"
 #include "graphics\mesh\Model.h"
 #include "terrain\Terrain.h"
@@ -25,7 +25,7 @@ GLfloat yaw = -90.0f;
 GLfloat pitch = 0.0f;
 
 int main() {
-	engine::graphics::Camera camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f);
+	engine::graphics::FPSCamera camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f);
 	engine::graphics::Window window("Engine", WINDOW_X_RESOLUTION, WINDOW_Y_RESOLUTION);
 
 	//´´½¨³¡¾°

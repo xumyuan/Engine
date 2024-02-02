@@ -3,8 +3,8 @@
 namespace engine {
 	namespace graphics {
 
-		PostProcessor::PostProcessor(Renderer* renderer)
-			: m_Renderer(renderer), m_PostProcessShader("src/shaders/postprocess.vert", "src/shaders/postprocess.frag"), m_ScreenRenderTarget(Window::getWidth(), Window::getHeight())
+		PostProcessor::PostProcessor(MeshRenderer* renderer)
+			: m_MeshRenderer(renderer), m_PostProcessShader("src/shaders/postprocess.vert", "src/shaders/postprocess.frag"), m_ScreenRenderTarget(Window::getWidth(), Window::getHeight())
 		{
 			m_ScreenRenderTarget.addColorAttachment(false).addDepthStencilRBO(false).createFramebuffer();
 			ui::DebugPane::bindGammaCorrectionValue(&m_GammaCorrection);
@@ -50,7 +50,7 @@ namespace engine {
 			glBindTexture(GL_TEXTURE_2D, target->getColorBufferTexture());
 
 			Window::clear();
-			m_Renderer->NDC_Plane.Draw();
+			m_MeshRenderer->NDC_Plane.Draw();
 
 #if DEBUG_ENABLED
 			glFinish();

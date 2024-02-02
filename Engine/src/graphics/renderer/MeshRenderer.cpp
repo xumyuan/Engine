@@ -1,8 +1,8 @@
-#include "Renderer.h"
+#include "MeshRenderer.h"
 namespace engine {
 	namespace graphics {
 
-		Renderer::Renderer(Camera* camera) :
+		MeshRenderer::MeshRenderer(FPSCamera* camera) :
 			m_Camera(camera), NDC_Plane()
 		{
 			m_GLCache = GLCache::getInstance();
@@ -12,17 +12,17 @@ namespace engine {
 		}
 
 		//不透明渲染队列
-		void Renderer::submitOpaque(Renderable3D* renderable) {
+		void MeshRenderer::submitOpaque(Renderable3D* renderable) {
 			m_OpaqueRenderQueue.push_back(renderable);
 		}
 
 		//透明物体渲染队列
-		void Renderer::submitTransparent(Renderable3D* renderable) {
+		void MeshRenderer::submitTransparent(Renderable3D* renderable) {
 			m_TransparentRenderQueue.push_back(renderable);
 		}
 
 		// 不透明物渲染
-		void Renderer::flushOpaque(Shader& shader, RenderPass pass) {
+		void MeshRenderer::flushOpaque(Shader& shader, RenderPass pass) {
 			m_GLCache->switchShader(shader.getShaderID());
 
 
@@ -44,7 +44,7 @@ namespace engine {
 		}
 
 		// 透明物体渲染
-		void Renderer::flushTransparent(Shader& shader, RenderPass pass) {
+		void MeshRenderer::flushTransparent(Shader& shader, RenderPass pass) {
 
 			m_GLCache->switchShader(shader.getShaderID());
 			m_GLCache->setDepthTest(true);
@@ -77,7 +77,7 @@ namespace engine {
 		}
 
 		// TODO: Currently only support two levels in a hierarchical scene graph
-		void Renderer::setupModelMatrix(Renderable3D* renderable, Shader& shader, RenderPass pass) {
+		void MeshRenderer::setupModelMatrix(Renderable3D* renderable, Shader& shader, RenderPass pass) {
 			glm::mat4 model(1);
 			glm::mat4 translate = glm::translate(glm::mat4(1.0f), renderable->getPosition());
 			glm::mat4 rotate = glm::toMat4(renderable->getOrientation());

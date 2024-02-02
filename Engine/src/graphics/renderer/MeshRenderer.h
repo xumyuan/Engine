@@ -3,7 +3,7 @@
 #include <glm\gtx\norm.hpp>
 
 #include "../mesh/Model.h"
-#include "../camera/Camera.h"
+#include "../camera/FPSCamera.h"
 #include "Renderable3D.h"
 #include "GLCache.h"
 #include "RenderPass.h"
@@ -12,9 +12,9 @@
 
 namespace engine {
 	namespace graphics {
-		class Renderer {
+		class MeshRenderer {
 		public:
-			Renderer(Camera* camera);
+			MeshRenderer(FPSCamera* camera);
 
 			void submitOpaque(Renderable3D* renderable);
 			void submitTransparent(Renderable3D* renderable);
@@ -31,7 +31,7 @@ namespace engine {
 			std::deque<Renderable3D*> m_OpaqueRenderQueue;
 			std::deque<Renderable3D*> m_TransparentRenderQueue;
 
-			Camera* m_Camera;
+			FPSCamera* m_Camera;
 			GLCache* m_GLCache;
 		};
 

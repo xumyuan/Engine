@@ -2,7 +2,7 @@
 
 #include "../../Defs.h"
 #include "../mesh/common/Quad.h"
-#include "Renderer.h"
+#include "MeshRenderer.h"
 #include "../Shader.h"
 #include "../../platform/OpenGL/Framebuffers/RenderTarget.h"
 #include "../../utils/Timer.h"
@@ -14,7 +14,7 @@ namespace engine {
 
 		class PostProcessor {
 		public:
-			PostProcessor(Renderer* renderer);
+			PostProcessor(MeshRenderer* renderer);
 			~PostProcessor();
 
 			void preLightingPostProcess();
@@ -28,7 +28,7 @@ namespace engine {
 		private:
 			float m_GammaCorrection = 2.2f;
 
-			Renderer* m_Renderer;
+			MeshRenderer* m_MeshRenderer;
 			Shader m_PostProcessShader;
 			Quad m_NDC_Plane;
 			opengl::RenderTarget m_ScreenRenderTarget;
