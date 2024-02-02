@@ -28,15 +28,9 @@ namespace engine {
 			pointLight1.isActive = true;
 			addPointLight(pointLight1);
 
-			PointLight pointLight2(glm::vec3(800.0f, 200.0f, 100.0f), glm::vec3(110.0f, 65.0f, 180.0f));
+			PointLight pointLight2(glm::vec3(800.0f, 200.0f, 0.0f), glm::vec3(120.0f, 77.0f, 100.0f));
 			pointLight2.isActive = true;
 			addPointLight(pointLight2);
-
-			PointLight pointLight3(glm::vec3(1200.0f, 300.0f, 0.0f), glm::vec3(120.0f, 77.0f, 100.0f));
-			pointLight3.isActive = true;
-			addPointLight(pointLight3);
-
-
 		}
 
 		// TODO: Dynamically change the size of the lights (LIMIT OF 5 CURRENTLY FOR POINTLIGHTS)
