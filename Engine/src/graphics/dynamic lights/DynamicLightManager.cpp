@@ -1,3 +1,5 @@
+#include "pch.h"
+
 #include "DynamicLightManager.h"
 
 namespace engine {
@@ -18,7 +20,7 @@ namespace engine {
 			m_DirectionalLight.lightColor = glm::vec3(3.25f, 3.25f, 3.25f);
 
 			m_SpotLight.isActive = true;
-			m_SpotLight.lightColor = glm::vec3(300.0f, 300.0f, 300.0f);
+			m_SpotLight.lightColor = glm::vec3(100.0f, 100.0f, 100.0f);
 			m_SpotLight.position = glm::vec3(0.0f, 0.0f, 0.0f);
 			m_SpotLight.direction = glm::vec3(1.0f, 0.0f, 0.0f);
 			m_SpotLight.cutOff = glm::cos(glm::radians(12.5f));

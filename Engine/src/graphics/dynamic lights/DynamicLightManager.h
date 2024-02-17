@@ -4,8 +4,6 @@
 #include "PointLight.h"
 #include "SpotLight.h"
 
-#include <vector>
-
 namespace engine {
 	namespace graphics {
 

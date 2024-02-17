@@ -1,13 +1,13 @@
 #pragma once
-
-#include <vector>
-#include "../platform/OpenGL/VertexArray.h"
-#include "../platform/OpenGL/IndexBuffer.h"
-#include "../platform/OpenGL/Buffer.h"
 #include "Shader.h"
-#include "../utils/loaders/TextureLoader.h"
-#include "camera/FPSCamera.h"
 #include "Window.h"
+
+#include "graphics/camera/FPSCamera.h"
+#include "graphics/renderer/GLCache.h"
+#include "platform/OpenGL/Buffer.h"
+#include "platform/OpenGL/IndexBuffer.h"
+#include "platform/OpenGL/VertexArray.h"
+#include "utils/loaders/TextureLoader.h"
 
 namespace engine {
 	namespace graphics {
@@ -22,6 +22,7 @@ namespace engine {
 		private:
 			FPSCamera* m_Camera;
 			Shader m_SkyboxShader;
+			GLCache* m_GLCache;
 
 			opengl::VertexArray m_SkyboxVAO;
 			opengl::IndexBuffer m_SkyboxIBO;

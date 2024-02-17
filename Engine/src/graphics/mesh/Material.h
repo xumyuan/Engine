@@ -1,10 +1,7 @@
 #pragma once
-#include <GL\glew.h>
-#include <GLFW\glfw3.h>
-
-#include "../Shader.h"
-#include "../texture/Texture.h"
-#include "../../utils/loaders/TextureLoader.h"
+#include "graphics/Shader.h"
+#include "graphics/texture/Texture.h"
+#include "utils/loaders/TextureLoader.h"
 
 namespace engine {
 	namespace graphics {
@@ -16,7 +13,7 @@ namespace engine {
 
 			void BindMaterialInformation(Shader& shader) const;
 
-			
+
 			inline void setAlbedoMap(Texture* texture) { m_AlbedoMap = texture; }
 			inline void setNormalMap(Texture* texture) { m_NormalMap = texture; }
 			inline void setMetallicMap(Texture* texture) { m_MetallicMap = texture; }

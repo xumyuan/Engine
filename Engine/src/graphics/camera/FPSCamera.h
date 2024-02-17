@@ -1,11 +1,7 @@
 #pragma once
 
-#include <iostream>
-#include <GL/glew.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include "../Window.h"
-#include "../../ui/DebugPane.h"
+#include "graphics/Window.h"
+#include "ui/DebugPane.h"
 
 namespace engine {
 	namespace graphics {

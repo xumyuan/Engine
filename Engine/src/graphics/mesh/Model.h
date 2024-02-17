@@ -1,15 +1,17 @@
 #pragma once
 
+#include <graphics/Shader.h>
+#include <graphics/mesh/Mesh.h>
+#include <graphics/renderer/RenderPass.h>
+#include <utils/loaders/TextureLoader.h>
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#include "../Shader.h"
-#include "Mesh.h"
-#include "../../utils/loaders/TextureLoader.h"
-#include "../renderer/RenderPass.h"
+
 
 namespace engine {
 	namespace graphics {

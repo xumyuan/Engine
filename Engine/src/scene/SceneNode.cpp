@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "SceneNode.h"
 
 namespace engine {
@@ -10,7 +11,7 @@ namespace engine {
 
 		SceneNode::~SceneNode() {
 			// Recursive delete on children
-			for (int i = 0; i < m_Children.size(); i++) {
+			for (unsigned int i = 0; i < m_Children.size(); i++) {
 				delete m_Children[i];
 			}
 		}

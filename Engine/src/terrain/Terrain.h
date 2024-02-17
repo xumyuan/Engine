@@ -1,16 +1,9 @@
 #pragma once
-#include <GL\glew.h>
-#include <GLFW\glfw3.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include "stb_image.h"
-#include <SOIL/SOIL.h>
-#include <array>
 
-#include "..\graphics\mesh\Mesh.h"
-#include "../graphics/mesh/Model.h"
-#include "../utils/loaders/TextureLoader.h"
-#include "..\graphics\Shader.h"
+#include "graphics/Shader.h"
+#include "graphics/mesh/Mesh.h"
+#include "graphics/mesh/Model.h"
+#include "utils/loaders/TextureLoader.h"
 
 
 namespace engine {
@@ -18,7 +11,7 @@ namespace engine {
 
 		class Terrain {
 		private:
-			
+
 		public:
 			Terrain(glm::vec3& worldPosition);
 			~Terrain();
@@ -27,8 +20,8 @@ namespace engine {
 
 			inline const glm::vec3& getPosition() const { return m_Position; }
 		private:
-			glm::vec3 calculateNormal(int x, int z, unsigned char* heightMapData);
-			GLfloat getVertexHeight(int x, int y, unsigned char* heightMapData);
+			glm::vec3 calculateNormal(unsigned int x, unsigned int z, unsigned char* heightMapData);
+			GLfloat getVertexHeight(unsigned int x, unsigned int y, unsigned char* heightMapData);
 
 
 			float m_TerrainSize;

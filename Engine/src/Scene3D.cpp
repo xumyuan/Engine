@@ -1,9 +1,7 @@
+#include "pch.h"
 #include "Scene3D.h"
 
-#include <iterator>
-#include <iostream>
-#include <glm/glm.hpp>
-
+#include "graphics/mesh/Mesh.h"
 #include "graphics/mesh/common/Cube.h"
 #include "graphics/mesh/common/Sphere.h"
 #include "graphics/mesh/common/Quad.h"

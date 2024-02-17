@@ -1,5 +1,6 @@
+#include "pch.h"
 #include "Terrain.h"
-#include "../utils/Logger.h"
+
 
 namespace engine {
 	namespace terrain {
@@ -101,7 +102,7 @@ namespace engine {
 			m_Mesh->Draw();
 		}
 
-		glm::vec3 Terrain::calculateNormal(int x, int z, unsigned char* heightMapData) {
+		glm::vec3 Terrain::calculateNormal(unsigned int x, unsigned int z, unsigned char* heightMapData) {
 			GLfloat heightR = getVertexHeight(x + 1, z, heightMapData);
 			GLfloat heightL = getVertexHeight(x - 1, z, heightMapData);
 			GLfloat heightU = getVertexHeight(x, z + 1, heightMapData);
@@ -113,7 +114,7 @@ namespace engine {
 			return normal;
 		}
 
-		GLfloat Terrain::getVertexHeight(int x, int z, unsigned char* heightMapData) {
+		GLfloat Terrain::getVertexHeight(unsigned int x, unsigned int z, unsigned char* heightMapData) {
 			if (x < 0 || x >= m_VertexSideCount || z < 0 || z >= m_VertexSideCount) {
 				return 0.0f;
 			}

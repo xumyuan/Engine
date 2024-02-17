@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "Skybox.h"
 
 namespace engine {
@@ -43,6 +44,8 @@ namespace engine {
 			m_SkyboxVBO.load(skyboxVertices, 8 * 3, 3);
 			m_SkyboxIBO.load(skyboxIndices, 36);
 			m_SkyboxVAO.addBuffer(&m_SkyboxVBO, 0);
+
+			m_GLCache = GLCache::getInstance();
 		}
 
 		void Skybox::Draw() {
@@ -55,13 +58,13 @@ namespace engine {
 			m_SkyboxShader.setUniformMat4("view", m_Camera->getViewMatrix());
 			m_SkyboxShader.setUniformMat4("projection", m_Camera->getProjectionMatrix());
 
-			glDepthFunc(GL_LEQUAL);
+			m_GLCache->setDepthFunc(GL_LEQUAL);
 			m_SkyboxVAO.bind();
 			m_SkyboxIBO.bind();
 			glDrawElements(GL_TRIANGLES, m_SkyboxIBO.getCount(), GL_UNSIGNED_INT, 0);
 			m_SkyboxVAO.unbind();
 			m_SkyboxIBO.unbind();
-			glDepthFunc(GL_LESS);
+			m_GLCache->setDepthFunc(GL_LESS);
 
 			m_SkyboxShader.disable();
 		}

@@ -1,13 +1,10 @@
 #pragma once
 
-#include <glm/glm.hpp>
-#include <assimp\Importer.hpp>
-#include <vector>
 
-#include "../../platform/OpenGL/VertexArray.h"
-#include "../../platform/OpenGL/IndexBuffer.h"
 #include "Material.h"
-#include "../../utils/Logger.h"
+
+#include "platform/OpenGL/IndexBuffer.h"
+#include "platform/OpenGL/VertexArray.h"
 
 namespace engine {
 	namespace graphics {

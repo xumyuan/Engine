@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "TextureLoader.h"
 
 namespace engine {

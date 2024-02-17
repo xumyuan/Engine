@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "Window.h"
 
 namespace engine {
@@ -91,7 +92,7 @@ namespace engine {
 				return false;
 			}
 
-			
+
 			// ´´½¨´°¿Ú
 			if (FULLSCREEN_MODE) {
 				setFullScreenResolution();

@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "PostProcessor.h"
 
 namespace engine {
@@ -54,7 +55,7 @@ namespace engine {
 
 #if DEBUG_ENABLED
 			glFinish();
-			ui::RuntimePane::setPostProcessTimer(m_Timer.elapsed());
+			ui::RuntimePane::setPostProcessTimer((float)m_Timer.elapsed());
 #endif
 		}
 

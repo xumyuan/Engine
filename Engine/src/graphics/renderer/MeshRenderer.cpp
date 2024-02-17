@@ -1,4 +1,6 @@
+#include "pch.h"
 #include "MeshRenderer.h"
+
 namespace engine {
 	namespace graphics {
 

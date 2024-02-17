@@ -1,5 +1,6 @@
+#include "pch.h"
 #include "Material.h"
-#include "../Window.h"
+#include "graphics/Window.h"
 
 namespace engine {
 	namespace graphics {

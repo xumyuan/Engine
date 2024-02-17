@@ -1,12 +1,7 @@
 #pragma once
 
-#include <string>
-#include <map>
-#include "stb_image.h"
-#include <gl/glew.h>
-
-#include "../../graphics/texture/Texture.h"
-#include "../../graphics/texture/Cubemap.h"
+#include "graphics/texture/Texture.h"
+#include "graphics/texture/Cubemap.h"
 
 namespace engine {
 	namespace utils {
@@ -28,7 +23,7 @@ namespace engine {
 			// isSRGB是否要线性化的标志
 			// 所有颜色纹理都应线性化，而法线、高度、金属贴图不用
 			static graphics::Texture* load2DTexture(const std::string& path, bool isSRGB, graphics::TextureSettings* settings = nullptr);
-			
+
 			static graphics::Cubemap* loadCubemapTexture(const const std::string& right, const std::string& left, const std::string& top, const std::string& bottom, const std::string& back, const std::string& front, bool isSRGB, graphics::CubemapSettings* settings = nullptr);
 
 			inline static graphics::Texture* getDefaultAlbedo() { return m_DefaultTextures.m_DefaultAlbedo; }

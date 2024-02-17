@@ -1,6 +1,5 @@
+#include "pch.h"
 #include "FPSCamera.h"
-
-#include <iostream>
 
 namespace engine {
 	namespace graphics {

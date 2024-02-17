@@ -1,9 +1,6 @@
+#include "pch.h"
 #include "Model.h"
 
-#include <iostream>
-#include "stb_image.h"
-
-#include "../../utils/Logger.h"
 #include "Mesh.h"
 
 namespace engine {

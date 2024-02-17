@@ -1,4 +1,6 @@
+#include "pch.h"
 #include "DirectionalLight.h"
+
 namespace engine {
 	namespace graphics {
 		DirectionalLight::DirectionalLight(const glm::vec3& lightColor, const glm::vec3& dir)

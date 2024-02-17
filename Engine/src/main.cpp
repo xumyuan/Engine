@@ -1,25 +1,19 @@
-#include <iostream>
-#include "graphics\Window.h"
-#include "utils\Timer.h"
-#include "graphics\Shader.h"
-#include <SOIL/SOIL.h>
-#include <cmath>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
-#include "utils\Time.h"
-#include "graphics\camera\FPSCamera.h"
-#include "utils\Logger.h"
-#include "graphics\mesh\Model.h"
-#include "terrain\Terrain.h"
+#include "pch.h"
 #include "Scene3D.h"
-#include "platform/OpenGL/Framebuffers/RenderTarget.h"
+
+#include "graphics/Shader.h"
+#include "graphics/Window.h"
+#include "graphics/camera/FPSCamera.h"
+#include "graphics/mesh/Model.h"
 #include "graphics/mesh/common/Quad.h"
 #include "graphics/renderer/GLCache.h"
 #include "graphics/renderer/PostProcessor.h"
-#include "ui/RuntimePane.h"
+#include "platform/OpenGL/Framebuffers/RenderTarget.h"
+#include "terrain/Terrain.h"
 #include "ui/DebugPane.h"
+#include "ui/RuntimePane.h"
+#include "utils/Time.h"
+#include "utils/Timer.h"
 
 GLfloat yaw = -90.0f;
 GLfloat pitch = 0.0f;

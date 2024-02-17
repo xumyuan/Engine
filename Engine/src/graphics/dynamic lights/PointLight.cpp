@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "PointLight.h"
 
 namespace engine {

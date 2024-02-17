@@ -2,8 +2,6 @@
 
 #include "DynamicLight.h"
 
-#include <string>
-
 namespace engine {
 	namespace graphics {
 

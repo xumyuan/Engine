@@ -1,8 +1,5 @@
 #pragma once
 
-#include <string>
-#include <glm/common.hpp>
-#include <glm/glm.hpp>
 #include "imgui.h"
 
 namespace engine {

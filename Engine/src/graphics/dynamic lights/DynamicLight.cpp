@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "DynamicLight.h"
 
 namespace engine {
