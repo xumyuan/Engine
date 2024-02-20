@@ -4,7 +4,7 @@
 
 #include "graphics/Shader.h"
 #include "graphics/mesh/common/Quad.h"
-#include "platform/OpenGL/Framebuffers/RenderTarget.h"
+#include "platform/OpenGL/Framebuffers/Framebuffer.h"
 #include "ui/DebugPane.h"
 #include "ui/RuntimePane.h"
 #include "utils/Timer.h"

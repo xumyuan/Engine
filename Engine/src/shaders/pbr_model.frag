@@ -121,7 +121,7 @@ vec3 CalculateDirectionalLightRadiance(vec3 albedo, vec3 normal, float metallic,
 	diffuseRatio *= 1.0 - metallic;
 
 	vec3 numerator = fresnel * normalDistribution * geometry;
-	float denominator = 4 * max(dot(fragToView, normal), 0.0) * max(dot(lightDir, normal), 0.0) + 0.001;  // Prevents any division by zero
+	float denominator = 4 * max(dot(fragToView, normal), 0.1) * max(dot(lightDir, normal), 0.0) + 0.001;  // Prevents any division by zero
 	vec3 specular = numerator / denominator;
 
 	// Also calculate the diffuse, a lambertian calculation will be added onto the final radiance calculation
@@ -153,7 +153,7 @@ vec3 CalculatePointLightRadiance(vec3 albedo, vec3 normal, float metallic, float
 
 		// Finally calculate the specular part of the Cook-Torrance BRDF
 		vec3 numerator = specularRatio * normalDistribution * geometry;
-		float denominator = 4 * max(dot(fragToView, normal), 0.0) * max(dot(fragToLight, normal), 0.0) + 0.001; // Prevents any division by zero
+		float denominator = 4 * max(dot(fragToView, normal), 0.1) * max(dot(fragToLight, normal), 0.0) + 0.001; // Prevents any division by zero
 		vec3 specular = numerator / denominator;
 
 		// Also calculate the diffuse, a lambertian calculation will be added onto the final radiance calculation
@@ -204,7 +204,7 @@ vec3 CalculateSpotLightRadiance(vec3 albedo, vec3 normal, float metallic, float 
 
 	// Finally calculate the specular part of the Cook-Torrance BRDF
 	vec3 numerator = specularRatio * normalDistribution * geometry;
-	float denominator = 4 * max(dot(fragToView, normal), 0.0) * max(dot(fragToLight, normal), 0.0) + 0.001; // Prevents any division by zero
+	float denominator = 4 * max(dot(fragToView, normal), 0.1) * max(dot(fragToLight, normal), 0.0) + 0.001; // Prevents any division by zero
 	vec3 specular = numerator / denominator;
 
 	// Also calculate the diffuse, a lambertian calculation will be added onto the final radiance calculation

@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "RenderTarget.h"
+#include "Framebuffer.h"
 
 namespace engine {
 	namespace opengl {

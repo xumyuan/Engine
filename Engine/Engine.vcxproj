@@ -156,7 +156,7 @@
     <ClInclude Include="src\graphics\mesh\common\Quad.h" />
     <ClInclude Include="src\graphics\mesh\common\Sphere.h" />
     <ClInclude Include="src\graphics\renderer\PostProcessor.h" />
-    <ClInclude Include="src\platform\OpenGL\Framebuffers\RenderTarget.h" />
+    <ClInclude Include="src\platform\OpenGL\Framebuffers\Framebuffer.h" />
     <ClInclude Include="src\utils\loaders\MeshLoader.h" />
     <ClInclude Include="src\graphics\renderer\GLCache.h" />
     <ClInclude Include="src\graphics\mesh\Material.h" />
@@ -223,7 +223,7 @@
     <ClCompile Include="src\graphics\dynamic lights\PointLight.cpp" />
     <ClCompile Include="src\graphics\dynamic lights\SpotLight.cpp" />
     <ClCompile Include="src\graphics\Skybox.cpp" />
-    <ClCompile Include="src\platform\OpenGL\Framebuffers\RenderTarget.cpp" />
+    <ClCompile Include="src\platform\OpenGL\Framebuffers\Framebuffer.cpp" />
     <ClCompile Include="src\graphics\renderer\MeshRenderer.cpp" />
     <ClCompile Include="src\Scene3D.cpp" />
     <ClCompile Include="src\platform\OpenGL\IndexBuffer.cpp" />

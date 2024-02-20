@@ -120,7 +120,7 @@
     <ClInclude Include="src\graphics\renderer\RenderPass.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\platform\OpenGL\Framebuffers\RenderTarget.h">
+    <ClInclude Include="src\platform\OpenGL\Framebuffers\Framebuffer.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\ui\Pane.h">
@@ -200,7 +200,7 @@
     <ClCompile Include="src\graphics\renderer\MeshRenderer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\platform\OpenGL\Framebuffers\RenderTarget.cpp">
+    <ClCompile Include="src\platform\OpenGL\Framebuffers\Framebuffer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\graphics\Skybox.cpp">
