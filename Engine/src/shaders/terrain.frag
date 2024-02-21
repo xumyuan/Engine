@@ -131,7 +131,7 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos) {
 	return ambient + diffuse;
 }
  
-float CalculateShadow(vec3 normal, vec3 fragToDirLight) {
+float CalculateShadow(vec3 normal, vec3 fragToLight) {
 	vec3 ndcCoords = FragPosLightClipSpace.xyz / FragPosLightClipSpace.w;
 	vec3 depthmapCoords = ndcCoords * 0.5 + 0.5;
 
@@ -139,7 +139,7 @@ float CalculateShadow(vec3 normal, vec3 fragToDirLight) {
 	float currentDepth = depthmapCoords.z;
 
 	// 通过bias避免阴影失真，根据法向量和光照方向
-	float shadowBias = max(0.01, 0.1 * (1.0 - dot(normal, fragToDirLight)));
+	float shadowBias = max(0.01, 0.1 * (1.0 - dot(normal, fragToLight)));
 
 	// Perform Percentage Closer Filtering (PCF) in order to produce soft shadows
 	vec2 texelSize = 1.0 / textureSize(shadowmap, 0);

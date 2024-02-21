@@ -3,71 +3,22 @@
 
 namespace engine {
 	namespace graphics {
+
+		void error_callback(int error, const char* description);
+		void window_resize_callback(GLFWwindow* window, int width, int height);
+		void framebuffer_resize_callback(GLFWwindow* window, int width, int height);
+		void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+		void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
+		void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
+		void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+		void char_callback(GLFWwindow* window, unsigned int c);
+		void GLAPIENTRY DebugMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
+
 		bool Window::s_Keys[MAX_KEYS];
 		bool Window::s_Buttons[MAX_BUTTONS];
 		int Window::m_Width, Window::m_Height;
 		double Window::s_MouseX, Window::s_MouseY, Window::s_MouseXDelta, Window::s_MouseYDelta;
 		double Window::s_ScrollX, Window::s_ScrollY;
-
-		/*              Callback Functions              */
-		static void error_callback(int error, const char* description) {
-			std::cout << "Error:" << std::endl << description << std::endl;
-		}
-
-		static void window_resize_callback(GLFWwindow* window, int width, int height) {
-			Window* win = (Window*)glfwGetWindowUserPointer(window);
-			if (width == 0 || height == 0) {
-				win->m_Width = WINDOW_X_RESOLUTION;
-				win->m_Height = WINDOW_Y_RESOLUTION;
-			}
-			else {
-				win->m_Width = width;
-				win->m_Height = height;
-			}
-			glViewport(0, 0, win->m_Width, win->m_Height);
-		}
-
-		static void framebuffer_resize_callback(GLFWwindow* window, int width, int height) {
-			Window* win = (Window*)glfwGetWindowUserPointer(window);
-		}
-
-		static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-			Window* win = (Window*)glfwGetWindowUserPointer(window);
-			win->s_Keys[key] = action != GLFW_RELEASE;
-			ImGui_ImplGlfw_KeyCallback(window, key, scancode, action, mods);
-#if DEBUG_ENABLED
-			if (key == GLFW_KEY_P && action == GLFW_RELEASE) {
-				win->m_HideCursor = !win->m_HideCursor;
-				GLenum cursorOption = win->m_HideCursor ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL;
-				glfwSetInputMode(win->m_Window, GLFW_CURSOR, cursorOption);
-			}
-#endif
-		}
-
-		static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
-			Window* win = (Window*)glfwGetWindowUserPointer(window);
-			win->s_Buttons[button] = action != GLFW_RELEASE;
-			ImGui_ImplGlfw_MouseButtonCallback(window, button, action, mods);
-		}
-
-		static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
-			Window* win = (Window*)glfwGetWindowUserPointer(window);
-			win->s_MouseXDelta = xpos - win->s_MouseX;
-			win->s_MouseYDelta = ypos - win->s_MouseY;
-			win->s_MouseX = xpos;
-			win->s_MouseY = ypos;
-		}
-
-		static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
-			Window* win = (Window*)glfwGetWindowUserPointer(window);
-			win->s_ScrollX = xoffset;
-			win->s_ScrollY = yoffset;
-			ImGui_ImplGlfw_ScrollCallback(window, xoffset, yoffset);
-		}
-
-		static void char_callback(GLFWwindow* window, unsigned int c) {
-			ImGui_ImplGlfw_CharCallback(window, c);
-		}
 
 		Window::Window(const char* title, int width, int height) {
 			m_Title = title;
@@ -176,6 +127,16 @@ namespace engine {
 
 			ImGui::StyleColorsDark();
 
+			// Error callback setup
+#if DEBUG_ENABLED
+			glEnable(GL_DEBUG_OUTPUT);
+			glDebugMessageCallback(DebugMessageCallback, 0);
+			glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE);
+			glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_LOW, 0, nullptr, GL_FALSE);
+			glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_MEDIUM, 0, nullptr, GL_TRUE);
+			glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_HIGH, 0, nullptr, GL_TRUE);
+#endif
+
 			// Everything was successful so return true
 			return 1;
 		}
@@ -241,6 +202,72 @@ namespace engine {
 			else {
 				return s_Buttons[keycode];
 			}
+		}
+
+		/*              Callback Functions              */
+		static void error_callback(int error, const char* description) {
+			std::cout << "Error:" << std::endl << description << std::endl;
+		}
+
+		static void window_resize_callback(GLFWwindow* window, int width, int height) {
+			Window* win = (Window*)glfwGetWindowUserPointer(window);
+			if (width == 0 || height == 0) {
+				win->m_Width = WINDOW_X_RESOLUTION;
+				win->m_Height = WINDOW_Y_RESOLUTION;
+			}
+			else {
+				win->m_Width = width;
+				win->m_Height = height;
+			}
+			glViewport(0, 0, win->m_Width, win->m_Height);
+		}
+
+		static void framebuffer_resize_callback(GLFWwindow* window, int width, int height) {
+			Window* win = (Window*)glfwGetWindowUserPointer(window);
+		}
+
+		static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+			Window* win = (Window*)glfwGetWindowUserPointer(window);
+			win->s_Keys[key] = action != GLFW_RELEASE;
+			ImGui_ImplGlfw_KeyCallback(window, key, scancode, action, mods);
+#if DEBUG_ENABLED
+			if (key == GLFW_KEY_P && action == GLFW_RELEASE) {
+				win->m_HideCursor = !win->m_HideCursor;
+				GLenum cursorOption = win->m_HideCursor ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL;
+				glfwSetInputMode(win->m_Window, GLFW_CURSOR, cursorOption);
+			}
+#endif
+		}
+
+		static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
+			Window* win = (Window*)glfwGetWindowUserPointer(window);
+			win->s_Buttons[button] = action != GLFW_RELEASE;
+			ImGui_ImplGlfw_MouseButtonCallback(window, button, action, mods);
+		}
+
+		static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
+			Window* win = (Window*)glfwGetWindowUserPointer(window);
+			win->s_MouseXDelta = xpos - win->s_MouseX;
+			win->s_MouseYDelta = ypos - win->s_MouseY;
+			win->s_MouseX = xpos;
+			win->s_MouseY = ypos;
+		}
+
+		static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
+			Window* win = (Window*)glfwGetWindowUserPointer(window);
+			win->s_ScrollX = xoffset;
+			win->s_ScrollY = yoffset;
+			ImGui_ImplGlfw_ScrollCallback(window, xoffset, yoffset);
+		}
+
+		static void char_callback(GLFWwindow* window, unsigned int c) {
+			ImGui_ImplGlfw_CharCallback(window, c);
+		}
+
+		static void GLAPIENTRY DebugMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
+			fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
+				(type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
+				type, severity, message);
 		}
 
 

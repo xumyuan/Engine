@@ -16,7 +16,7 @@ namespace engine {
 		void DynamicLightManager::init() {
 			// Setup lighting configurations
 			m_DirectionalLight.isActive = true;
-			m_DirectionalLight.direction = glm::vec3(-0.1f, -1.0f, -0.1f);
+			m_DirectionalLight.direction = glm::vec3(-0.25f, -1.0f, -0.25f);
 			m_DirectionalLight.lightColor = glm::vec3(3.25f, 3.25f, 3.25f);
 
 			m_SpotLight.isActive = true;
