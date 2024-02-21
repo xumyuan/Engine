@@ -96,11 +96,23 @@ namespace engine {
 		}
 
 		bool Window::init() {
+
+			glewExperimental = true;
+
 			if (!glfwInit()) {
 				utils::Logger::getInstance().error("logged_files/window_creation.txt", "Window Initialization", "Could not initialize the GLFW window");
 				std::cout << "GLFW Failed To Initialize" << std::endl;
 				return false;
 			}
+
+			// Context hints
+			glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+			glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+			glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
+
+			// Window hints
+			glfwWindowHint(GLFW_DOUBLEBUFFER, true);
 
 
 			// ´´½¨´°¿Ú
