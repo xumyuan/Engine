@@ -3,39 +3,39 @@
 #include "Singleton.h"
 
 namespace engine {
-	namespace utils {
-		class Logger :public Singleton {
-		private:
 
-			Logger();
+	class Logger :public Singleton {
+	private:
 
-		public:
-			static Logger& getInstance();
+		Logger();
 
-			void debug(const std::string& filePath, std::string& module, const std::string& message);
+	public:
+		static Logger& getInstance();
 
-			//void debug(std::string& filePath, std::string& module, const std::string& message);
+		void debug(const std::string& filePath, std::string& module, const std::string& message);
 
-			void info(const std::string& filePath, const std::string& module, const std::string& message);
+		//void debug(std::string& filePath, std::string& module, const std::string& message);
 
-			void warning(const std::string& filePath, const std::string& module, const std::string& message);
+		void info(const std::string& filePath, const std::string& module, const std::string& message);
 
-			void error(const std::string& filePath, const std::string& module, const std::string& message);
+		void warning(const std::string& filePath, const std::string& module, const std::string& message);
 
-			void clearFileContents();
+		void error(const std::string& filePath, const std::string& module, const std::string& message);
 
-			void setOutputFile(const std::string& filePath);
+		void clearFileContents();
 
-			enum {
-				DEBUG, INFO, WARNING, ERROR
-			};
-			std::vector<std::string> filePaths;
+		void setOutputFile(const std::string& filePath);
 
-			std::ofstream filestream;
-			std::string file; // Default value set to: "logged_files/log.txt"
-		private:
-			void logMessage(const int& priority, const std::string& module, const std::string& message);
+		enum {
+			DEBUG, INFO, WARNING, ERROR
 		};
-	}
+		std::vector<std::string> filePaths;
+
+		std::ofstream filestream;
+		std::string file; // Default value set to: "logged_files/log.txt"
+	private:
+		void logMessage(const int& priority, const std::string& module, const std::string& message);
+	};
+
 }
 

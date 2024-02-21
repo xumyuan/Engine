@@ -10,32 +10,30 @@
 #include "utils/Timer.h"
 
 namespace engine {
-	namespace graphics {
 
-		class PostProcessor {
-		public:
-			PostProcessor(MeshRenderer* renderer);
-			~PostProcessor();
+	class PostProcessor {
+	public:
+		PostProcessor(MeshRenderer* renderer);
+		~PostProcessor();
 
-			void preLightingPostProcess();
-			// 假设输入 RenderTarget 已绑定，函数运行后默认屏幕 RenderTarget 已绑定
-			void postLightingPostProcess(opengl::RenderTarget* input);
+		void preLightingPostProcess();
+		// 假设输入 RenderTarget 已绑定，函数运行后默认屏幕 RenderTarget 已绑定
+		void postLightingPostProcess(Framebuffer* input);
 
-			// 如果我们想要进行更多自定义后期处理，可能会很有用。 Unity是这样做的
-			//void blit(Texture *texture, opengl::RenderTarget *source);
+		// 如果我们想要进行更多自定义后期处理，可能会很有用。 Unity是这样做的
+		//void blit(Texture *texture, RenderTarget *source);
 
-			inline void EnableBlur(bool choice) { m_Blur = choice; }
-		private:
-			float m_GammaCorrection = 2.2f;
+		inline void EnableBlur(bool choice) { m_Blur = choice; }
+	private:
+		float m_GammaCorrection = 2.2f;
 
-			MeshRenderer* m_MeshRenderer;
-			Shader m_PostProcessShader;
-			Quad m_NDC_Plane;
-			opengl::RenderTarget m_ScreenRenderTarget;
-			Timer m_Timer;
+		MeshRenderer* m_MeshRenderer;
+		Shader m_PostProcessShader;
+		Quad m_NDC_Plane;
+		Framebuffer m_ScreenRenderTarget;
+		Timer m_Timer;
 
-			bool m_Blur = false;
-		};
+		bool m_Blur = false;
+	};
 
-	}
 }

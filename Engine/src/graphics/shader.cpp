@@ -2,156 +2,155 @@
 #include "Shader.h"
 
 namespace engine {
-	namespace graphics {
 
-		Shader::Shader(const char* vertPath, const char* fragPath)
-			: m_VertPath(vertPath), m_FragPath(fragPath), m_GeomPath("")
-		{
-			m_ShaderID = load();
+	Shader::Shader(const char* vertPath, const char* fragPath)
+		: m_VertPath(vertPath), m_FragPath(fragPath), m_GeomPath("")
+	{
+		m_ShaderID = load();
+	}
+
+	Shader::Shader(const char* vertPath, const char* fragPath, const char* geoPath)
+		: m_VertPath(vertPath), m_FragPath(fragPath), m_GeomPath(geoPath)
+	{
+		m_ShaderID = load();
+	}
+
+	Shader::~Shader() {
+		glDeleteProgram(m_ShaderID);
+	}
+
+	GLuint Shader::load() {
+		// Create the program and shaders
+		GLuint program = glCreateProgram();
+		GLuint vertex = glCreateShader(GL_VERTEX_SHADER);
+		GLuint fragment = glCreateShader(GL_FRAGMENT_SHADER);
+
+		// Variables need to be declared or the character pointers will become dangling pointers
+		std::string vertSourceString = FileUtils::readFile(m_VertPath);
+		std::string fragSourceString = FileUtils::readFile(m_FragPath);
+		const char* vertSource = vertSourceString.c_str();
+		const char* fragSource = fragSourceString.c_str();
+
+		// 顶点着色器
+		glShaderSource(vertex, 1, &vertSource, NULL);
+		glCompileShader(vertex);
+		GLint result;
+
+		// Check to see if it was successful
+		glGetShaderiv(vertex, GL_COMPILE_STATUS, &result);
+		if (result == GL_FALSE) {
+			GLint length;
+			glGetShaderiv(vertex, GL_INFO_LOG_LENGTH, &length);
+			std::vector<char> error(length);
+			glGetShaderInfoLog(vertex, length, &length, &error[0]);
+			std::cout << "Failed to Compile Vertex Shader: " + std::string(m_VertPath) << std::endl << &error[0] << std::endl;
+
+			Logger::getInstance().error("logged_files/shader_creation.txt", "shader initialization", "failed to compile vertex shader " + error[0]);
+			glDeleteShader(vertex);
+			return 0;
 		}
 
-		Shader::Shader(const char* vertPath, const char* fragPath, const char* geoPath)
-			: m_VertPath(vertPath), m_FragPath(fragPath), m_GeomPath(geoPath)
-		{
-			m_ShaderID = load();
+		//片段着色器
+		glShaderSource(fragment, 1, &fragSource, NULL);
+		glCompileShader(fragment);
+
+		// Check to see if it was successful
+		glGetShaderiv(fragment, GL_COMPILE_STATUS, &result);
+		if (result == GL_FALSE) {
+			GLint length;
+			glGetShaderiv(fragment, GL_INFO_LOG_LENGTH, &length);
+			std::vector<char> error(length);
+			glGetShaderInfoLog(fragment, length, &length, &error[0]);
+			std::cout << "Failed to Compile Fragment Shader: " + std::string(m_FragPath) << std::endl << &error[0] << std::endl;
+			Logger::getInstance().error("logged_files/shader_creation.txt", "shader initialization", "failed to compile fragment shader " + error[0]);
+			glDeleteShader(fragment);
+			return 0;
 		}
 
-		Shader::~Shader() {
-			glDeleteProgram(m_ShaderID);
-		}
+		GLuint geometry;
+		// 几何着色器是否存在
+		if (m_GeomPath != "") {
+			geometry = glCreateShader(GL_GEOMETRY_SHADER);
+			std::string geomSourceString = FileUtils::readFile(m_GeomPath);
+			const char* geomSource = geomSourceString.c_str();
 
-		GLuint Shader::load() {
-			// Create the program and shaders
-			GLuint program = glCreateProgram();
-			GLuint vertex = glCreateShader(GL_VERTEX_SHADER);
-			GLuint fragment = glCreateShader(GL_FRAGMENT_SHADER);
-
-			// Variables need to be declared or the character pointers will become dangling pointers
-			std::string vertSourceString = FileUtils::readFile(m_VertPath);
-			std::string fragSourceString = FileUtils::readFile(m_FragPath);
-			const char* vertSource = vertSourceString.c_str();
-			const char* fragSource = fragSourceString.c_str();
-
-			// 顶点着色器
-			glShaderSource(vertex, 1, &vertSource, NULL);
-			glCompileShader(vertex);
+			// Geometry Shader
+			glShaderSource(geometry, 1, &geomSource, NULL);
+			glCompileShader(geometry);
 			GLint result;
 
 			// Check to see if it was successful
-			glGetShaderiv(vertex, GL_COMPILE_STATUS, &result);
+			glGetShaderiv(geometry, GL_COMPILE_STATUS, &result);
 			if (result == GL_FALSE) {
 				GLint length;
-				glGetShaderiv(vertex, GL_INFO_LOG_LENGTH, &length);
+				glGetShaderiv(geometry, GL_INFO_LOG_LENGTH, &length);
 				std::vector<char> error(length);
-				glGetShaderInfoLog(vertex, length, &length, &error[0]);
-				std::cout << "Failed to Compile Vertex Shader: " + std::string(m_VertPath) << std::endl << &error[0] << std::endl;
-
-				utils::Logger::getInstance().error("logged_files/shader_creation.txt", "shader initialization", "failed to compile vertex shader " + error[0]);
-				glDeleteShader(vertex);
-				return 0;
-			}
-
-			//片段着色器
-			glShaderSource(fragment, 1, &fragSource, NULL);
-			glCompileShader(fragment);
-
-			// Check to see if it was successful
-			glGetShaderiv(fragment, GL_COMPILE_STATUS, &result);
-			if (result == GL_FALSE) {
-				GLint length;
-				glGetShaderiv(fragment, GL_INFO_LOG_LENGTH, &length);
-				std::vector<char> error(length);
-				glGetShaderInfoLog(fragment, length, &length, &error[0]);
-				std::cout << "Failed to Compile Fragment Shader: " + std::string(m_FragPath) << std::endl << &error[0] << std::endl;
-				utils::Logger::getInstance().error("logged_files/shader_creation.txt", "shader initialization", "failed to compile fragment shader " + error[0]);
-				glDeleteShader(fragment);
-				return 0;
-			}
-
-			GLuint geometry;
-			// 几何着色器是否存在
-			if (m_GeomPath != "") {
-				geometry = glCreateShader(GL_GEOMETRY_SHADER);
-				std::string geomSourceString = FileUtils::readFile(m_GeomPath);
-				const char* geomSource = geomSourceString.c_str();
-
-				// Geometry Shader
-				glShaderSource(geometry, 1, &geomSource, NULL);
-				glCompileShader(geometry);
-				GLint result;
-
-				// Check to see if it was successful
-				glGetShaderiv(geometry, GL_COMPILE_STATUS, &result);
-				if (result == GL_FALSE) {
-					GLint length;
-					glGetShaderiv(geometry, GL_INFO_LOG_LENGTH, &length);
-					std::vector<char> error(length);
-					glGetShaderInfoLog(geometry, length, &length, &error[0]);
-					std::cout << "Failed to Compile Geometry Shader: " + std::string(m_GeomPath) << std::endl << &error[0] << std::endl;
-					utils::Logger::getInstance().error("logged_files/shader_creation.txt", "shader initialization", "failed to compile geometry shader " + error[0]);
-					glDeleteShader(geometry);
-					return 0;
-				}
-			}
-
-
-			// Attach the shaders to the program and link them
-			glAttachShader(program, vertex);
-			glAttachShader(program, fragment);
-			if (m_GeomPath != "")
-				glAttachShader(program, geometry);
-			glLinkProgram(program);
-			glValidateProgram(program);
-
-			// Delete the vertex and fragment shaders
-			glDeleteShader(vertex);
-			glDeleteShader(fragment);
-			if (m_GeomPath != "")
+				glGetShaderInfoLog(geometry, length, &length, &error[0]);
+				std::cout << "Failed to Compile Geometry Shader: " + std::string(m_GeomPath) << std::endl << &error[0] << std::endl;
+				Logger::getInstance().error("logged_files/shader_creation.txt", "shader initialization", "failed to compile geometry shader " + error[0]);
 				glDeleteShader(geometry);
-
-			// Return the program id
-			return program;
+				return 0;
+			}
 		}
 
-		GLint Shader::getUniformLocation(const GLchar* name) {
-			return glGetUniformLocation(m_ShaderID, name);
-		}
 
-		void Shader::setUniform1f(const GLchar* name, float value) {
-			glUniform1f(getUniformLocation(name), value);
-		}
+		// Attach the shaders to the program and link them
+		glAttachShader(program, vertex);
+		glAttachShader(program, fragment);
+		if (m_GeomPath != "")
+			glAttachShader(program, geometry);
+		glLinkProgram(program);
+		glValidateProgram(program);
 
-		void Shader::setUniform1i(const GLchar* name, int value) {
-			glUniform1i(getUniformLocation(name), value);
-		}
+		// Delete the vertex and fragment shaders
+		glDeleteShader(vertex);
+		glDeleteShader(fragment);
+		if (m_GeomPath != "")
+			glDeleteShader(geometry);
 
-		void Shader::setUniform2f(const GLchar* name, const glm::vec2& vector) {
-			glUniform2f(getUniformLocation(name), vector.x, vector.y);
-		}
-
-		void Shader::setUniform3f(const GLchar* name, const glm::vec3& vector) {
-			glUniform3f(getUniformLocation(name), vector.x, vector.y, vector.z);
-		}
-
-		void Shader::setUniform4f(const GLchar* name, const glm::vec4& vector) {
-			glUniform4f(getUniformLocation(name), vector.x, vector.y, vector.z, vector.w);
-		}
-
-		void Shader::setUniformMat4(const GLchar* name, const glm::mat4& matrix) {
-			glUniformMatrix4fv(glGetUniformLocation(m_ShaderID, name), 1, GL_FALSE, glm::value_ptr(matrix));
-		}
-
-		void Shader::setUniformMat3(const char* name, const glm::mat3& matrix) {
-			glUniformMatrix3fv(glGetUniformLocation(m_ShaderID, name), 1, GL_FALSE, glm::value_ptr(matrix));
-		}
-
-		void Shader::enable() const {
-			glUseProgram(m_ShaderID);
-		}
-
-		void Shader::disable() const {
-			glUseProgram(0);
-		}
-
+		// Return the program id
+		return program;
 	}
+
+	GLint Shader::getUniformLocation(const GLchar* name) {
+		return glGetUniformLocation(m_ShaderID, name);
+	}
+
+	void Shader::setUniform1f(const GLchar* name, float value) {
+		glUniform1f(getUniformLocation(name), value);
+	}
+
+	void Shader::setUniform1i(const GLchar* name, int value) {
+		glUniform1i(getUniformLocation(name), value);
+	}
+
+	void Shader::setUniform2f(const GLchar* name, const glm::vec2& vector) {
+		glUniform2f(getUniformLocation(name), vector.x, vector.y);
+	}
+
+	void Shader::setUniform3f(const GLchar* name, const glm::vec3& vector) {
+		glUniform3f(getUniformLocation(name), vector.x, vector.y, vector.z);
+	}
+
+	void Shader::setUniform4f(const GLchar* name, const glm::vec4& vector) {
+		glUniform4f(getUniformLocation(name), vector.x, vector.y, vector.z, vector.w);
+	}
+
+	void Shader::setUniformMat4(const GLchar* name, const glm::mat4& matrix) {
+		glUniformMatrix4fv(glGetUniformLocation(m_ShaderID, name), 1, GL_FALSE, glm::value_ptr(matrix));
+	}
+
+	void Shader::setUniformMat3(const char* name, const glm::mat3& matrix) {
+		glUniformMatrix3fv(glGetUniformLocation(m_ShaderID, name), 1, GL_FALSE, glm::value_ptr(matrix));
+	}
+
+	void Shader::enable() const {
+		glUseProgram(m_ShaderID);
+	}
+
+	void Shader::disable() const {
+		glUseProgram(0);
+	}
+
+
 }

@@ -2,38 +2,36 @@
 #include "GLCache.h"
 #include "RenderPass.h"
 
-#include "scene/SceneNode.h"
+#include "scene/Renderable3D.h"
 #include "graphics/camera/FPSCamera.h"
 #include "graphics/mesh/Model.h"
 #include "graphics/mesh/common/Quad.h"
 
 
 namespace engine {
-	namespace graphics {
-		class MeshRenderer {
-		public:
-			MeshRenderer(FPSCamera* camera);
+	class MeshRenderer {
+	public:
+		MeshRenderer(FPSCamera* camera);
 
-			void submitOpaque(scene::SceneNode* renderable);
-			void submitTransparent(scene::SceneNode* renderable);
+		void submitOpaque(Renderable3D* renderable);
+		void submitTransparent(Renderable3D* renderable);
 
-			void flushOpaque(Shader& shader, RenderPass pass);
-			void flushTransparent(Shader& shader, RenderPass pass);
-		public:
-			Quad NDC_Plane;
+		void flushOpaque(Shader& shader, RenderPass pass);
+		void flushTransparent(Shader& shader, RenderPass pass);
+	public:
+		Quad NDC_Plane;
 
-		private:
-			void setupModelMatrix(scene::SceneNode* renderable, Shader& shader, RenderPass pass);
+	private:
+		void setupModelMatrix(Renderable3D* renderable, Shader& shader, RenderPass pass);
 
 
-			std::deque<scene::SceneNode*> m_OpaqueRenderQueue;
-			std::deque<scene::SceneNode*> m_TransparentRenderQueue;
+		std::deque<Renderable3D*> m_OpaqueRenderQueue;
+		std::deque<Renderable3D*> m_TransparentRenderQueue;
 
-			FPSCamera* m_Camera;
-			GLCache* m_GLCache;
-		};
-
+		FPSCamera* m_Camera;
+		GLCache* m_GLCache;
 	};
+
 }
 
 

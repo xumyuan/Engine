@@ -1,24 +1,24 @@
 #pragma once
 
 namespace engine {
-	namespace opengl {
 
-		class IndexBuffer {
-		private:
-			GLuint m_BufferID;
-			GLsizei m_Count;
-		public:
-			IndexBuffer();
-			IndexBuffer(GLuint* data, GLsizei amount);
-			~IndexBuffer();
 
-			void load(GLuint* data, GLsizei amount);
+	class IndexBuffer {
+	private:
+		GLuint m_BufferID;
+		GLsizei m_Count;
+	public:
+		IndexBuffer();
+		IndexBuffer(GLuint* data, GLsizei amount);
+		~IndexBuffer();
 
-			void bind() const;
-			void unbind() const;
+		void load(GLuint* data, GLsizei amount);
 
-			inline GLsizei getCount() const { return m_Count; }
-		};
+		void bind() const;
+		void unbind() const;
 
-	}
+		inline GLsizei getCount() const { return m_Count; }
+	};
+
+
 }

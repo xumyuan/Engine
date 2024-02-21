@@ -1,24 +1,24 @@
 #pragma once
 
 namespace engine {
-	namespace opengl {
 
-		class Buffer {
-		private:
-			GLuint m_BufferID;
-			GLuint m_ComponentCount;
-		public:
-			Buffer();
-			Buffer(GLfloat* data, GLsizei amount, GLuint componentCount);
-			~Buffer();
 
-			void load(GLfloat* data, GLsizei amount, GLuint componentCount);
+	class Buffer {
+	private:
+		GLuint m_BufferID;
+		GLuint m_ComponentCount;
+	public:
+		Buffer();
+		Buffer(GLfloat* data, GLsizei amount, GLuint componentCount);
+		~Buffer();
 
-			void bind() const;
-			void unbind() const;
+		void load(GLfloat* data, GLsizei amount, GLuint componentCount);
 
-			inline GLuint getComponentCount() const { return m_ComponentCount; }
-		};
+		void bind() const;
+		void unbind() const;
 
-	}
+		inline GLuint getComponentCount() const { return m_ComponentCount; }
+	};
+
+
 }

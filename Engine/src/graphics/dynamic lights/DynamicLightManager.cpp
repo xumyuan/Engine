@@ -3,7 +3,6 @@
 #include "DynamicLightManager.h"
 
 namespace engine {
-	namespace graphics {
 
 		// TODO: Add functionality so it can update with an entitie's position and orientation
 		DynamicLightManager::DynamicLightManager()
@@ -50,6 +49,4 @@ namespace engine {
 		void DynamicLightManager::addPointLight(PointLight& pointLight) {
 			m_PointLights.push_back(pointLight);
 		}
-
-	}
 }

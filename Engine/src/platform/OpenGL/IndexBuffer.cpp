@@ -2,7 +2,7 @@
 #include "IndexBuffer.h"
 
 namespace engine {
-	namespace opengl {
+	
 
 		IndexBuffer::IndexBuffer() {
 			glGenBuffers(1, &m_BufferID);
@@ -33,5 +33,5 @@ namespace engine {
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		}
 
-	}
+	
 }

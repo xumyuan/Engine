@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "Scene3D.h"
+#include "scene/Scene3D.h"
 
 #include "graphics/Shader.h"
 #include "graphics/Window.h"
@@ -16,26 +16,26 @@
 #include "utils/Timer.h"
 
 int main() {
-	engine::graphics::FPSCamera camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f);
-	engine::graphics::Window window("Engine", WINDOW_X_RESOLUTION, WINDOW_Y_RESOLUTION);
+	engine::FPSCamera camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f);
+	engine::Window window("Engine", WINDOW_X_RESOLUTION, WINDOW_Y_RESOLUTION);
 
 	//创建场景
 	engine::Scene3D scene(&camera, &window);
-	engine::graphics::GLCache* glCache = engine::graphics::GLCache::getInstance();
-	engine::utils::TextureLoader::initializeDefaultTextures();
-	engine::graphics::PostProcessor postProcessor(scene.getRenderer());
+	engine::GLCache* glCache = engine::GLCache::getInstance();
+	engine::TextureLoader::initializeDefaultTextures();
+	engine::PostProcessor postProcessor(scene.getRenderer());
 
 	// 准备ui
-	engine::ui::RuntimePane runtimePane(glm::vec2(256.0f, 90.0f));
-	engine::ui::DebugPane debugPane(glm::vec2(256.0f, 115.0f));
+	engine::RuntimePane runtimePane(glm::vec2(256.0f, 90.0f));
+	engine::DebugPane debugPane(glm::vec2(256.0f, 115.0f));
 
 	// 创建帧缓冲
 	bool shouldMultisample = MSAA_SAMPLE_AMOUNT > 1.0 ? true : false;
-	engine::opengl::RenderTarget framebuffer(window.getWidth(), window.getHeight());
+	engine::Framebuffer framebuffer(window.getWidth(), window.getHeight());
 	framebuffer.addColorAttachment(shouldMultisample).addDepthStencilRBO(shouldMultisample).createFramebuffer();
 
 	// TODO: MAKE MULTISAMPLE OPTION WORK OR INVESTIGATE
-	engine::opengl::RenderTarget shadowmap(SHADOWMAP_RESOLUTION_X, SHADOWMAP_RESOLUTION_Y);
+	engine::Framebuffer shadowmap(SHADOWMAP_RESOLUTION_X, SHADOWMAP_RESOLUTION_Y);
 	shadowmap.addDepthAttachment(false).createFramebuffer();
 
 

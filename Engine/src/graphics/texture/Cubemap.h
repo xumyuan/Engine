@@ -1,44 +1,42 @@
 #pragma once
 
 namespace engine {
-	namespace graphics {
 
-		struct CubemapSettings {
-			// Texture wrapping options
-			GLenum TextureWrapSMode = GL_CLAMP_TO_EDGE;
-			GLenum TextureWrapTMode = GL_CLAMP_TO_EDGE;
-			GLenum TextureWrapRMode = GL_CLAMP_TO_EDGE;
+	struct CubemapSettings {
+		// Texture wrapping options
+		GLenum TextureWrapSMode = GL_CLAMP_TO_EDGE;
+		GLenum TextureWrapTMode = GL_CLAMP_TO_EDGE;
+		GLenum TextureWrapRMode = GL_CLAMP_TO_EDGE;
 
-			// Texture filtering options
-			GLenum TextureMinificationFilterMode = GL_LINEAR; // Filtering mode when the texture moves further away and multiple texels map to one pixel (trilinear for best quality)
-			GLenum TextureMagnificationFilterMode = GL_LINEAR; // Filtering mode when the texture gets closer and multiple pixels map to a single texel (Never needs to be more than bilinear because that is as accurate as it gets in this sitation)
-		};
+		// Texture filtering options
+		GLenum TextureMinificationFilterMode = GL_LINEAR; // Filtering mode when the texture moves further away and multiple texels map to one pixel (trilinear for best quality)
+		GLenum TextureMagnificationFilterMode = GL_LINEAR; // Filtering mode when the texture gets closer and multiple pixels map to a single texel (Never needs to be more than bilinear because that is as accurate as it gets in this sitation)
+	};
 
-		class Cubemap {
-		public:
-			Cubemap();
-			Cubemap(CubemapSettings settings);
-			~Cubemap();
+	class Cubemap {
+	public:
+		Cubemap();
+		Cubemap(CubemapSettings settings);
+		~Cubemap();
 
-			void generateCubemapFace(GLenum face, unsigned int faceWidth, unsigned int faceHeight, GLenum textureFormat, GLenum dataFormat, const unsigned char* data);
+		void generateCubemapFace(GLenum face, unsigned int faceWidth, unsigned int faceHeight, GLenum textureFormat, GLenum dataFormat, const unsigned char* data);
 
-			void bind(int unit = -1);
-			void unbind();
+		void bind(int unit = -1);
+		void unbind();
 
-			// Pre-generation controls only
-			inline void setCubemapSettings(CubemapSettings settings) {
-				m_CubemapSettings = settings;
-			}
-		private:
+		// Pre-generation controls only
+		inline void setCubemapSettings(CubemapSettings settings) {
+			m_CubemapSettings = settings;
+		}
+	private:
 
-			// TODO:研究更好的过滤，例如各向异性支持，并研究立方体贴图的适当 mips
-			unsigned int m_CubemapId;
+		// TODO:研究更好的过滤，例如各向异性支持，并研究立方体贴图的适当 mips
+		unsigned int m_CubemapId;
 
-			unsigned int m_FaceWidth, m_FaceHeight;
-			GLenum m_TextureFormat;
+		unsigned int m_FaceWidth, m_FaceHeight;
+		GLenum m_TextureFormat;
 
-			CubemapSettings m_CubemapSettings;
-		};
+		CubemapSettings m_CubemapSettings;
+	};
 
-	}
 }
