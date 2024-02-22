@@ -61,6 +61,12 @@ namespace engine {
 		std::vector<glm::vec3> tangents;
 		std::vector<glm::vec3> bitangents;
 		std::vector<unsigned int> indices;
+
+		positions.reserve(mesh->mNumVertices);
+		uvs.reserve(mesh->mNumVertices);
+		normals.reserve(mesh->mNumVertices);
+		tangents.reserve(mesh->mNumVertices);
+		bitangents.reserve(mesh->mNumVertices);
 		indices.reserve(mesh->mNumFaces * 3); // 假设为三角形，不是三角形也能被加载，不过不会被优化
 
 		// 处理顶点数据

@@ -147,6 +147,12 @@
     <ClInclude Include="src\scene\Renderable3D.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="src\input\InputManager.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\input\JoystickManager.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\graphics\shader.cpp">
@@ -270,6 +276,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\scene\Renderable3D.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\input\InputManager.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\input\JoystickManager.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

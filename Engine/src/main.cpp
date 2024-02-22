@@ -8,6 +8,7 @@
 #include "graphics/mesh/common/Quad.h"
 #include "graphics/renderer/GLCache.h"
 #include "graphics/renderer/PostProcessor.h"
+#include "input/InputManager.h"
 #include "platform/OpenGL/Framebuffers/Framebuffer.h"
 #include "terrain/Terrain.h"
 #include "ui/DebugPane.h"
@@ -74,7 +75,7 @@ int main() {
 
 		camera.processInput(deltaTime.getDeltaTime());
 
-		if (window.isKeyPressed(GLFW_KEY_ESCAPE))
+		if (engine::InputManager::isKeyPressed(GLFW_KEY_ESCAPE))
 			window.close();
 
 
@@ -101,7 +102,6 @@ int main() {
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-		window.resetScroll();
 		window.update();
 	}
 

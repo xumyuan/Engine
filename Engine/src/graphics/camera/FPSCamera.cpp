@@ -36,30 +36,30 @@ namespace engine {
 
 	void FPSCamera::processInput(GLfloat deltaTime) {
 		// Keyboard input
-		if (Window::isKeyPressed(GLFW_KEY_W))
+		if (InputManager::isKeyPressed(GLFW_KEY_W))
 			processKeyboard(engine::FORWARD, deltaTime);
-		if (Window::isKeyPressed(GLFW_KEY_S))
+		if (InputManager::isKeyPressed(GLFW_KEY_S))
 			processKeyboard(engine::BACKWARD, deltaTime);
-		if (Window::isKeyPressed(GLFW_KEY_A))
+		if (InputManager::isKeyPressed(GLFW_KEY_A))
 			processKeyboard(engine::LEFT, deltaTime);
-		if (Window::isKeyPressed(GLFW_KEY_D))
+		if (InputManager::isKeyPressed(GLFW_KEY_D))
 			processKeyboard(engine::RIGHT, deltaTime);
-		if (Window::isKeyPressed(GLFW_KEY_SPACE))
+		if (InputManager::isKeyPressed(GLFW_KEY_SPACE))
 			processKeyboard(engine::UPWARDS, deltaTime);
-		if (Window::isKeyPressed(GLFW_KEY_LEFT_CONTROL))
+		if (InputManager::isKeyPressed(GLFW_KEY_LEFT_CONTROL))
 			processKeyboard(engine::DOWNWARDS, deltaTime);
-		if (Window::isKeyPressed(GLFW_KEY_LEFT_SHIFT))
+		if (InputManager::isKeyPressed(GLFW_KEY_LEFT_SHIFT))
 			m_MovementSpeed = SPEED * 4.0f;
-		else if (Window::isKeyPressed(GLFW_KEY_LEFT_ALT))
+		else if (InputManager::isKeyPressed(GLFW_KEY_LEFT_ALT))
 			m_MovementSpeed = SPEED / 4.0f;
 		else
 			m_MovementSpeed = SPEED;
 
 		// Mouse scrolling
-		processMouseScroll(Window::getScrollY() * 6);
+		processMouseScroll(InputManager::getScrollY() * 6);
 
 		// Mouse movement
-		processMouseMovement(Window::getMouseXDelta(), -Window::getMouseYDelta(), true);
+		processMouseMovement(InputManager::getMouseXDelta(), -InputManager::getMouseYDelta(), true);
 	}
 
 	void FPSCamera::processKeyboard(Camera_Movement direction, GLfloat deltaTime) {

@@ -3,6 +3,9 @@
 
 namespace engine {
 
+	// Static declarations
+	int Window::m_Width; int Window::m_Height;
+
 	void error_callback(int error, const char* description);
 	void window_resize_callback(GLFWwindow* window, int width, int height);
 	void framebuffer_resize_callback(GLFWwindow* window, int width, int height);
@@ -11,20 +14,16 @@ namespace engine {
 	void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
 	void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 	void char_callback(GLFWwindow* window, unsigned int c);
+	void joystick_callback(int joystick, int event);
 	void GLAPIENTRY DebugMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
 
-	bool Window::s_Keys[MAX_KEYS];
-	bool Window::s_Buttons[MAX_BUTTONS];
-	int Window::m_Width, Window::m_Height;
-	double Window::s_MouseX, Window::s_MouseY, Window::s_MouseXDelta, Window::s_MouseYDelta;
-	double Window::s_ScrollX, Window::s_ScrollY;
+
 
 	Window::Window(const char* title, int width, int height) {
 		m_Title = title;
 		m_Width = width;
 		m_Height = height;
-		s_ScrollX = s_ScrollY = 0;
-		s_MouseXDelta = s_MouseYDelta = 0;
+
 		m_HideCursor = true;
 
 		if (!init()) {
@@ -33,8 +32,6 @@ namespace engine {
 			glfwTerminate();
 		}
 
-		memset(s_Keys, 0, sizeof(bool) * MAX_KEYS);
-		memset(s_Buttons, 0, sizeof(bool) * MAX_BUTTONS);
 	}
 
 	Window::~Window() {
@@ -84,6 +81,10 @@ namespace engine {
 		if (m_HideCursor)
 			glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
+		double currMouseX, currMouseY;
+		glfwGetCursorPos(m_Window, &currMouseX, &currMouseY);
+		g_InputManager.setMousePos(currMouseX, currMouseY);
+
 		// Set up contexts and callbacks
 		glfwMakeContextCurrent(m_Window);
 		glfwSetWindowUserPointer(m_Window, this);
@@ -95,7 +96,7 @@ namespace engine {
 		glfwSetCursorPosCallback(m_Window, cursor_position_callback);
 		glfwSetScrollCallback(m_Window, scroll_callback);
 		glfwSetCharCallback(m_Window, char_callback);
-		glfwGetCursorPos(m_Window, &s_MouseX, &s_MouseY);
+		glfwSetJoystickCallback(joystick_callback);
 
 
 		// Check to see if v-sync was enabled and act accordingly
@@ -141,23 +142,15 @@ namespace engine {
 	}
 
 	void Window::update() {
-		//// ImGui new frame
-		//ImGui_ImplOpenGL3_NewFrame();
-		//ImGui_ImplGlfw_NewFrame();
-		//ImGui::NewFrame();
-
-		//ImGui::ShowDemoWindow();
-
-		//ImGui::Render(); 
-		//ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
 		GLenum error = glGetError();
 		if (error != GL_NO_ERROR) {
 			std::cout << "OpenGL Error: " << error << std::endl;
 		}
+		// Input handling
+		g_InputManager.Update();
 
+		//Handle Window updating
 		glfwSwapBuffers(m_Window);
-		s_MouseXDelta = s_MouseYDelta = 0;
 		glfwPollEvents();
 	}
 
@@ -180,28 +173,6 @@ namespace engine {
 		m_Height = mode->height;
 	}
 
-	/*                   Static Funciton                    */
-	bool Window::isKeyPressed(unsigned int keycode) {
-		if (keycode >= MAX_KEYS) {
-			Logger::getInstance().error("logged_files/input_errors.txt", "Input Check", "Key checked is out of bounds (ie not supported)");
-			std::cout << "Max key overflow in Window" << std::endl;
-			return false;
-		}
-		else {
-			return s_Keys[keycode];
-		}
-	}
-
-	bool Window::isMouseButtonPressed(unsigned int keycode) {
-		if (keycode >= MAX_BUTTONS) {
-			Logger::getInstance().error("logged_files/input_errors.txt", "Input Check", "Key checked is out of bounds (ie not supported)");
-			std::cout << "Max mouse button overflow in window" << std::endl;
-			return false;
-		}
-		else {
-			return s_Buttons[keycode];
-		}
-	}
 
 	/*              Callback Functions              */
 	static void error_callback(int error, const char* description) {
@@ -227,7 +198,7 @@ namespace engine {
 
 	static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 		Window* win = (Window*)glfwGetWindowUserPointer(window);
-		win->s_Keys[key] = action != GLFW_RELEASE;
+		g_InputManager.keyCallback(key, scancode, action, mods);
 		ImGui_ImplGlfw_KeyCallback(window, key, scancode, action, mods);
 #if DEBUG_ENABLED
 		if (key == GLFW_KEY_P && action == GLFW_RELEASE) {
@@ -239,28 +210,25 @@ namespace engine {
 	}
 
 	static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
-		Window* win = (Window*)glfwGetWindowUserPointer(window);
-		win->s_Buttons[button] = action != GLFW_RELEASE;
+		g_InputManager.mouseButtonCallback(button, action, mods);
 		ImGui_ImplGlfw_MouseButtonCallback(window, button, action, mods);
 	}
 
 	static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
-		Window* win = (Window*)glfwGetWindowUserPointer(window);
-		win->s_MouseXDelta = xpos - win->s_MouseX;
-		win->s_MouseYDelta = ypos - win->s_MouseY;
-		win->s_MouseX = xpos;
-		win->s_MouseY = ypos;
+		g_InputManager.cursorPositionCallback(xpos, ypos);
 	}
 
 	static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
-		Window* win = (Window*)glfwGetWindowUserPointer(window);
-		win->s_ScrollX = xoffset;
-		win->s_ScrollY = yoffset;
+		g_InputManager.scrollCallback(xoffset, yoffset);
 		ImGui_ImplGlfw_ScrollCallback(window, xoffset, yoffset);
 	}
 
 	static void char_callback(GLFWwindow* window, unsigned int c) {
 		ImGui_ImplGlfw_CharCallback(window, c);
+	}
+
+	static void joystick_callback(int joystick, int event) {
+		g_InputManager.joystickCallback(joystick, event);
 	}
 
 	static void GLAPIENTRY DebugMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {

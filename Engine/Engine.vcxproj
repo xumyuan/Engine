@@ -141,6 +141,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\input\JoystickManager.h" />
+    <ClInclude Include="src\input\InputManager.h" />
     <ClInclude Include="src\graphics\camera\CubemapCamera.h" />
     <ClInclude Include="src\pch.h" />
     <ClInclude Include="src\graphics\ibl\EnvironmentProbe.h" />
@@ -187,6 +189,8 @@
     <ClInclude Include="src\graphics\texture\Texture.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\input\JoystickManager.cpp" />
+    <ClCompile Include="src\input\InputManager.cpp" />
     <ClCompile Include="src\graphics\camera\CubemapCamera.cpp" />
     <ClCompile Include="src\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
