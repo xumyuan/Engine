@@ -6,7 +6,7 @@ namespace engine {
 	PostProcessor::PostProcessor(MeshRenderer* renderer)
 		: m_MeshRenderer(renderer), m_PostProcessShader("src/shaders/postprocess.vert", "src/shaders/postprocess.frag"), m_ScreenRenderTarget(Window::getWidth(), Window::getHeight())
 	{
-		m_ScreenRenderTarget.addColorAttachment(false).addDepthStencilRBO(false).createFramebuffer();
+		m_ScreenRenderTarget.addTexture2DColorAttachment(false).addDepthStencilRBO(false).createFramebuffer();
 		DebugPane::bindGammaCorrectionValue(&m_GammaCorrection);
 	}
 

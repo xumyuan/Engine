@@ -13,12 +13,12 @@ namespace engine {
 	}
 
 	//不透明渲染队列
-	void MeshRenderer::submitOpaque(Renderable3D* renderable) {
+	void MeshRenderer::submitOpaque(RenderableModel* renderable) {
 		m_OpaqueRenderQueue.push_back(renderable);
 	}
 
 	//透明物体渲染队列
-	void MeshRenderer::submitTransparent(Renderable3D* renderable) {
+	void MeshRenderer::submitTransparent(RenderableModel* renderable) {
 		m_TransparentRenderQueue.push_back(renderable);
 	}
 
@@ -35,7 +35,7 @@ namespace engine {
 
 		//不透明物体渲染队列
 		while (!m_OpaqueRenderQueue.empty()) {
-			Renderable3D* current = m_OpaqueRenderQueue.front();
+			RenderableModel* current = m_OpaqueRenderQueue.front();
 
 			setupModelMatrix(current, shader, pass);
 			current->draw(shader, pass);
@@ -57,13 +57,13 @@ namespace engine {
 
 		//排序后从后往前渲染，没有考虑缩放和旋转
 		std::sort(m_TransparentRenderQueue.begin(), m_TransparentRenderQueue.end(),
-			[this](Renderable3D* a, Renderable3D* b)->bool {
+			[this](RenderableModel* a, RenderableModel* b)->bool {
 				return glm::length2(m_Camera->getPosition() - a->getPosition()) > glm::length2(m_Camera->getPosition() - b->getPosition());
 			});
 
 		//透明物体渲染
 		while (!m_TransparentRenderQueue.empty()) {
-			Renderable3D* current = m_TransparentRenderQueue.front();
+			RenderableModel* current = m_TransparentRenderQueue.front();
 
 			//开启混合
 			m_GLCache->setBlend(true);
@@ -78,7 +78,7 @@ namespace engine {
 	}
 
 	// TODO: Currently only support two levels in a hierarchical scene graph
-	void MeshRenderer::setupModelMatrix(Renderable3D* renderable, Shader& shader, RenderPass pass) {
+	void MeshRenderer::setupModelMatrix(RenderableModel* renderable, Shader& shader, RenderPass pass) {
 		glm::mat4 model(1);
 		glm::mat4 translate = glm::translate(glm::mat4(1.0f), renderable->getPosition());
 		glm::mat4 rotate = glm::toMat4(renderable->getOrientation());

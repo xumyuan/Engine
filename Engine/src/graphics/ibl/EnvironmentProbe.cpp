@@ -3,7 +3,7 @@
 
 namespace engine {
 
-	EnvironmentProbe::EnvironmentProbe(glm::vec3& probePosition, glm::vec2& probeResolution) {
+	EnvironmentProbe::EnvironmentProbe(glm::vec3& probePosition, glm::vec2& probeResolution, bool isStatic) {
 
 	}
 

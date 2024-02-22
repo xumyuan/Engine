@@ -13,7 +13,7 @@ namespace engine {
 		InputManager();
 		~InputManager();
 
-		void Update();
+		void update();
 
 		static bool isKeyPressed(unsigned int keycode);
 		static float getKeyPressure(unsigned int keycode);

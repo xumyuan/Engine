@@ -40,7 +40,7 @@ namespace engine {
 
 			//pbr ÁÙÊ±´úÂë
 		Model* pbrGun = new engine::Model("res/3D_Models/Cerberus_Gun/Cerberus_LP.FBX");
-		add(new Renderable3D(glm::vec3(120.0f, 75.0f, 120.0f), glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(-90.0f), pbrGun, nullptr, false));
+		add(new RenderableModel(glm::vec3(120.0f, 75.0f, 120.0f), glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(-90.0f), pbrGun, nullptr, false));
 		pbrGun->getMeshes()[0].getMaterial().setAlbedoMap(TextureLoader::load2DTexture(std::string("res/3D_Models/Cerberus_Gun/Textures/Cerberus_A.tga"), true));
 		pbrGun->getMeshes()[0].getMaterial().setNormalMap(TextureLoader::load2DTexture(std::string("res/3D_Models/Cerberus_Gun/Textures/Cerberus_N.tga"), false));
 		pbrGun->getMeshes()[0].getMaterial().setMetallicMap(TextureLoader::load2DTexture(std::string("res/3D_Models/Cerberus_Gun/Textures/Cerberus_M.tga"), false));
@@ -166,14 +166,14 @@ namespace engine {
 
 	}
 
-	void Scene3D::add(Renderable3D* renderable) {
+	void Scene3D::add(RenderableModel* renderable) {
 		m_Renderables.push_back(renderable);
 	}
 
 	void Scene3D::addObjectsToRenderQueue() {
 		auto iter = m_Renderables.begin();
 		while (iter != m_Renderables.end()) {
-			Renderable3D* curr = *iter;
+			RenderableModel* curr = *iter;
 			if (curr->getTransparent()) {
 				m_MeshRenderer->submitTransparent(curr);
 			}

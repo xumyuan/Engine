@@ -144,7 +144,7 @@
     <ClInclude Include="src\graphics\camera\CubemapCamera.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\scene\Renderable3D.h">
+    <ClInclude Include="src\scene\RenderableModel.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\input\InputManager.h">
@@ -275,7 +275,7 @@
     <ClCompile Include="src\graphics\camera\CubemapCamera.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\scene\Renderable3D.cpp">
+    <ClCompile Include="src\scene\RenderableModel.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\input\InputManager.cpp">

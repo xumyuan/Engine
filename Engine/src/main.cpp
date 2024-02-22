@@ -33,7 +33,7 @@ int main() {
 	// ´´½¨Ö¡»º³å
 	bool shouldMultisample = MSAA_SAMPLE_AMOUNT > 1.0 ? true : false;
 	engine::Framebuffer framebuffer(window.getWidth(), window.getHeight());
-	framebuffer.addColorAttachment(shouldMultisample).addDepthStencilRBO(shouldMultisample).createFramebuffer();
+	framebuffer.addTexture2DColorAttachment(shouldMultisample).addDepthStencilRBO(shouldMultisample).createFramebuffer();
 
 	// TODO: MAKE MULTISAMPLE OPTION WORK OR INVESTIGATE
 	engine::Framebuffer shadowmap(SHADOWMAP_RESOLUTION_X, SHADOWMAP_RESOLUTION_Y);
