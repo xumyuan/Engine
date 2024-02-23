@@ -70,7 +70,7 @@ namespace engine {
 			m_GLCache->setBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 			setupModelMatrix(current, shader, pass);
-			current->draw(shader, RenderPassType::LightingPass);
+			current->draw(shader, pass);
 
 			m_TransparentRenderQueue.pop_front();
 
@@ -95,7 +95,7 @@ namespace engine {
 
 		shader.setUniformMat4("model", model);
 
-		if (pass != RenderPassType::ShadowmapPass) {
+		if (pass != RenderPassType::ShadowmapPassTpye) {
 			glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
 			shader.setUniformMat3("normalMatrix", normalMatrix);
 		}

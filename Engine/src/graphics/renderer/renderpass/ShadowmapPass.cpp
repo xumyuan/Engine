@@ -4,7 +4,7 @@
 namespace engine
 {
 
-	ShadowmapPass::ShadowmapPass(Scene3D* scene) : RenderPass(scene, RenderPassType::ShadowmapPass),
+	ShadowmapPass::ShadowmapPass(Scene3D* scene) : RenderPass(scene, RenderPassType::ShadowmapPassTpye),
 		m_ShadowmapFramebuffer(SHADOWMAP_RESOLUTION_X, SHADOWMAP_RESOLUTION_Y), m_ShadowmapShader("src/shaders/shadowmap.vert", "src/shaders/shadowmap.frag")
 	{
 		m_ShadowmapFramebuffer.addDepthAttachment(false).createFramebuffer();

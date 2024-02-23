@@ -7,6 +7,7 @@
 #include "graphics/mesh/Model.h"
 #include "graphics/mesh/common/Quad.h"
 #include "graphics/renderer/GLCache.h"
+#include "graphics/renderer/MasterRenderer.h"
 #include "graphics/renderer/PostProcessor.h"
 #include "input/InputManager.h"
 #include "platform/OpenGL/Framebuffers/Framebuffer.h"
@@ -22,23 +23,12 @@ int main() {
 
 	//创建场景
 	engine::Scene3D scene(&window);
-	engine::GLCache* glCache = engine::GLCache::getInstance();
+	engine::MasterRenderer renderer(&scene);
 	engine::TextureLoader::initializeDefaultTextures();
-	engine::PostProcessor postProcessor(scene.getModelRenderer());
 
 	// 准备ui
 	engine::RuntimePane runtimePane(glm::vec2(256.0f, 90.0f));
 	engine::DebugPane debugPane(glm::vec2(256.0f, 115.0f));
-
-	// 创建帧缓冲
-	bool shouldMultisample = MSAA_SAMPLE_AMOUNT > 1.0 ? true : false;
-	engine::Framebuffer framebuffer(window.getWidth(), window.getHeight());
-	framebuffer.addTexture2DColorAttachment(shouldMultisample).addDepthStencilRBO(shouldMultisample).createFramebuffer();
-
-	// TODO: MAKE MULTISAMPLE OPTION WORK OR INVESTIGATE
-	engine::Framebuffer shadowmap(SHADOWMAP_RESOLUTION_X, SHADOWMAP_RESOLUTION_Y);
-	shadowmap.addDepthAttachment(false).createFramebuffer();
-
 
 #if DEBUG_ENABLED
 	engine::Timer timer;
@@ -63,36 +53,10 @@ int main() {
 		glFinish();
 		timer.reset();
 #endif
-		// Shadowmap Pass
-		glViewport(0, 0, shadowmap.getWidth(), shadowmap.getHeight());
-		shadowmap.bind();
-		shadowmap.clear();
-		scene.shadowmapPass();
-#if DEBUG_ENABLED
-		glFinish();
-		runtimePane.setShadowmapTimer(timer.elapsed());
-#endif
-
-
 		if (engine::InputManager::isKeyPressed(GLFW_KEY_ESCAPE))
 			window.close();
-
-
-		//绘制到自定义多重采样缓冲区
-		glViewport(0, 0, framebuffer.getWidth(), framebuffer.getHeight());
-
-		framebuffer.bind();
-		framebuffer.clear();
 		scene.onUpdate(deltaTime.getDeltaTime());
-		scene.onRender(shadowmap.getDepthTexture());
-
-
-#if DEBUG_ENABLED
-		glFinish();
-		timer.reset();
-#endif
-		// Peform post processing
-		postProcessor.postLightingPostProcess(&framebuffer);
+		renderer.render();
 
 		// Display panes
 		runtimePane.render();

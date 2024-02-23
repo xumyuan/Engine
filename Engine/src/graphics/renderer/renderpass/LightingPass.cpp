@@ -4,7 +4,7 @@
 namespace engine
 {
 
-	LightingPass::LightingPass(Scene3D* scene) : RenderPass(scene, RenderPassType::LightingPass),
+	LightingPass::LightingPass(Scene3D* scene) : RenderPass(scene, RenderPassType::LightingPassType),
 		m_Framebuffer(Window::getWidth(), Window::getHeight()), m_ModelShader("src/shaders/pbr_model.vert", "src/shaders/pbr_model.frag"), m_TerrainShader("src/shaders/terrain.vert", "src/shaders/terrain.frag")
 	{
 		bool shouldMultisample = MSAA_SAMPLE_AMOUNT > 1.0 ? true : false;
@@ -68,7 +68,7 @@ namespace engine
 
 		// Render pass output
 		LightingPassOutput passOutput;
-		passOutput.outputTexture = m_Framebuffer.getColorBufferTexture();
+		passOutput.outputFramebuffer = &m_Framebuffer;
 		return passOutput;
 	}
 

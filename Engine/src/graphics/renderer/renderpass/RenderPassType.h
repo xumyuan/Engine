@@ -1,12 +1,12 @@
 #pragma once
-#pragma once
+#include <platform/OpenGL/Framebuffers/Framebuffer.h>
 
 namespace engine {
 
 	enum RenderPassType {
-		ShadowmapPass,
-		LightingPass,
-		PostProcessPass
+		ShadowmapPassTpye,
+		LightingPassType,
+		PostProcessPassType
 	};
 
 	struct ShadowmapPassOutput
@@ -17,7 +17,7 @@ namespace engine {
 
 	struct LightingPassOutput
 	{
-		unsigned int outputTexture;
+		Framebuffer* outputFramebuffer;
 	};
 
 }

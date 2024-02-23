@@ -40,10 +40,11 @@ namespace engine {
 #endif
 
 		// 绑定着色器及其后处理设置，并绑定屏幕空间纹理
+		glViewport(0, 0, Window::getWidth(), Window::getHeight());
 		input->unbind();
 		GLCache::getInstance()->switchShader(m_PostProcessShader.getShaderID());
-		m_PostProcessShader.setUniform2f("read_offset", glm::vec2(1.0f / (float)target->getWidth(), 1.0f / (float)target->getHeight()));
 		m_PostProcessShader.setUniform1f("gamma_inverse", 1.0f / m_GammaCorrection);
+		m_PostProcessShader.setUniform2f("read_offset", glm::vec2(1.0f / (float)target->getWidth(), 1.0f / (float)target->getHeight()));
 		m_PostProcessShader.setUniform1i("blur_enabled", m_Blur);
 		m_PostProcessShader.setUniform1i("screen_texture", 0);
 		glActiveTexture(GL_TEXTURE0);

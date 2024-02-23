@@ -91,9 +91,9 @@ namespace engine {
 		// Add objects to the renderer
 		addModelsToRenderer();
 
-		m_ModelRenderer.flushOpaque(m_ShadowmapShader, RenderPassType::ShadowmapPass);
-		m_ModelRenderer.flushTransparent(m_ShadowmapShader, RenderPassType::ShadowmapPass);
-		m_Terrain.Draw(m_ShadowmapShader, RenderPassType::ShadowmapPass);
+		m_ModelRenderer.flushOpaque(m_ShadowmapShader, RenderPassType::ShadowmapPassTpye);
+		m_ModelRenderer.flushTransparent(m_ShadowmapShader, RenderPassType::ShadowmapPassTpye);
+		m_Terrain.Draw(m_ShadowmapShader, RenderPassType::ShadowmapPassTpye);
 
 		m_GLCache->switchShader(m_TerrainShader.getShaderID());
 		m_TerrainShader.setUniformMat4("lightSpaceViewProjectionMatrix", directionalLightViewProjMatrix);
@@ -106,6 +106,9 @@ namespace engine {
 	void Scene3D::onUpdate(float deltaTime) {
 		// Camera Update
 		m_SceneCamera.processInput(deltaTime);
+
+		m_DynamicLightManager.setSpotLightDirection(m_SceneCamera.getFront());
+		m_DynamicLightManager.setSpotLightPosition(m_SceneCamera.getPosition());
 	}
 
 	// 场景渲染
@@ -137,7 +140,7 @@ namespace engine {
 		addModelsToRenderer();
 
 		// Opaque objects
-		m_ModelRenderer.flushOpaque(m_ModelShader, RenderPassType::LightingPass);
+		m_ModelRenderer.flushOpaque(m_ModelShader, RenderPassType::LightingPassType);
 
 		// 地形
 		m_GLCache->switchShader(m_TerrainShader.getShaderID());
@@ -156,14 +159,14 @@ namespace engine {
 		m_TerrainShader.setUniformMat4("model", modelMatrix);
 		m_TerrainShader.setUniformMat4("view", m_SceneCamera.getViewMatrix());
 		m_TerrainShader.setUniformMat4("projection", projectionMat);
-		m_Terrain.Draw(m_TerrainShader, RenderPassType::LightingPass);
+		m_Terrain.Draw(m_TerrainShader, RenderPassType::LightingPassType);
 
 		// 天空盒
 		m_Skybox->Draw();
 
 		//透明物体渲染
 		m_GLCache->switchShader(m_ModelShader.getShaderID());
-		m_ModelRenderer.flushTransparent(m_ModelShader, RenderPassType::LightingPass);
+		m_ModelRenderer.flushTransparent(m_ModelShader, RenderPassType::LightingPassType);
 
 	}
 

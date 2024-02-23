@@ -1,6 +1,10 @@
 #pragma once
 
-#include "scene/Scene3D.h"
+#include <graphics/renderer/renderpass/LightingPass.h>
+#include <graphics/renderer/renderpass/PostProcessPass.h>
+#include <graphics/renderer/renderpass/ShadowmapPass.h>
+#include <scene/Scene3D.h>
+#include <utils/Timer.h>
 
 namespace engine
 {
@@ -10,9 +14,19 @@ namespace engine
 	public:
 		MasterRenderer(Scene3D* scene);
 
-
+		void render();
 	private:
 		Scene3D* m_ActiveScene;
+
+		GLCache* m_GLCache;
+
+		// Render passes
+		ShadowmapPass m_ShadowmapPass;
+		LightingPass m_LightingPass;
+		PostProcessPass m_PostProcessPass;
+
+
+		Timer m_Timer;
 	};
 
 }
