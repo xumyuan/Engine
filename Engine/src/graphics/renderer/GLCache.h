@@ -1,4 +1,5 @@
 #pragma once
+#include "graphics/shader.h"
 #include "utils/Singleton.h"
 
 namespace engine {
@@ -23,6 +24,7 @@ namespace engine {
 		void setBlendFunc(GLenum src, GLenum dst);
 		void setCullFace(GLenum faceToCull);
 
+		void switchShader(Shader& shader);
 		void switchShader(GLuint shaderID);
 	private:
 		// Toggles

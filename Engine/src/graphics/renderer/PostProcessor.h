@@ -1,6 +1,6 @@
 #pragma once
 
-#include "MeshRenderer.h"
+#include "ModelRenderer.h"
 
 #include "graphics/Shader.h"
 #include "graphics/mesh/common/Quad.h"
@@ -13,7 +13,7 @@ namespace engine {
 
 	class PostProcessor {
 	public:
-		PostProcessor(MeshRenderer* renderer);
+		PostProcessor(ModelRenderer* renderer);
 		~PostProcessor();
 
 		void preLightingPostProcess();
@@ -27,7 +27,7 @@ namespace engine {
 	private:
 		float m_GammaCorrection = 2.2f;
 
-		MeshRenderer* m_MeshRenderer;
+		ModelRenderer* m_MeshRenderer;
 		Shader m_PostProcessShader;
 		Quad m_NDC_Plane;
 		Framebuffer m_ScreenRenderTarget;

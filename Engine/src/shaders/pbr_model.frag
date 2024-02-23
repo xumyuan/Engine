@@ -121,7 +121,7 @@ vec3 CalculateDirectionalLightRadiance(vec3 albedo, vec3 normal, float metallic,
 	vec3 diffuseRatio = vec3(1.0) - specularRatio;
 	diffuseRatio *= 1.0 - metallic;
 
-	vec3 numerator = fresnel * normalDistribution * geometry;
+	vec3 numerator = specularRatio * normalDistribution * geometry;
 	float denominator = 4 * max(dot(fragToView, normal), 0.1) * max(dot(lightDir, normal), 0.0) + 0.001;  // Prevents any division by zero
 	vec3 specular = numerator / denominator;
 

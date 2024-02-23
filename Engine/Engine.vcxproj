@@ -141,6 +141,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\graphics\renderer\renderpass\LightingPass.h" />
+    <ClInclude Include="src\graphics\renderer\renderpass\PostProcessPass.h" />
+    <ClInclude Include="src\graphics\renderer\renderpass\RenderPass.h" />
+    <ClInclude Include="src\graphics\renderer\renderpass\ShadowmapPass.h" />
+    <ClInclude Include="src\graphics\renderer\MasterRenderer.h" />
     <ClInclude Include="src\input\JoystickManager.h" />
     <ClInclude Include="src\input\InputManager.h" />
     <ClInclude Include="src\graphics\camera\CubemapCamera.h" />
@@ -151,7 +156,7 @@
     <ClInclude Include="src\ui\DebugPane.h" />
     <ClInclude Include="src\ui\Pane.h" />
     <ClInclude Include="src\ui\RuntimePane.h" />
-    <ClInclude Include="src\graphics\renderer\RenderPass.h" />
+    <ClInclude Include="src\graphics\renderer\renderpass\RenderPassType.h" />
     <ClInclude Include="src\graphics\texture\Cubemap.h" />
     <ClInclude Include="src\graphics\mesh\common\Cube.h" />
     <ClInclude Include="src\graphics\mesh\common\Quad.h" />
@@ -168,7 +173,7 @@
     <ClInclude Include="src\graphics\dynamic lights\SpotLight.h" />
     <ClInclude Include="src\Defs.h" />
     <ClInclude Include="src\graphics\Skybox.h" />
-    <ClInclude Include="src\graphics\renderer\MeshRenderer.h" />
+    <ClInclude Include="src\graphics\renderer\ModelRenderer.h" />
     <ClInclude Include="src\scene\Scene3D.h" />
     <ClInclude Include="src\platform\OpenGL\IndexBuffer.h" />
     <ClInclude Include="src\platform\OpenGL\Buffer.h" />
@@ -189,6 +194,11 @@
     <ClInclude Include="src\graphics\texture\Texture.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\graphics\renderer\renderpass\LightingPass.cpp" />
+    <ClCompile Include="src\graphics\renderer\renderpass\PostProcessPass.cpp" />
+    <ClCompile Include="src\graphics\renderer\renderpass\RenderPass.cpp" />
+    <ClCompile Include="src\graphics\renderer\renderpass\ShadowmapPass.cpp" />
+    <ClCompile Include="src\graphics\renderer\MasterRenderer.cpp" />
     <ClCompile Include="src\input\JoystickManager.cpp" />
     <ClCompile Include="src\input\InputManager.cpp" />
     <ClCompile Include="src\graphics\camera\CubemapCamera.cpp" />
@@ -226,7 +236,7 @@
     <ClCompile Include="src\graphics\dynamic lights\SpotLight.cpp" />
     <ClCompile Include="src\graphics\Skybox.cpp" />
     <ClCompile Include="src\platform\OpenGL\Framebuffers\Framebuffer.cpp" />
-    <ClCompile Include="src\graphics\renderer\MeshRenderer.cpp" />
+    <ClCompile Include="src\graphics\renderer\ModelRenderer.cpp" />
     <ClCompile Include="src\scene\Scene3D.cpp" />
     <ClCompile Include="src\platform\OpenGL\IndexBuffer.cpp" />
     <ClCompile Include="src\platform\OpenGL\Buffer.cpp" />

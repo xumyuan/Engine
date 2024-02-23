@@ -1,17 +1,17 @@
 #pragma once
 
 #include "graphics/mesh/Model.h"
-#include "graphics/renderer/RenderPass.h"
+#include "graphics/renderer/renderpass/RenderPassType.h"
 
 namespace engine {
 
 	class RenderableModel {
 	public:
-		RenderableModel(const glm::vec3& position, const glm::vec3& scale, const glm::vec3& rotationAxis, float radianRotation, Model* model, RenderableModel* parent, bool isStatic = false, bool transparent = false);
+		RenderableModel(const glm::vec3& position, const glm::vec3& scale, const glm::vec3& rotationAxis, float radianRotation, Model* model, RenderableModel* parent, bool m_IsStatic = false, bool transparent = false);
 		~RenderableModel();
 
 		// Assumes shader is already bound by the renderer
-		void draw(Shader& shader, RenderPass pass) const;
+		void draw(Shader& shader, RenderPassType pass) const;
 
 		void addChild(RenderableModel* child);
 

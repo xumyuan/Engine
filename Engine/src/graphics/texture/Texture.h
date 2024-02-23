@@ -18,7 +18,7 @@ namespace engine {
 	class Texture {
 	public:
 		Texture();
-		Texture(TextureSettings settings);
+		Texture(TextureSettings &settings);
 		~Texture();
 
 		// ¥¥Ω®Œ∆¿Ì

@@ -1,6 +1,6 @@
 #pragma once
 #include "GLCache.h"
-#include "RenderPass.h"
+#include "graphics/renderer/renderpass/RenderPassType.h"
 
 #include "scene/RenderableModel.h"
 #include "graphics/camera/FPSCamera.h"
@@ -9,20 +9,20 @@
 
 
 namespace engine {
-	class MeshRenderer {
+	class ModelRenderer {
 	public:
-		MeshRenderer(FPSCamera* camera);
+		ModelRenderer(FPSCamera* camera);
 
 		void submitOpaque(RenderableModel* renderable);
 		void submitTransparent(RenderableModel* renderable);
 
-		void flushOpaque(Shader& shader, RenderPass pass);
-		void flushTransparent(Shader& shader, RenderPass pass);
+		void flushOpaque(Shader& shader, RenderPassType pass);
+		void flushTransparent(Shader& shader, RenderPassType pass);
 	public:
 		Quad NDC_Plane;
 
 	private:
-		void setupModelMatrix(RenderableModel* renderable, Shader& shader, RenderPass pass);
+		void setupModelMatrix(RenderableModel* renderable, Shader& shader, RenderPassType pass);
 
 
 		std::deque<RenderableModel*> m_OpaqueRenderQueue;

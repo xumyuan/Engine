@@ -3,6 +3,10 @@
 
 namespace engine {
 
+	CubemapCamera::CubemapCamera() : m_CenterPosition(0.0f, 0.0f, 0.0f) {
+		switchCameraToFace(0);
+	}
+
 	CubemapCamera::CubemapCamera(glm::vec3& centerPosiiton) : m_CenterPosition(centerPosiiton) {
 		switchCameraToFace(0);
 	}

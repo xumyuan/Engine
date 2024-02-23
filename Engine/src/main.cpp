@@ -17,14 +17,14 @@
 #include "utils/Timer.h"
 
 int main() {
-	engine::FPSCamera camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f);
+
 	engine::Window window("Engine", WINDOW_X_RESOLUTION, WINDOW_Y_RESOLUTION);
 
 	//创建场景
-	engine::Scene3D scene(&camera, &window);
+	engine::Scene3D scene(&window);
 	engine::GLCache* glCache = engine::GLCache::getInstance();
 	engine::TextureLoader::initializeDefaultTextures();
-	engine::PostProcessor postProcessor(scene.getRenderer());
+	engine::PostProcessor postProcessor(scene.getModelRenderer());
 
 	// 准备ui
 	engine::RuntimePane runtimePane(glm::vec2(256.0f, 90.0f));
@@ -73,7 +73,6 @@ int main() {
 		runtimePane.setShadowmapTimer(timer.elapsed());
 #endif
 
-		camera.processInput(deltaTime.getDeltaTime());
 
 		if (engine::InputManager::isKeyPressed(GLFW_KEY_ESCAPE))
 			window.close();
