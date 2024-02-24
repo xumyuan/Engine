@@ -24,7 +24,7 @@ namespace engine {
 		void shadowmapPass();
 
 		void onUpdate(float deltaTime);
-		void onRender(unsigned int shadowmap);
+		void onRender();
 
 		void addModelsToRenderer();
 
@@ -49,7 +49,6 @@ namespace engine {
 		EnvironmentProbeManager m_ProbeManager;
 		std::vector<RenderableModel*> m_RenderableModels;
 
-		Shader m_TerrainShader, m_ModelShader, m_ShadowmapShader;
 	};
 
 }

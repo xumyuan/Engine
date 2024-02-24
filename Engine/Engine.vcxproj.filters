@@ -93,9 +93,6 @@
     <ClInclude Include="src\graphics\renderer\GLCache.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\graphics\renderer\PostProcessor.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="src\graphics\mesh\common\Cube.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -243,9 +240,6 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\graphics\renderer\GLCache.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="src\graphics\renderer\PostProcessor.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\graphics\mesh\common\Cube.cpp">
