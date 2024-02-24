@@ -141,6 +141,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\graphics\ibl\EnvironmentProbeManager.h" />
     <ClInclude Include="src\utils\loaders\ShaderLoader.h" />
     <ClInclude Include="src\graphics\camera\ICamera.h" />
     <ClInclude Include="src\graphics\renderer\renderpass\EnvironmentProbePass.h" />
@@ -195,6 +196,7 @@
     <ClInclude Include="src\graphics\texture\Texture.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\graphics\ibl\EnvironmentProbeManager.cpp" />
     <ClCompile Include="src\utils\loaders\ShaderLoader.cpp" />
     <ClCompile Include="src\graphics\renderer\renderpass\EnvironmentProbePass.cpp" />
     <ClCompile Include="src\graphics\renderer\renderpass\LightingPass.cpp" />

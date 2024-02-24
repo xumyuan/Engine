@@ -171,6 +171,9 @@
     <ClInclude Include="src\utils\loaders\ShaderLoader.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="src\graphics\ibl\EnvironmentProbeManager.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\graphics\shader.cpp">
@@ -315,6 +318,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\utils\loaders\ShaderLoader.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\graphics\ibl\EnvironmentProbeManager.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

@@ -31,7 +31,7 @@ namespace engine
 
 		m_CubemapCamera.setCenterPosition(probePosition);
 		ShadowmapPass shadowPass(m_ActiveScene, &shadowmapFramebuffer);
-		LightingPass lightingPass(m_ActiveScene, &lightingFramebuffer);
+		LightingPass lightingPass(m_ActiveScene, &lightingFramebuffer, false);
 
 		for (int i = 0; i < 6; i++) {
 			// Setup the view
@@ -45,7 +45,8 @@ namespace engine
 			lightingPass.executeRenderPass(shadowpassOutput, &m_CubemapCamera);
 		}
 		// Temp cleanup
-		delete iblProbe;
+		EnvironmentProbeManager* probeManager = m_ActiveScene->getProbeManager();
+		probeManager->addProbe(iblProbe);
 	}
 
 }
