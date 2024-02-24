@@ -18,9 +18,11 @@ namespace engine
 	void EnvironmentProbePass::pregenerateProbes() {
 		// Create framebuffers for generating the probes
 		Framebuffer shadowmapFramebuffer(DEFAULT_IBL_RESOLUTION, DEFAULT_IBL_RESOLUTION); // Creating without colour might make a depth only framebuffer :O
-		shadowmapFramebuffer.addTexture2DColorAttachment(false).addDepthAttachment(false).createFramebuffer();
+		shadowmapFramebuffer.addTexture2DColorAttachment(false).
+			addDepthAttachment(false).createFramebuffer();
 		Framebuffer lightingFramebuffer(DEFAULT_IBL_RESOLUTION, DEFAULT_IBL_RESOLUTION);
-		lightingFramebuffer.addDepthStencilRBO(false).createFramebuffer();
+		lightingFramebuffer.addTexture2DColorAttachment(false).
+			addDepthStencilRBO(false).createFramebuffer();
 
 		glm::vec3 probePosition = glm::vec3(120.0f, 90.0f, 140.0f);
 		glm::vec2 probeResolution = glm::vec2(DEFAULT_IBL_RESOLUTION, DEFAULT_IBL_RESOLUTION);
