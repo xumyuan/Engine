@@ -10,7 +10,7 @@ namespace engine {
 	public:
 		DynamicLightManager();
 
-		void setupLightingUniforms(Shader& shader);
+		void setupLightingUniforms(Shader* shader);
 		void addPointLight(PointLight& pointLight);
 
 		// Control functions

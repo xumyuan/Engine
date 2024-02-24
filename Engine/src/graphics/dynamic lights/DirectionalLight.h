@@ -6,7 +6,7 @@ namespace engine {
 		DirectionalLight();
 		DirectionalLight(const glm::vec3& lightColor, const glm::vec3& dir);
 
-		virtual void setupUniforms(Shader& shader, int currentLightIndex) override;
+		virtual void setupUniforms(Shader* shader, int currentLightIndex) override;
 
 		glm::vec3 direction;
 	};

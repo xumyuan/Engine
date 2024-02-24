@@ -13,7 +13,7 @@ namespace engine {
 		Terrain(const glm::vec3& worldPosition);
 		~Terrain();
 
-		void Draw(Shader& shader, RenderPassType pass) const;
+		void Draw(Shader *shader, RenderPassType pass) const;
 
 		inline const glm::vec3& getPosition() const { return m_Position; }
 	private:

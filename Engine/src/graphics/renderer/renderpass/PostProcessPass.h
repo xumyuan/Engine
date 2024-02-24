@@ -17,7 +17,7 @@ namespace engine
 
 		inline void EnableBlur(bool choice) { m_Blur = choice; }
 	private:
-		Shader m_PostProcessShader;
+		Shader *m_PostProcessShader;
 		Quad m_NDC_Plane;
 		Framebuffer m_ScreenRenderTarget; // 仅在启用多重采样时使​​用，以便它可以位块传输到非多重采样缓冲区
 

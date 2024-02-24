@@ -19,7 +19,7 @@ namespace engine {
 
 		Cubemap* getSkyboxCubemap() { return m_SkyboxCubemap; }
 	private:
-		Shader m_SkyboxShader;
+		Shader *m_SkyboxShader;
 		GLCache* m_GLCache;
 
 		VertexArray m_SkyboxVAO;

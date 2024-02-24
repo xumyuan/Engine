@@ -4,7 +4,7 @@
 namespace engine {
 
 	enum RenderPassType {
-		ShadowmapPassTpye,
+		ShadowmapPassType,
 		LightingPassType,
 		PostProcessPassType,
 		EnvironmentProbePassType
@@ -13,7 +13,7 @@ namespace engine {
 	struct ShadowmapPassOutput
 	{
 		glm::mat4 directionalLightViewProjMatrix;
-		unsigned int shadowmapTexture;
+		Framebuffer* shadowmapFramebuffer;
 	};
 
 	struct LightingPassOutput

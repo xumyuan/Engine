@@ -53,8 +53,9 @@ namespace engine {
 		inline GLfloat getMovementSpeed() const { return m_MovementSpeed; }
 		inline GLfloat getMouseSensitivity() const { return m_MouseSensitivity; }
 		inline GLfloat getFOV() const { return m_FOV; }
-		inline const glm::vec3& getFront() const { return m_Front; }
 		inline virtual const glm::vec3& getPosition() const override { return m_Position; }
+		inline virtual const glm::vec3& getFront() const { return m_Front; }
+		inline virtual const glm::vec3& getUp() const { return m_Up; }
 	private:
 		void updateCameraVectors();
 	};

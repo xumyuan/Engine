@@ -8,7 +8,7 @@ namespace engine {
 	class EnvironmentProbe {
 	public:
 		EnvironmentProbe(glm::vec3& probePosition, glm::vec2& probeResolution, bool m_IsStatic);
-
+		~EnvironmentProbe();
 		void generate();
 
 		// Assumes the shader is bound

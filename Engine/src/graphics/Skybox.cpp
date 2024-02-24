@@ -1,10 +1,13 @@
 #include "pch.h"
 #include "Skybox.h"
 
+#include <utils/loaders/ShaderLoader.h>
+
 namespace engine {
 
-	Skybox::Skybox(const std::vector<std::string>& filePaths) : m_SkyboxShader("src/shaders/skybox.vert", "src/shaders/skybox.frag")
-	{
+
+	Skybox::Skybox(const std::vector<std::string>& filePaths) {
+		m_SkyboxShader = ShaderLoader::loadShader("src/shaders/skybox.vert", "src/shaders/skybox.frag");
 		m_SkyboxCubemap = TextureLoader::loadCubemapTexture(filePaths[0], filePaths[1], filePaths[2], filePaths[3], filePaths[4], filePaths[5], true);
 
 		GLfloat skyboxVertices[] = {
@@ -48,14 +51,14 @@ namespace engine {
 	}
 
 	void Skybox::Draw(ICamera* camera) {
-		m_SkyboxShader.enable();
+		m_SkyboxShader->enable();
 
 		// Pass the texture to the shader
 		m_SkyboxCubemap->bind(0);
-		m_SkyboxShader.setUniform1i("skyboxCubemap", 0);
+		m_SkyboxShader->setUniform1i("skyboxCubemap", 0);
 
-		m_SkyboxShader.setUniformMat4("view", camera->getViewMatrix());
-		m_SkyboxShader.setUniformMat4("projection", camera->getProjectionMatrix());
+		m_SkyboxShader->setUniformMat4("view", camera->getViewMatrix());
+		m_SkyboxShader->setUniformMat4("projection", camera->getProjectionMatrix());
 
 		m_GLCache->setDepthFunc(GL_LEQUAL);
 		m_SkyboxVAO.bind();
@@ -65,7 +68,7 @@ namespace engine {
 		m_SkyboxIBO.unbind();
 		m_GLCache->setDepthFunc(GL_LESS);
 
-		m_SkyboxShader.disable();
+		m_SkyboxShader->disable();
 	}
 
 }

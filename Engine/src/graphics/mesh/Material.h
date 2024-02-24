@@ -10,7 +10,7 @@ namespace engine {
 		Material(Texture* albedoMap = nullptr, Texture* normalMap = nullptr, Texture* metallicMap = nullptr, Texture* roughnessMap = nullptr,
 			Texture* ambientOcclusionMap = nullptr, Texture* emissionMap = nullptr);
 
-		void BindMaterialInformation(Shader& shader) const;
+		void BindMaterialInformation(Shader* shader) const;
 
 
 		inline void setAlbedoMap(Texture* texture) { m_AlbedoMap = texture; }
