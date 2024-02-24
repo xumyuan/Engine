@@ -3,7 +3,7 @@
 
 namespace engine {
 
-	Skybox::Skybox(const std::vector<std::string>& filePaths, FPSCamera* camera) : m_SkyboxShader("src/shaders/skybox.vert", "src/shaders/skybox.frag"), m_Camera(camera)
+	Skybox::Skybox(const std::vector<std::string>& filePaths) : m_SkyboxShader("src/shaders/skybox.vert", "src/shaders/skybox.frag")
 	{
 		m_SkyboxCubemap = TextureLoader::loadCubemapTexture(filePaths[0], filePaths[1], filePaths[2], filePaths[3], filePaths[4], filePaths[5], true);
 
@@ -47,15 +47,15 @@ namespace engine {
 		m_GLCache = GLCache::getInstance();
 	}
 
-	void Skybox::Draw() {
+	void Skybox::Draw(ICamera* camera) {
 		m_SkyboxShader.enable();
 
 		// Pass the texture to the shader
 		m_SkyboxCubemap->bind(0);
 		m_SkyboxShader.setUniform1i("skyboxCubemap", 0);
 
-		m_SkyboxShader.setUniformMat4("view", m_Camera->getViewMatrix());
-		m_SkyboxShader.setUniformMat4("projection", m_Camera->getProjectionMatrix());
+		m_SkyboxShader.setUniformMat4("view", camera->getViewMatrix());
+		m_SkyboxShader.setUniformMat4("projection", camera->getProjectionMatrix());
 
 		m_GLCache->setDepthFunc(GL_LEQUAL);
 		m_SkyboxVAO.bind();

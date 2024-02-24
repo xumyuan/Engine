@@ -16,8 +16,8 @@ namespace engine
 	}
 
 	void MasterRenderer::init() {
-		//ShadowmapPassOutput shadowmapOutput = m_ShadowmapPass.generateShadowmaps();
-		//m_EnvironmentProbePass.pregenerateProbes(shadowmapOutput);
+		ShadowmapPassOutput shadowmapOutput = m_ShadowmapPass.generateShadowmaps();
+		m_EnvironmentProbePass.pregenerateProbes(shadowmapOutput);
 	}
 
 	void MasterRenderer::render() {
@@ -33,7 +33,7 @@ namespace engine
 #endif
 
 		// Lighting Pass
-		LightingPassOutput lightingOutput = m_LightingPass.executeRenderPass(shadowmapOutput);
+		LightingPassOutput lightingOutput = m_LightingPass.executeRenderPass(shadowmapOutput, m_ActiveScene->getCamera());
 
 		// Post Process Pass
 #if DEBUG_ENABLED

@@ -2,6 +2,7 @@
 
 #include "graphics/Window.h"
 #include "ui/DebugPane.h"
+#include "graphics/camera/ICamera.h"
 
 namespace engine {
 
@@ -21,7 +22,7 @@ namespace engine {
 	const GLfloat SENSITIVITY = 0.1f;
 	const GLfloat FOV = 80.0f;
 
-	class FPSCamera {
+	class FPSCamera :public ICamera {
 	private:
 		// Camera Attributes
 		glm::vec3 m_Position, m_Front, m_Up, m_Right, m_WorldUp;
@@ -38,8 +39,8 @@ namespace engine {
 		// Scalar Constructor
 		FPSCamera(GLfloat xPos, GLfloat yPos, GLfloat zPos, GLfloat xUp, GLfloat yUp, GLfloat zUp, GLfloat yaw, GLfloat pitch);
 
-		glm::mat4 getViewMatrix();
-		glm::mat4 getProjectionMatrix();
+		virtual glm::mat4 getViewMatrix() override;
+		virtual glm::mat4 getProjectionMatrix() override;
 		void processInput(GLfloat deltaTime);
 
 		void processKeyboard(Camera_Movement direction, GLfloat deltaTime);
@@ -53,7 +54,7 @@ namespace engine {
 		inline GLfloat getMouseSensitivity() const { return m_MouseSensitivity; }
 		inline GLfloat getFOV() const { return m_FOV; }
 		inline const glm::vec3& getFront() const { return m_Front; }
-		inline const glm::vec3& getPosition() const { return m_Position; }
+		inline virtual const glm::vec3& getPosition() const override { return m_Position; }
 	private:
 		void updateCameraVectors();
 	};

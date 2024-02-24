@@ -165,6 +165,9 @@
     <ClInclude Include="src\graphics\renderer\renderpass\EnvironmentProbePass.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="src\graphics\camera\ICamera.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\graphics\shader.cpp">
