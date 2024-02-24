@@ -12,7 +12,7 @@ namespace engine
 
 	ShadowmapPass::~ShadowmapPass() {}
 
-	ShadowmapPassOutput ShadowmapPass::executeRenderPass() {
+	ShadowmapPassOutput ShadowmapPass::generateShadowmaps() {
 		glViewport(0, 0, m_ShadowmapFramebuffer.getWidth(), m_ShadowmapFramebuffer.getHeight());
 		m_ShadowmapFramebuffer.bind();
 		m_ShadowmapFramebuffer.clear();

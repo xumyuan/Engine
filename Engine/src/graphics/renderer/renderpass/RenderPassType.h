@@ -6,7 +6,8 @@ namespace engine {
 	enum RenderPassType {
 		ShadowmapPassTpye,
 		LightingPassType,
-		PostProcessPassType
+		PostProcessPassType,
+		EnvironmentProbePassType
 	};
 
 	struct ShadowmapPassOutput

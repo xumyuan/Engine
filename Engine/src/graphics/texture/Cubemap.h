@@ -28,10 +28,12 @@ namespace engine {
 		inline void setCubemapSettings(CubemapSettings settings) {
 			m_CubemapSettings = settings;
 		}
-	private:
 
+		// Getters
+		unsigned int getCubemapID() { return m_CubemapID; }
+	private:
 		// TODO:研究更好的过滤，例如各向异性支持，并研究立方体贴图的适当 mips
-		unsigned int m_CubemapId;
+		unsigned int m_CubemapID;
 
 		unsigned int m_FaceWidth, m_FaceHeight;
 		GLenum m_TextureFormat;

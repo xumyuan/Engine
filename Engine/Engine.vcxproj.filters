@@ -132,9 +132,6 @@
     <ClInclude Include="src\graphics\ibl\EnvironmentProbe.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\graphics\ibl\EnvironmentProbeManager.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="src\pch.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -163,6 +160,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\graphics\renderer\renderpass\ShadowmapPass.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\graphics\renderer\renderpass\EnvironmentProbePass.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -275,9 +275,6 @@
     <ClCompile Include="src\graphics\ibl\EnvironmentProbe.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\graphics\ibl\EnvironmentProbeManager.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="src\pch.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -306,6 +303,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\graphics\renderer\renderpass\ShadowmapPass.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\graphics\renderer\renderpass\EnvironmentProbePass.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
