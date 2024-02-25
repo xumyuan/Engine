@@ -24,7 +24,7 @@ namespace engine
 		lightingFramebuffer.addTexture2DColorAttachment(false).
 			addDepthStencilRBO(false).createFramebuffer();
 
-		glm::vec3 probePosition = glm::vec3(120.0f, 90.0f, 140.0f);
+		glm::vec3 probePosition = glm::vec3(67.0f, 92.0f, 133.0f);
 		glm::vec2 probeResolution = glm::vec2(DEFAULT_IBL_RESOLUTION, DEFAULT_IBL_RESOLUTION);
 		EnvironmentProbe* iblProbe = new EnvironmentProbe(probePosition, probeResolution, true);
 		iblProbe->generate();
@@ -41,6 +41,7 @@ namespace engine
 
 			// Light pass
 			iblProbe->getIrradianceMap()->bind();
+			lightingFramebuffer.bind();
 			lightingFramebuffer.setColorAttachment(iblProbe->getIrradianceMap()->getCubemapID(), GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
 			lightingPass.executeRenderPass(shadowpassOutput, &m_CubemapCamera);
 		}

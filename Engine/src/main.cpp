@@ -19,11 +19,11 @@
 int main() {
 
 	engine::Window window("Engine", WINDOW_X_RESOLUTION, WINDOW_Y_RESOLUTION);
+	engine::TextureLoader::initializeDefaultTextures();
 
 	//创建场景
 	engine::Scene3D scene(&window);
 	engine::MasterRenderer renderer(&scene);
-	engine::TextureLoader::initializeDefaultTextures();
 
 	// 准备ui
 	engine::RuntimePane runtimePane(glm::vec2(256.0f, 90.0f));
