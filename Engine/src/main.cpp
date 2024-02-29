@@ -39,6 +39,7 @@ int main() {
 		deltaTime.update();
 
 #if DEBUG_ENABLED
+		//Ïß¿òÄ£Ê½
 		if (debugPane.getWireframeMode())
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		else

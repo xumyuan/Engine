@@ -16,7 +16,7 @@ namespace engine
 	EnvironmentProbePass::~EnvironmentProbePass() {}
 
 	void EnvironmentProbePass::pregenerateProbes() {
-		// Create framebuffers for generating the probes
+		// 创建帧缓冲用于光照探针
 		Framebuffer shadowmapFramebuffer(DEFAULT_IBL_RESOLUTION, DEFAULT_IBL_RESOLUTION); // Creating without colour might make a depth only framebuffer :O
 		shadowmapFramebuffer.addTexture2DColorAttachment(false).
 			addDepthAttachment(false).createFramebuffer();

@@ -87,6 +87,10 @@ namespace engine {
 	}
 
 	void FPSCamera::processMouseMovement(GLfloat xOffset, GLfloat yOffset, GLboolean constrainPitch = true) {
+
+		if (!Window::getHideCursor())
+			return;
+
 		xOffset *= m_MouseSensitivity;
 		yOffset *= m_MouseSensitivity;
 
