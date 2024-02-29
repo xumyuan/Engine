@@ -10,6 +10,6 @@ uniform mat4 projection;
 void main() {
 	SampleDirection = position;
 
-	// Cut off the translation part of the view matrix (so the cube will not be translated because we want the cube to surround the probe's origin)
+	// 切断视图矩阵的平移部分（因此立方体不会平移，因为我们希望立方体围绕探针的原点）
 	gl_Position = projection * mat4(mat3(view)) * vec4(position, 1.0f); 
 }
