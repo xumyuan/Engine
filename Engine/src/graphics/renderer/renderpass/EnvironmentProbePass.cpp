@@ -1,16 +1,23 @@
 #include "pch.h"
 #include "EnvironmentProbePass.h"
 
+#include <graphics/mesh/common/Cube.h>
 #include <graphics/renderer/renderpass/LightingPass.h>
 #include <graphics/renderer/renderpass/ShadowmapPass.h>
+#include <utils/loaders/ShaderLoader.h>
 
 namespace engine
 {
 
 	EnvironmentProbePass::EnvironmentProbePass(Scene3D* scene) : RenderPass(scene, RenderPassType::EnvironmentProbePassType),
-		m_CubemapGenerationFramebuffer(DEFAULT_IBL_RESOLUTION, DEFAULT_IBL_RESOLUTION)
+		m_CaptureShadowFramebuffer(DEFAULT_IBL_RESOLUTION, DEFAULT_IBL_RESOLUTION), m_CaptureLightingFramebuffer(DEFAULT_IBL_RESOLUTION, DEFAULT_IBL_RESOLUTION),
+		m_ConvolutionFramebuffer(LIGHT_PROBE_RESOLUTION, LIGHT_PROBE_RESOLUTION)
 	{
-		m_CubemapGenerationFramebuffer.addDepthStencilRBO(false);
+		m_CaptureShadowFramebuffer.addDepthAttachment(false).createFramebuffer();
+		m_CaptureLightingFramebuffer.addTexture2DColorAttachment(false).addDepthStencilRBO(false).createFramebuffer();
+		m_ConvolutionFramebuffer.addTexture2DColorAttachment(false).addDepthStencilRBO(false).createFramebuffer();
+
+		m_ConvolutionShader = ShaderLoader::loadShader("src/shaders/lightprobe_convolution.vert", "src/shaders/lightprobe_convolution.frag");
 	}
 
 	EnvironmentProbePass::~EnvironmentProbePass() {}

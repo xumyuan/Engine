@@ -260,6 +260,8 @@
     <ClCompile Include="src\graphics\texture\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="src\shaders\lightprobe_convolution.frag" />
+    <None Include="src\shaders\lightprobe_convolution.vert" />
     <None Include="src\shaders\terrain.vert" />
     <None Include="src\shaders\oldModel.frag" />
     <None Include="src\shaders\model.vert" />

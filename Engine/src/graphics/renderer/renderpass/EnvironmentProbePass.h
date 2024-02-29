@@ -17,8 +17,10 @@ namespace engine
 
 		void pregenerateProbes();
 	private:
-		Framebuffer m_CubemapGenerationFramebuffer;
+		Framebuffer m_CaptureShadowFramebuffer, m_CaptureLightingFramebuffer, m_ConvolutionFramebuffer;
 		CubemapCamera m_CubemapCamera;
+
+		Shader* m_ConvolutionShader;
 
 	};
 
