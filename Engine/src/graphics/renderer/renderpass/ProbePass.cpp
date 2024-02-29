@@ -55,13 +55,12 @@ namespace engine {
 			lightingPass.executeRenderPass(shadowpassOutput, &m_CubemapCamera);
 			m_SceneCaptureLightingFramebuffer.setColorAttachment(0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
 		}
-		/*
-		// Take the capture and apply convolution for the irradiance map (indirect diffuse liing)
-		// Since we are rendering by sampling a cubemap, use a cube
-		Model cubeModel = Model(Cube());
-		RenderableModel renderable(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), 0.0f, &cubeModel, nullptr);
+		
+		// 捕获并应用辐照度图的卷积（间接漫反射）
 		m_GLCache->switchShader(m_ConvolutionShader);
 		m_GLCache->setFaceCull(false);
+		m_GLCache->setDepthTest(false);
+
 		m_ConvolutionShader->setUniformMat4("projection", m_CubemapCamera.getProjectionMatrix());
 		m_SceneCaptureCubemap.bind(0);
 		m_ConvolutionShader->setUniform1i("sceneCaptureCubemap", 0);
@@ -71,13 +70,14 @@ namespace engine {
 			m_CubemapCamera.switchCameraToFace(i);
 			m_ConvolutionShader->setUniformMat4("view", m_CubemapCamera.getViewMatrix());
 
-			// Convolute the scene's capture and store it in the Light Probe's cubemap
+			// 对场景的捕捉进行卷积并将其存储在光探针的立方体贴图中
 			m_LightProbeConvolutionFramebuffer.setColorAttachment(lightProbe->getIrradianceMap()->getCubemapID(), GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
-			renderable.draw(m_ConvolutionShader, RenderPassType::ShadowmapPassType);
+			m_ActiveScene->getModelRenderer()->NDC_Cube.Draw(); // 由于我们正在对立方体贴图进行采样，因此只需使用 NDC 空间中的立方体
 			m_LightProbeConvolutionFramebuffer.setColorAttachment(0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
 		}
 		m_GLCache->setFaceCull(true);
-		*/
+		m_GLCache->setDepthTest(true);
+		
 		ProbeManager* probeManager = m_ActiveScene->getProbeManager();
 		probeManager->addProbe(lightProbe);
 	}

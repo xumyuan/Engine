@@ -68,6 +68,7 @@ namespace engine {
 		m_SkyboxIBO.unbind();
 		m_GLCache->setDepthFunc(GL_LESS);
 
+		m_SkyboxCubemap->unbind();
 	}
 
 }

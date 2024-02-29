@@ -5,6 +5,7 @@
 #include "scene/RenderableModel.h"
 #include "graphics/camera/FPSCamera.h"
 #include "graphics/mesh/Model.h"
+#include <graphics/mesh/common/Cube.h>
 #include "graphics/mesh/common/Quad.h"
 
 
@@ -20,6 +21,7 @@ namespace engine {
 		void flushTransparent(Shader* shader, RenderPassType pass);
 	public:
 		Quad NDC_Plane;
+		Cube NDC_Cube;
 
 	private:
 		void setupModelMatrix(RenderableModel* renderable, Shader* shader, RenderPassType pass);

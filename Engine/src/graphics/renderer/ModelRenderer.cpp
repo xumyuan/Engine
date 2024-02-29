@@ -4,7 +4,7 @@
 namespace engine {
 
 	ModelRenderer::ModelRenderer(FPSCamera* camera) :
-		m_Camera(camera), NDC_Plane()
+		m_Camera(camera), NDC_Plane(), NDC_Cube()
 	{
 		m_GLCache = GLCache::getInstance();
 		m_GLCache->setDepthTest(true);
