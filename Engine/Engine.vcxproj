@@ -141,10 +141,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="src\graphics\ibl\EnvironmentProbeManager.h" />
+    <ClInclude Include="src\graphics\ibl\ReflectionProbe.h" />
+    <ClInclude Include="src\graphics\renderer\renderpass\ProbePass.h" />
+    <ClInclude Include="src\graphics\ibl\ProbeManager.h" />
     <ClInclude Include="src\utils\loaders\ShaderLoader.h" />
     <ClInclude Include="src\graphics\camera\ICamera.h" />
-    <ClInclude Include="src\graphics\renderer\renderpass\EnvironmentProbePass.h" />
     <ClInclude Include="src\graphics\renderer\renderpass\LightingPass.h" />
     <ClInclude Include="src\graphics\renderer\renderpass\PostProcessPass.h" />
     <ClInclude Include="src\graphics\renderer\renderpass\RenderPass.h" />
@@ -154,7 +155,7 @@
     <ClInclude Include="src\input\InputManager.h" />
     <ClInclude Include="src\graphics\camera\CubemapCamera.h" />
     <ClInclude Include="src\pch.h" />
-    <ClInclude Include="src\graphics\ibl\EnvironmentProbe.h" />
+    <ClInclude Include="src\graphics\ibl\LightProbe.h" />
     <ClInclude Include="src\scene\RenderableModel.h" />
     <ClInclude Include="src\ui\DebugPane.h" />
     <ClInclude Include="src\ui\Pane.h" />
@@ -196,9 +197,10 @@
     <ClInclude Include="src\graphics\texture\Texture.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\graphics\ibl\EnvironmentProbeManager.cpp" />
+    <ClCompile Include="src\graphics\ibl\ReflectionProbe.cpp" />
+    <ClCompile Include="src\graphics\renderer\renderpass\ProbePass.cpp" />
+    <ClCompile Include="src\graphics\ibl\ProbeManager.cpp" />
     <ClCompile Include="src\utils\loaders\ShaderLoader.cpp" />
-    <ClCompile Include="src\graphics\renderer\renderpass\EnvironmentProbePass.cpp" />
     <ClCompile Include="src\graphics\renderer\renderpass\LightingPass.cpp" />
     <ClCompile Include="src\graphics\renderer\renderpass\PostProcessPass.cpp" />
     <ClCompile Include="src\graphics\renderer\renderpass\RenderPass.cpp" />
@@ -221,7 +223,7 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeaderFile>
     </ClCompile>
-    <ClCompile Include="src\graphics\ibl\EnvironmentProbe.cpp" />
+    <ClCompile Include="src\graphics\ibl\LightProbe.cpp" />
     <ClCompile Include="src\scene\RenderableModel.cpp" />
     <ClCompile Include="src\ui\DebugPane.cpp" />
     <ClCompile Include="src\ui\Pane.cpp" />

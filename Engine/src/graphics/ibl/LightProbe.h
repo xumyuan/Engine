@@ -5,10 +5,10 @@
 
 namespace engine {
 
-	class EnvironmentProbe {
+	class LightProbe {
 	public:
-		EnvironmentProbe(glm::vec3& probePosition, glm::vec2& probeResolution, bool m_IsStatic);
-		~EnvironmentProbe();
+		LightProbe(glm::vec3& probePosition, glm::vec2& probeResolution);
+		~LightProbe();
 		void generate();
 
 		// Assumes the shader is bound
@@ -17,13 +17,12 @@ namespace engine {
 		// Getters
 		inline Cubemap* getIrradianceMap() { return m_IrradianceMap; }
 	private:
-		Cubemap* m_IrradianceMap, * m_PrefilterMap, * m_BRDF_LUT;
+		Cubemap* m_IrradianceMap;
 
 		glm::vec3 m_Position;
 		bool m_Generated;
 
 		glm::vec2 m_ProbeResolution;
-		bool m_IsStatic;
 	};
 
 }

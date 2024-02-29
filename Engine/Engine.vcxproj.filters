@@ -129,7 +129,7 @@
     <ClInclude Include="src\ui\DebugPane.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\graphics\ibl\EnvironmentProbe.h">
+    <ClInclude Include="src\graphics\ibl\LightProbe.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\pch.h">
@@ -162,16 +162,19 @@
     <ClInclude Include="src\graphics\renderer\renderpass\ShadowmapPass.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\graphics\renderer\renderpass\EnvironmentProbePass.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="src\graphics\camera\ICamera.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\utils\loaders\ShaderLoader.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\graphics\ibl\EnvironmentProbeManager.h">
+    <ClInclude Include="src\graphics\ibl\ProbeManager.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\graphics\renderer\renderpass\ProbePass.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\graphics\ibl\ReflectionProbe.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -281,7 +284,7 @@
     <ClCompile Include="src\ui\DebugPane.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\graphics\ibl\EnvironmentProbe.cpp">
+    <ClCompile Include="src\graphics\ibl\LightProbe.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\pch.cpp">
@@ -314,13 +317,16 @@
     <ClCompile Include="src\graphics\renderer\renderpass\ShadowmapPass.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\graphics\renderer\renderpass\EnvironmentProbePass.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="src\utils\loaders\ShaderLoader.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\graphics\ibl\EnvironmentProbeManager.cpp">
+    <ClCompile Include="src\graphics\ibl\ProbeManager.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\graphics\renderer\renderpass\ProbePass.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\graphics\ibl\ReflectionProbe.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

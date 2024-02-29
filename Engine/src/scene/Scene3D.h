@@ -4,7 +4,7 @@
 #include "graphics/Window.h"
 #include "graphics/camera/FPSCamera.h"
 #include "graphics/dynamic lights/DynamicLightManager.h"
-#include "graphics/ibl/EnvironmentProbeManager.h"
+#include "graphics/ibl/ProbeManager.h"
 #include "graphics/renderer/GLCache.h"
 #include "graphics/renderer/ModelRenderer.h"
 #include "scene/RenderableModel.h"
@@ -28,7 +28,7 @@ namespace engine {
 		inline ModelRenderer* getModelRenderer() { return &m_ModelRenderer; }
 		inline Terrain* getTerrain() { return &m_Terrain; }
 		inline DynamicLightManager* getDynamicLightManager() { return &m_DynamicLightManager; }
-		inline EnvironmentProbeManager* getProbeManager() { return &m_ProbeManager; }
+		inline ProbeManager* getProbeManager() { return &m_ProbeManager; }
 		inline FPSCamera* getCamera() { return &m_SceneCamera; }
 		inline Skybox* getSkybox() { return m_Skybox; }
 	private:
@@ -44,11 +44,11 @@ namespace engine {
 		ModelRenderer m_ModelRenderer;
 		Terrain m_Terrain;
 		DynamicLightManager m_DynamicLightManager;
-		EnvironmentProbeManager m_ProbeManager;
+		ProbeManager m_ProbeManager;
 		std::vector<RenderableModel*> m_RenderableModels;
 
 		// Scene parameters
-		EnvironmentProbeBlendSetting m_SceneProbeBlendSetting = PROBES_SIMPLE;
+		ProbeBlendSetting m_SceneProbeBlendSetting = PROBES_SIMPLE;
 
 	};
 
