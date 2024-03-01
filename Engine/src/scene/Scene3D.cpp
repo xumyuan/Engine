@@ -53,7 +53,7 @@ namespace engine {
 				mat.setAlbedoMap(TextureLoader::getDefaultAO());
 				mat.setNormalMap(TextureLoader::getDefaultNormal());
 				mat.setAmbientOcclusionMap(TextureLoader::getDefaultAO());
-				mat.setMetallicMap(TextureLoader::getFullMetallic());
+				mat.setMetallicMap(TextureLoader::getNoMetallic());
 				mat.setRoughnessMap(TextureLoader::getNoRoughness());
 
 				m_RenderableModels.push_back(
