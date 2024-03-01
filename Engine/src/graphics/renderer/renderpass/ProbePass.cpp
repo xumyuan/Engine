@@ -29,6 +29,7 @@ namespace engine {
 	void ProbePass::pregenerateProbes() {
 		glm::vec3 probePosition = glm::vec3(67.0f, 92.0f, 133.0f);
 		generateLightProbe(probePosition);
+		generateReflectionProbe(probePosition);
 	}
 
 	void ProbePass::generateLightProbe(glm::vec3& probePosition) {
@@ -55,7 +56,7 @@ namespace engine {
 			lightingPass.executeRenderPass(shadowpassOutput, &m_CubemapCamera);
 			m_SceneCaptureLightingFramebuffer.setColorAttachment(0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
 		}
-		
+
 		// 捕获并应用辐照度图的卷积（间接漫反射）
 		m_GLCache->switchShader(m_ConvolutionShader);
 		m_GLCache->setFaceCull(false);
@@ -77,13 +78,35 @@ namespace engine {
 		}
 		m_GLCache->setFaceCull(true);
 		m_GLCache->setDepthTest(true);
-		
+
 		ProbeManager* probeManager = m_ActiveScene->getProbeManager();
 		probeManager->addProbe(lightProbe);
 	}
 
 	void ProbePass::generateReflectionProbe(glm::vec3& probePosition) {
+		glm::vec2 probeResolution(IBL_CAPTURE_RESOLUTION, IBL_CAPTURE_RESOLUTION);
+		ReflectionProbe* reflectionProbe = new ReflectionProbe(probePosition, probeResolution, true);
+		reflectionProbe->generate();
 
+		// 初始化 用于渲染到探针立方体贴图
+		m_CubemapCamera.setCenterPosition(probePosition);
+		ShadowmapPass shadowPass(m_ActiveScene, &m_SceneCaptureShadowFramebuffer);
+		LightingPass lightingPass(m_ActiveScene, &m_SceneCaptureLightingFramebuffer, false);
+
+		// 将场景渲染到探针的立方体贴图
+		for (int i = 0; i < 6; ++i) {
+			m_CubemapCamera.switchCameraToFace(i);
+
+			ShadowmapPassOutput shadowpassOutput = shadowPass.generateShadowmaps(&m_CubemapCamera);
+
+			m_SceneCaptureLightingFramebuffer.bind();
+			m_SceneCaptureLightingFramebuffer.setColorAttachment(m_SceneCaptureCubemap.getCubemapID(), GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
+			lightingPass.executeRenderPass(shadowpassOutput, &m_CubemapCamera);
+			m_SceneCaptureLightingFramebuffer.setColorAttachment(0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
+		}
+
+		ProbeManager* probeManager = m_ActiveScene->getProbeManager();
+		probeManager->addProbe(reflectionProbe);
 	}
 
 }
