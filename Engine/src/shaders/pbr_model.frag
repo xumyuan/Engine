@@ -43,6 +43,7 @@ out vec4 color;
 uniform vec3 viewPos;
 
 // IBL
+uniform int reflectionProbeMipCount;
 uniform bool computeIBL;
 uniform samplerCube irradianceMap;
 uniform samplerCube prefilterMap;
@@ -79,31 +80,40 @@ void main() {
 	float roughness = max(texture(material.texture_roughness, TexCoords).r, 0.04);
 	float ao = texture(material.texture_ao, TexCoords).r;
 
-	// Normal mapping code. Opted out of tangent space normal mapping since I would have to convert all of my lights to tangent space
+	// 法线贴图代码。 选择退出切线空间法线贴图，因为我必须将所有灯光转换为切线空间
 	normal = normalize(normal * 2.0f - 1.0f);
 	normal = normalize(TBN * normal);
 
 	vec3 fragToView = normalize(viewPos - FragPos);
+	vec3 reflectionVec = reflect(-fragToView, normal);
 
-	// Dielectrics have an average base specular reflectivity around 0.04, and metals absorb all of their diffuse (refraction) lighting so their albedo is used instead for their specular lighting (reflection)
+	// 电介质的平均基础镜面反射率约为 0.04，金属吸收其所有漫反射（折射）照明，因此其反照率用于代替镜面照明（反射）
 	vec3 baseReflectivity = vec3(0.04);
 	baseReflectivity = mix(baseReflectivity, albedo, metallic);
 
 
-	// Calculate per light radiance for all of the direct lighting
+	// 计算所有直接照明的每个光辐射率
 	vec3 directLightIrradiance = vec3(0.0);
 	directLightIrradiance += CalculateDirectionalLightRadiance(albedo, normal, metallic, roughness, fragToView, baseReflectivity);
 	directLightIrradiance += CalculatePointLightRadiance(albedo, normal, metallic, roughness, fragToView, baseReflectivity);
 	directLightIrradiance += CalculateSpotLightRadiance(albedo, normal, metallic, roughness, fragToView, baseReflectivity);
 
-	// Calcualte ambient IBL for both diffuse and specular
+	// 计算漫反射和镜面反射的环境 IBL
 	vec3 ambient = vec3(0.03) * albedo * ao;
 	if (computeIBL) {
 		vec3 specularRatio = FresnelSchlick(max(dot(normal, fragToView), 0.0), baseReflectivity);
+
 		vec3 diffuseRatio = vec3(1.0) - specularRatio;
 		diffuseRatio *= 1.0 - metallic;
+
 		vec3 indirectDiffuse = texture(irradianceMap, normal).rgb * albedo;
-		ambient = (diffuseRatio * indirectDiffuse) * ao;
+
+		vec3 prefilterColour = textureLod(prefilterMap, reflectionVec, roughness * (reflectionProbeMipCount - 1)).rgb;
+		vec2 brdfIntegration = texture(brdfLUT, vec2(max(dot(normal, fragToView), 0.0), roughness)).rg;
+		vec3 indirectSpecular = prefilterColour * (specularRatio * brdfIntegration.x + brdfIntegration.y);
+
+		ambient = (diffuseRatio * indirectDiffuse + indirectSpecular) * ao;
+		//ambient = vec3(brdfIntegration,0.0)*ao;
 	}
 
 	color = vec4(ambient + directLightIrradiance, albedoAlpha);
@@ -171,7 +181,7 @@ vec3 CalculatePointLightRadiance(vec3 albedo, vec3 normal, float metallic, float
 	return pointLightIrradiance;
 }
 
-// Approximates the amount of microfacets that are properly aligned with the halfway vector, thus determines the strength and area for specular light
+// 近似与半程矢量正确对齐的微面数量，从而确定镜面光的强度和面积
 float NormalDistributionGGX(vec3 normal, vec3 halfway, float roughness) {
 	float a = roughness * roughness;
 	float a2 = a * a;
@@ -202,24 +212,24 @@ vec3 CalculateSpotLightRadiance(vec3 albedo, vec3 normal, float metallic, float 
 	vec3 fresnel = FresnelSchlick(max(dot(halfway, fragToView), 0.0), baseReflectivity);
 	float geometry = GeometrySmith(normal, fragToView, fragToLight, roughness);
 
-	// Calculate reflected and refracted light respectively, and since metals absorb all refracted light, we nullify the diffuse lighting based on the metallic parameter
+	// 分别计算反射光和折射光，由于金属吸收所有折射光，因此我们根据金属参数取消漫射光
 	vec3 specularRatio = fresnel;
 	vec3 diffuseRatio = vec3(1.0) - specularRatio;
 	diffuseRatio *= 1.0 - metallic;
 
-	// Finally calculate the specular part of the Cook-Torrance BRDF
+	// 最后计算Cook-Torrance BRDF的镜面部分
 	vec3 numerator = specularRatio * normalDistribution * geometry;
 	float denominator = 4 * max(dot(fragToView, normal), 0.1) * max(dot(fragToLight, normal), 0.0) + 0.001; // Prevents any division by zero
 	vec3 specular = numerator / denominator;
 
-	// Also calculate the diffuse, a lambertian calculation will be added onto the final radiance calculation
+	// 还计算漫反射，lambertian计算将添加到最终的辐射计算中
 	vec3 diffuse = diffuseRatio * albedo / PI;
 
 	// Add light radiance to the irradiance sum
 	return (diffuse + specular) * radiance * max(dot(normal, fragToLight), 0.0);
 }
 
-// Approximates the geometry obstruction and geometry shadowing respectively, on the microfacet level
+// 在微面级别上分别近似几何阻挡和几何阴影
 float GeometrySmith(vec3 normal, vec3 viewDir, vec3 lightDir, float roughness) {
 	return GeometrySchlickGGX(max(dot(normal, viewDir), 0.0), roughness) * GeometrySchlickGGX(max(dot(normal, lightDir), 0.0), roughness);
 }
@@ -234,8 +244,8 @@ float GeometrySchlickGGX(float cosTheta, float roughness) {
 	return numerator / max(denominator, 0.001);
 }
 
-// Calculates the amount of specular (reflected) light. Since diffuse(refraction) and specular(reflection) are mutually exclusive, 
-// we can also use this to determine the amount of diffuse light
+// 计算镜面（反射）光的量。 由于漫反射（折射）和镜面反射（反射）是互斥的，
+// 我们还可以用它来确定漫射光的量
 vec3 FresnelSchlick(float cosTheta, vec3 baseReflectivity) {
 	return max(baseReflectivity + (1.0 - baseReflectivity) * pow(2, (-5.55473 * cosTheta - 6.98316) * cosTheta), 0.0);
 }
@@ -247,11 +257,11 @@ float CalculateShadow(vec3 normal, vec3 fragToLight) {
 	float shadow = 0.0;
 	float currentDepth = depthmapCoords.z;
 
-	// Add shadow bias to avoid shadow acne, and more shadow bias is needed depending on the angle between the normal and light direction
-	// However too much bias can cause peter panning
+	// 添加阴影偏置以避免阴影失真，根据法线方向和光线方向之间的角度需要更多阴影偏置
+	// 太多的偏移会导致 peter panning
 	float shadowBias = max(0.01, 0.1 * (1.0 - dot(normal, fragToLight)));
 
-	// Perform Percentage Closer Filtering (PCF) in order to produce soft shadows
+	// 执行百分比接近过滤 (PCF) 以产生柔和的阴影
 	vec2 texelSize = 1.0 / textureSize(shadowmap, 0);
 	for (int y = -1; y <= 1; ++y) {
 		for (int x = -1; x <= 1; ++x) {

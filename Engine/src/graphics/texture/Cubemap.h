@@ -34,6 +34,9 @@ namespace engine {
 
 		// Getters
 		unsigned int getCubemapID() { return m_CubemapID; }
+
+		inline unsigned int getFaceWidth() { return m_FaceWidth; }
+		inline unsigned int getFaceHeight() { return m_FaceHeight; }
 	private:
 		// TODO:研究更好的过滤，例如各向异性支持，并研究立方体贴图的适当 mips
 		unsigned int m_CubemapID;

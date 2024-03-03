@@ -38,6 +38,9 @@ namespace engine {
 		// Global Data
 		GLCache* m_GLCache;
 
+		// Scene parameters
+		ProbeBlendSetting m_SceneProbeBlendSetting = PROBES_SIMPLE;
+
 		// Scene Specific Data
 		FPSCamera m_SceneCamera;
 		Skybox* m_Skybox;
@@ -46,9 +49,6 @@ namespace engine {
 		DynamicLightManager m_DynamicLightManager;
 		ProbeManager m_ProbeManager;
 		std::vector<RenderableModel*> m_RenderableModels;
-
-		// Scene parameters
-		ProbeBlendSetting m_SceneProbeBlendSetting = PROBES_SIMPLE;
 
 	};
 

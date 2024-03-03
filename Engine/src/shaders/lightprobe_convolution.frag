@@ -16,20 +16,21 @@ void main() {
 	vec3 right = cross(up, normal);
 	up = cross(normal, right);
 
-	vec3 irradiance = vec3(0.0);
-	float sampleDelta = 0.025;
+	vec3 irradiance = vec3(0.0, 0.0, 0.0);
+	float sampleDelta = 0.05;
 	float nrSamples = 0.0;
+
 	for(float phi = 0.0; phi < 2.0 * PI; phi += sampleDelta)
 	{
 		for(float theta = 0.0;theta < 0.5 * PI; theta += sampleDelta)
 		{
 			// 切线空间坐标
-			vec3 tangentSample = vec3(sin(theta) * cos(phi), sin(theta) * sin(phi), cos(theta));
+			vec3 tangentSample = vec3(sin(theta) * cos(phi),  sin(theta) * sin(phi), cos(theta));
 
 			// 转为世界空间坐标
 			vec3 worldSample = tangentSample.x * right + tangentSample.y * up + tangentSample.z * normal;
 
-			irradiance += texture(sceneCaptureCubemap, worldSample).rgb *cos(theta)*sin(theta);
+			irradiance += texture(sceneCaptureCubemap, worldSample).rgb * cos(theta) * sin(theta);
 			nrSamples++;
 		}
 	}

@@ -23,20 +23,21 @@ void main(){
 
 	vec3 prefilteredColor = vec3(0.0);
 	for(uint i = 0; i < SAMPLE_COUNT; ++i){
-		vec2 Xi = Hammersley(i,SAMPLE_COUNT);
-		vec3 H = ImportanceSampleGGX(Xi,N,roughness);
-		vec3 L = normalize(2.0 * dot(V,H)*H-V);
-
-		float NdotL = max(dot(N,L),0.0);
-		if(NdotL>0.0){
-			prefilteredColor += texture(environmentMap,L).rgb * NdotL;
+		vec2 Xi = Hammersley(i, SAMPLE_COUNT);
+		vec3 H  = ImportanceSampleGGX(Xi, N, roughness);
+		vec3 L  = normalize(2.0 * dot(V, H) * H - V);
+	
+		float NdotL = max(dot(N, L), 0.0);
+		if(NdotL > 0.0) {
+			prefilteredColor += texture(environmentMap, L).rgb * NdotL;
 			totalWeight += NdotL;
 		}
-		prefilteredColor = prefilteredColor/totalWeight;
-
-		FragColor = vec4(prefilteredColor,1.0);
+		
 	}
 
+	prefilteredColor = prefilteredColor/totalWeight;
+
+	FragColor = vec4(prefilteredColor,1.0);
 }
 
 float RadicalInverse_VdC(uint bits) 
@@ -58,7 +59,7 @@ vec3 ImportanceSampleGGX(vec2 Xi, vec3 N, float roughness){
 	float a = roughness*roughness;
 
 	float phi = 2.0 * PI * Xi.x;
-	float cosTheta = sqrt((1.0-Xi.y)/(1.0+(a*a-1.0)-Xi.y));
+	float cosTheta = sqrt((1.0-Xi.y)/(1.0+(a*a-1.0)*Xi.y));
 	float sinTheta = sqrt(1.0 - cosTheta*cosTheta);
 
 	vec3 H;

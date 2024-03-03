@@ -3,9 +3,9 @@
 
 namespace engine {
 
-	Texture::Texture() : m_TextureTarget(0) {}
+	Texture::Texture() : m_TextureId(0), m_TextureTarget(0), m_Width(0), m_Height(0), m_TextureFormat(0), m_TextureSettings() {}
 
-	Texture::Texture(TextureSettings& settings) : m_TextureTarget(0), m_TextureSettings(settings) {}
+	Texture::Texture(TextureSettings& settings) : m_TextureId(0), m_TextureTarget(0), m_Width(0), m_Height(0), m_TextureFormat(0), m_TextureSettings(settings) {}
 
 	Texture::~Texture() {
 		glDeleteTextures(1, &m_TextureId);
@@ -44,8 +44,17 @@ namespace engine {
 		unbind();
 	}
 
+	//void Texture::generate2DMultisampleTexture(unsigned int width, unsigned int height) {
+	//	// Multisampled textures do not support mips or filtering/wrapping options
+	//	m_TextureTarget = GL_TEXTURE_2D_MULTISAMPLE;
+	//	m_Width = width;
+	//	m_Height = height;
 
-
+	//	glGenTextures(1, &m_TextureId);
+	//	bind();
+	//	glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, MSAA_SAMPLE_AMOUNT, m_TextureSettings.TextureFormat, m_Width, m_Height, GL_TRUE);
+	//	unbind();
+	//}
 
 	void Texture::bind(int unit) {
 		if (unit >= 0)

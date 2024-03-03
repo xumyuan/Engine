@@ -61,8 +61,8 @@ namespace engine
 		m_ActiveScene->addModelsToRenderer();
 		modelRenderer->flushOpaque(m_ModelShader, m_RenderPassType);
 
-		m_GLCache->switchShader(m_TerrainShader);
 
+		m_GLCache->switchShader(m_TerrainShader);
 		lightManager->setupLightingUniforms(m_TerrainShader);
 		m_TerrainShader->setUniform3f("viewPos", camera->getPosition());
 		glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), terrain->getPosition());
@@ -72,6 +72,7 @@ namespace engine
 		m_TerrainShader->setUniformMat4("view", camera->getViewMatrix());
 		m_TerrainShader->setUniformMat4("projection", camera->getProjectionMatrix());
 		bindShadowmap(m_TerrainShader, shadowmapData);
+
 		terrain->Draw(m_TerrainShader, m_RenderPassType);
 
 		skybox->Draw(camera);

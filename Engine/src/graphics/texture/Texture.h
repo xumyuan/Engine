@@ -7,13 +7,13 @@ namespace engine {
 		GLenum TextureWrapTMode = GL_REPEAT;
 
 		// Texture filtering options
-		GLenum TextureMinificationFilterMode = GL_LINEAR_MIPMAP_LINEAR; // Filtering mode when the texture moves further away and multiple texels map to one pixel (trilinear for best quality)
-		GLenum TextureMagnificationFilterMode = GL_LINEAR; // Filtering mode when the texture gets closer and multiple pixels map to a single texel (Never needs to be more than bilinear because that is as accurate as it gets in this sitation)
-		float TextureAnisotropyLevel = ANISOTROPIC_FILTERING_LEVEL; // Specified independent of texture min and mag filtering, should be a power of 2 (1.0 means the usual isotropic texture filtering is used which means anisotropic filtering isn't used)
+		GLenum TextureMinificationFilterMode = GL_LINEAR_MIPMAP_LINEAR; 
+		GLenum TextureMagnificationFilterMode = GL_LINEAR; 
+		float TextureAnisotropyLevel = ANISOTROPIC_FILTERING_LEVEL; // 指定独立于纹理 min 和 mag 过滤，应为 2 的幂（1.0 表示使用通常的各向同性纹理过滤，这意味着不使用各向异性过滤）
 
 		// Mip options
 		bool HasMips = true;
-		int MipBias = 0; // positive means blurrier texture selected, negative means sharper texture which can show texture aliasing
+		int MipBias = 0; // 正值表示选择较模糊的纹理，负值表示较清晰的纹理，可以显示纹理锯齿
 	};
 	class Texture {
 	public:
@@ -24,7 +24,7 @@ namespace engine {
 		// 创建纹理
 		void generate2DTexture(unsigned int width, unsigned int height, GLenum textureFormat, GLenum dataFormat, const void* data);
 
-		void generate2DMultisampleTexture(unsigned int width, unsigned int height, GLenum textureFormat, int numSamples);
+		void generate2DMultisampleTexture(unsigned int width, unsigned int height);
 
 		void bind(int unit = -1);
 		void unbind();
@@ -39,8 +39,10 @@ namespace engine {
 		// Pre-generation controls only
 		void setMipMode(bool shouldGenMips, int mipBias);
 		inline void setTextureSettings(TextureSettings settings) { m_TextureSettings = settings; }
-		// Don't use this to bind the texture and use it. Call the Bind() function instead
+		// 不要用它来绑定纹理并使用它。 而是调用 Bind() 函数
 		inline unsigned int getTextureId() { return m_TextureId; }
+		inline unsigned int getWidth() { return m_Width; }
+		inline unsigned int getHeight() { return m_Height; }
 	private:
 		unsigned int m_TextureId;
 		GLenum m_TextureTarget;

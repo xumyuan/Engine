@@ -11,8 +11,8 @@ namespace engine {
 
 	ProbePass::ProbePass(Scene3D* scene) : RenderPass(scene, RenderPassType::ProbePassType),
 		m_SceneCaptureShadowFramebuffer(IBL_CAPTURE_RESOLUTION, IBL_CAPTURE_RESOLUTION), m_SceneCaptureLightingFramebuffer(IBL_CAPTURE_RESOLUTION, IBL_CAPTURE_RESOLUTION),
-		m_ReflectionProbeSamplingFramebuffer(REFLECTION_PROBE_RESOLUTION, REFLECTION_PROBE_RESOLUTION),
-		m_LightProbeConvolutionFramebuffer(LIGHT_PROBE_RESOLUTION, LIGHT_PROBE_RESOLUTION), m_SceneCaptureSettings(), m_SceneCaptureCubemap(m_SceneCaptureSettings)
+		m_LightProbeConvolutionFramebuffer(LIGHT_PROBE_RESOLUTION, LIGHT_PROBE_RESOLUTION), m_ReflectionProbeSamplingFramebuffer(REFLECTION_PROBE_RESOLUTION, REFLECTION_PROBE_RESOLUTION),
+		m_SceneCaptureCubemap(m_SceneCaptureSettings)
 	{
 		m_SceneCaptureShadowFramebuffer.addDepthAttachment(false).createFramebuffer();
 		m_SceneCaptureLightingFramebuffer.addTexture2DColorAttachment(false).addDepthStencilRBO(false).createFramebuffer();
@@ -33,9 +33,48 @@ namespace engine {
 	ProbePass::~ProbePass() {}
 
 	void ProbePass::pregenerateProbes() {
+		generateBRDFLUT();
+
 		glm::vec3 probePosition = glm::vec3(67.0f, 92.0f, 133.0f);
 		generateLightProbe(probePosition);
 		generateReflectionProbe(probePosition);
+	}
+
+	void ProbePass::generateBRDFLUT() {
+		Shader* brdfIntegrationShader = ShaderLoader::loadShader("src/shaders/prebrdf.vert", "src/shaders/prebrdf.frag");
+		ModelRenderer* modelRenderer = m_ActiveScene->getModelRenderer();
+
+		// brdf的纹理设置
+		TextureSettings textureSettings;
+		textureSettings.TextureWrapSMode = GL_CLAMP_TO_EDGE;
+		textureSettings.TextureWrapTMode = GL_CLAMP_TO_EDGE;
+		textureSettings.TextureMinificationFilterMode = GL_LINEAR;
+		textureSettings.TextureMagnificationFilterMode = GL_LINEAR;
+		textureSettings.TextureAnisotropyLevel = 1.0f;
+		textureSettings.HasMips = false;
+
+		Texture* brdfLUT = new Texture(textureSettings);
+		brdfLUT->generate2DTexture(BRDF_LUT_RESOLUTION, BRDF_LUT_RESOLUTION, 
+			GL_RG16F, GL_RG, 0);
+
+		// 设置lut的帧缓冲区
+		Framebuffer brdfBuffer(BRDF_LUT_RESOLUTION, BRDF_LUT_RESOLUTION);
+
+		brdfBuffer.addTexture2DColorAttachment(false).
+			addDepthRBO(false).createFramebuffer();
+		brdfBuffer.bind();
+		
+		m_GLCache->switchShader(brdfIntegrationShader);
+		m_GLCache->setDepthTest(false);
+
+		glViewport(0, 0, BRDF_LUT_RESOLUTION, BRDF_LUT_RESOLUTION);
+		brdfBuffer.setColorAttachment(brdfLUT->getTextureId(), GL_TEXTURE_2D);
+		modelRenderer->NDC_Plane.Draw();
+		brdfBuffer.setColorAttachment(0, GL_TEXTURE_2D);
+
+		m_GLCache->setDepthTest(true);
+
+		ReflectionProbe::setBRDFLUT(brdfLUT);
 	}
 
 	void ProbePass::generateLightProbe(glm::vec3& probePosition) {
@@ -71,7 +110,9 @@ namespace engine {
 		m_ConvolutionShader->setUniformMat4("projection", m_CubemapCamera.getProjectionMatrix());
 		m_SceneCaptureCubemap.bind(0);
 		m_ConvolutionShader->setUniform1i("sceneCaptureCubemap", 0);
+
 		m_LightProbeConvolutionFramebuffer.bind();
+		glViewport(0, 0, m_LightProbeConvolutionFramebuffer.getWidth(), m_LightProbeConvolutionFramebuffer.getHeight());
 		for (int i = 0; i < 6; i++) {
 			// Setup the camera's view
 			m_CubemapCamera.switchCameraToFace(i);

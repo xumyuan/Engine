@@ -8,7 +8,7 @@ namespace engine
 
 	MasterRenderer::MasterRenderer(Scene3D* scene) : m_ActiveScene(scene),
 		m_ShadowmapPass(scene),
-		m_LightingPass(scene),
+		m_LightingPass(scene, true),
 		m_PostProcessPass(scene),
 		m_EnvironmentProbePass(scene)
 	{
@@ -16,6 +16,8 @@ namespace engine
 	}
 
 	void MasterRenderer::init() {
+		// State that should never change
+		glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 		m_EnvironmentProbePass.pregenerateProbes();
 	}
 

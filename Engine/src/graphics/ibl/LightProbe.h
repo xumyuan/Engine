@@ -20,9 +20,9 @@ namespace engine {
 		Cubemap* m_IrradianceMap;
 
 		glm::vec3 m_Position;
-		bool m_Generated;
-
 		glm::vec2 m_ProbeResolution;
+
+		bool m_Generated;
 	};
 
 }

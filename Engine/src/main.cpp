@@ -29,6 +29,8 @@ int main() {
 	engine::RuntimePane runtimePane(glm::vec2(256.0f, 90.0f));
 	engine::DebugPane debugPane(glm::vec2(256.0f, 115.0f));
 
+	renderer.init();
+
 #if DEBUG_ENABLED
 	engine::Timer timer;
 #endif
