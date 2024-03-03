@@ -3,7 +3,7 @@
 
 namespace engine {
 
-	Cubemap::Cubemap() : m_CubemapID(0) {}
+	Cubemap::Cubemap() : m_CubemapID(0), m_CubemapSettings() {}
 
 	Cubemap::Cubemap(CubemapSettings& settings) : m_CubemapID(0), m_CubemapSettings(settings) {}
 
@@ -13,7 +13,7 @@ namespace engine {
 
 	void Cubemap::generateCubemapFace(GLenum face, unsigned int faceWidth, unsigned int faceHeight, GLenum textureFormat, GLenum dataFormat, const unsigned char* data)
 	{
-		// Generate cubemap if this is the first face being generated
+		// 如果这是生成的第一个面，则生成立方体贴图
 		if (m_CubemapID == 0) {
 			glGenTextures(1, &m_CubemapID);
 			m_TextureFormat = textureFormat;
@@ -33,6 +33,10 @@ namespace engine {
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, m_CubemapSettings.TextureWrapSMode);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, m_CubemapSettings.TextureWrapTMode);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, m_CubemapSettings.TextureWrapRMode);
+
+
+		if (m_CubemapSettings.GenerateMips)
+			glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 
 		unbind();
 	}

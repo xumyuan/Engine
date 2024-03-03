@@ -9,8 +9,11 @@ namespace engine {
 		GLenum TextureWrapRMode = GL_CLAMP_TO_EDGE;
 
 		// Texture filtering options
-		GLenum TextureMinificationFilterMode = GL_LINEAR; // Filtering mode when the texture moves further away and multiple texels map to one pixel (trilinear for best quality)
-		GLenum TextureMagnificationFilterMode = GL_LINEAR; // Filtering mode when the texture gets closer and multiple pixels map to a single texel (Never needs to be more than bilinear because that is as accurate as it gets in this sitation)
+		GLenum TextureMinificationFilterMode = GL_LINEAR; // 当纹理移得更远并且多个纹素映射到一个像素时的过滤模式（三线性以获得最佳质量）
+		GLenum TextureMagnificationFilterMode = GL_LINEAR; // 当纹理变得更接近并且多个像素映射到单个纹素时的过滤模式（永远不需要超过双线性，因为这与在这种情况下一样准确）
+
+		// Mip Settings
+		bool GenerateMips = false;
 	};
 
 	class Cubemap {

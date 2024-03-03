@@ -3,7 +3,7 @@
 
 namespace engine {
 	Framebuffer::Framebuffer(unsigned int width, unsigned int height)
-		:m_Width(width), m_Height(height), m_FBO(0), m_ColorTexture(0), m_DepthStencilRBO(0), m_DepthTexture(0)
+		:m_Width(width), m_Height(height), m_FBO(0), m_ColorTexture(0), m_DepthRBO(0), m_DepthStencilRBO(0), m_DepthTexture(0)
 	{
 		glGenFramebuffers(1, &m_FBO);
 	}
@@ -43,11 +43,12 @@ namespace engine {
 
 	Framebuffer& Framebuffer::addTexture2DColorAttachment(bool multisampledBuffer) {
 		m_IsMultisampledColourBuffer = multisampledBuffer;
-
+#if DEBUG_ENABLED
 		if (m_ColorTexture != 0) {
 			Logger::getInstance().error("logged_files/error.txt", "Framebuffer initialization", "Framebuffer already has a color attachment");
 			return *this;
 		}
+#endif
 
 		bind();
 		glGenTextures(1, &m_ColorTexture);
@@ -74,12 +75,39 @@ namespace engine {
 		return *this;
 	}
 
+	Framebuffer& Framebuffer::addDepthRBO(bool multisampledBuffer) {
+#if DEBUG_ENABLED
+		if (m_DepthRBO != 0) {
+			Logger::getInstance().error("logged_files/error.txt", "Framebuffer initialization", "Framebuffer already has a depth RBO attachment");
+			return *this;
+		}
+#endif
+
+		bind();
+
+		// Generate the depth rbo attachment
+		glGenRenderbuffers(1, &m_DepthRBO);
+		glBindRenderbuffer(GL_RENDERBUFFER, m_DepthRBO);
+		if (multisampledBuffer)
+			glRenderbufferStorageMultisample(GL_RENDERBUFFER, MSAA_SAMPLE_AMOUNT, GL_DEPTH_COMPONENT24, m_Width, m_Height);
+		else
+			glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, m_Width, m_Height);
+
+		// Attach the depth rbo attachment
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_DepthRBO);
+
+		unbind();
+		return *this;
+	}
+
 	Framebuffer& Framebuffer::addDepthStencilRBO(bool multisampledBuffer) {
+#if DEBUG_ENABLED
 		if (m_DepthStencilRBO != 0)
 		{
 			Logger::getInstance().error("logged_files/error.txt", "Framebuffer initialization", "Framebuffer already has a depth+stencil RBO attachment");
 			return *this;
 		}
+#endif
 		bind();
 
 		// Generate depth+stencil rbo attachment
@@ -98,11 +126,13 @@ namespace engine {
 	}
 
 	Framebuffer& Framebuffer::addDepthAttachment(bool multisampled) {
+#if DEBUG_ENABLED
 		if (m_DepthTexture != 0)
 		{
 			Logger::getInstance().error("logged_files/error.txt", "Framebuffer initialization", "Framebuffer already has a depth attachment");
 			return *this;
 		}
+#endif
 		bind();
 
 		// Generate depth attachment
@@ -133,9 +163,9 @@ namespace engine {
 	}
 
 
-	void Framebuffer::setColorAttachment(unsigned int target, unsigned int targetType)
+	void Framebuffer::setColorAttachment(unsigned int target, unsigned int targetType, int mipToWriteTo)
 	{
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, targetType, target, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, targetType, target, mipToWriteTo);
 	}
 
 	void Framebuffer::bind() {

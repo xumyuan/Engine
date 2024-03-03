@@ -11,17 +11,23 @@ namespace engine {
 
 	ProbePass::ProbePass(Scene3D* scene) : RenderPass(scene, RenderPassType::ProbePassType),
 		m_SceneCaptureShadowFramebuffer(IBL_CAPTURE_RESOLUTION, IBL_CAPTURE_RESOLUTION), m_SceneCaptureLightingFramebuffer(IBL_CAPTURE_RESOLUTION, IBL_CAPTURE_RESOLUTION),
-		m_LightProbeConvolutionFramebuffer(LIGHT_PROBE_RESOLUTION, LIGHT_PROBE_RESOLUTION), m_SceneCaptureCubemap(m_SceneCaptureSettings)
+		m_ReflectionProbeSamplingFramebuffer(REFLECTION_PROBE_RESOLUTION, REFLECTION_PROBE_RESOLUTION),
+		m_LightProbeConvolutionFramebuffer(LIGHT_PROBE_RESOLUTION, LIGHT_PROBE_RESOLUTION), m_SceneCaptureSettings(), m_SceneCaptureCubemap(m_SceneCaptureSettings)
 	{
 		m_SceneCaptureShadowFramebuffer.addDepthAttachment(false).createFramebuffer();
 		m_SceneCaptureLightingFramebuffer.addTexture2DColorAttachment(false).addDepthStencilRBO(false).createFramebuffer();
-		m_LightProbeConvolutionFramebuffer.addTexture2DColorAttachment(false).addDepthStencilRBO(false).createFramebuffer();
+
+		m_LightProbeConvolutionFramebuffer.addTexture2DColorAttachment(false).addDepthRBO(false).createFramebuffer();
+		m_ReflectionProbeSamplingFramebuffer.addTexture2DColorAttachment(false).addDepthRBO(false).createFramebuffer();
+
 
 		for (int i = 0; i < 6; i++) {
 			m_SceneCaptureCubemap.generateCubemapFace(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, IBL_CAPTURE_RESOLUTION, IBL_CAPTURE_RESOLUTION, GL_RGBA16F, GL_RGB, nullptr);
 		}
 
 		m_ConvolutionShader = ShaderLoader::loadShader("src/shaders/lightprobe_convolution.vert", "src/shaders/lightprobe_convolution.frag");
+
+		m_ImportanceSamplingShader = ShaderLoader::loadShader("src/shaders/reflectionprobe_importance_sampling.vert", "src/shaders/reflectionprobe_importance_sampling.frag");
 	}
 
 	ProbePass::~ProbePass() {}
@@ -60,7 +66,7 @@ namespace engine {
 		// 捕获并应用辐照度图的卷积（间接漫反射）
 		m_GLCache->switchShader(m_ConvolutionShader);
 		m_GLCache->setFaceCull(false);
-		m_GLCache->setDepthTest(false);
+		m_GLCache->setDepthTest(false); // Important cause the depth buffer isn't cleared so it zero depth
 
 		m_ConvolutionShader->setUniformMat4("projection", m_CubemapCamera.getProjectionMatrix());
 		m_SceneCaptureCubemap.bind(0);
@@ -84,7 +90,7 @@ namespace engine {
 	}
 
 	void ProbePass::generateReflectionProbe(glm::vec3& probePosition) {
-		glm::vec2 probeResolution(IBL_CAPTURE_RESOLUTION, IBL_CAPTURE_RESOLUTION);
+		glm::vec2 probeResolution(REFLECTION_PROBE_RESOLUTION, REFLECTION_PROBE_RESOLUTION);
 		ReflectionProbe* reflectionProbe = new ReflectionProbe(probePosition, probeResolution, true);
 		reflectionProbe->generate();
 
@@ -104,6 +110,40 @@ namespace engine {
 			lightingPass.executeRenderPass(shadowpassOutput, &m_CubemapCamera);
 			m_SceneCaptureLightingFramebuffer.setColorAttachment(0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
 		}
+
+		// 对代表增加的粗糙度级别的立方体贴图 mip 进行捕获并执行重要性采样
+		m_GLCache->switchShader(m_ImportanceSamplingShader);
+		m_GLCache->setFaceCull(false);
+		m_GLCache->setDepthTest(false); // Important cause the depth buffer isn't cleared so it zero depth
+
+		m_ImportanceSamplingShader->setUniformMat4("projection", m_CubemapCamera.getProjectionMatrix());
+		m_SceneCaptureCubemap.bind(0);
+		m_ImportanceSamplingShader->setUniform1i("sceneCaptureCubemap", 0);
+
+		m_ReflectionProbeSamplingFramebuffer.bind();
+		for (int mip = 0; mip < REFLECTION_PROBE_MIP_COUNT; mip++) {
+			// Calculate the size of this mip and resize
+			unsigned int mipWidth = m_ReflectionProbeSamplingFramebuffer.getWidth() * std::pow(0.5, mip);
+			unsigned int mipHeight = m_ReflectionProbeSamplingFramebuffer.getHeight() * std::pow(0.5, mip);
+
+			glBindRenderbuffer(GL_RENDERBUFFER, m_ReflectionProbeSamplingFramebuffer.getDepthRBO());
+			glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipWidth, mipHeight);
+			glViewport(0, 0, mipWidth, mipHeight);
+
+			float mipRoughnessLevel = (float)mip / (float)(REFLECTION_PROBE_MIP_COUNT - 1);
+			m_ImportanceSamplingShader->setUniform1f("roughness", mipRoughnessLevel);
+			for (int i = 0; i < 6; i++) {
+				// Setup the camera's view
+				m_CubemapCamera.switchCameraToFace(i);
+				m_ImportanceSamplingShader->setUniformMat4("view", m_CubemapCamera.getViewMatrix());
+
+				// 对场景捕获的重要性进行采样并将其存储在反射探针的立方体贴图中
+				m_ReflectionProbeSamplingFramebuffer.setColorAttachment(reflectionProbe->getPrefilterMap()->getCubemapID(), GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, mip);
+				m_ActiveScene->getModelRenderer()->NDC_Cube.Draw(); // Since we are sampling a cubemap, just use a cube
+				m_ReflectionProbeSamplingFramebuffer.setColorAttachment(0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
+			}
+		}
+
 
 		ProbeManager* probeManager = m_ActiveScene->getProbeManager();
 		probeManager->addProbe(reflectionProbe);
