@@ -14,7 +14,7 @@ namespace engine {
 	void ReflectionProbe::generate() {
 		// 生成 HDR 环境探针并设置生成标志
 		CubemapSettings settings;
-		settings.GenerateMips = true;
+		settings.HasMips = true;
 		m_PrefilterMap = new Cubemap(settings);
 		for (int i = 0; i < 6; i++) {
 			m_PrefilterMap->generateCubemapFace(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, (unsigned int)m_ProbeResolution.x, (unsigned int)m_ProbeResolution.y, GL_RGBA16F, GL_RGB, nullptr);

@@ -3,9 +3,9 @@
 
 namespace engine {
 
-	Cubemap::Cubemap() : m_CubemapID(0), m_CubemapSettings() {}
+	Cubemap::Cubemap() : m_CubemapID(0), m_FacesGenerated(0), m_CubemapSettings() {}
 
-	Cubemap::Cubemap(CubemapSettings& settings) : m_CubemapID(0), m_CubemapSettings(settings) {}
+	Cubemap::Cubemap(CubemapSettings& settings) : m_CubemapID(0), m_FacesGenerated(0), m_CubemapSettings(settings) {}
 
 	Cubemap::~Cubemap() {
 		glDeleteTextures(1, &m_CubemapID);
@@ -25,18 +25,22 @@ namespace engine {
 
 		glTexImage2D(face, 0, m_TextureFormat, m_FaceWidth, m_FaceHeight, 0, dataFormat, GL_UNSIGNED_BYTE, data);
 
-		// Texture filtering
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, m_CubemapSettings.TextureMagnificationFilterMode);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, m_CubemapSettings.TextureMinificationFilterMode);
+		++m_FacesGenerated;
 
-		// Texture wrapping
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, m_CubemapSettings.TextureWrapSMode);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, m_CubemapSettings.TextureWrapTMode);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, m_CubemapSettings.TextureWrapRMode);
+		if (m_FacesGenerated >= 6) {
+			// Texture filtering
+			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, m_CubemapSettings.TextureMagnificationFilterMode);
+			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, m_CubemapSettings.TextureMinificationFilterMode);
+
+			// Texture wrapping
+			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, m_CubemapSettings.TextureWrapSMode);
+			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, m_CubemapSettings.TextureWrapTMode);
+			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, m_CubemapSettings.TextureWrapRMode);
 
 
-		if (m_CubemapSettings.GenerateMips)
-			glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+			if (m_CubemapSettings.HasMips)
+				glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+		}
 
 		unbind();
 	}

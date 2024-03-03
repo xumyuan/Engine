@@ -123,8 +123,8 @@ namespace engine {
 		m_ReflectionProbeSamplingFramebuffer.bind();
 		for (int mip = 0; mip < REFLECTION_PROBE_MIP_COUNT; mip++) {
 			// Calculate the size of this mip and resize
-			unsigned int mipWidth = m_ReflectionProbeSamplingFramebuffer.getWidth() * std::pow(0.5, mip);
-			unsigned int mipHeight = m_ReflectionProbeSamplingFramebuffer.getHeight() * std::pow(0.5, mip);
+			unsigned int mipWidth = m_ReflectionProbeSamplingFramebuffer.getWidth() >> mip;
+			unsigned int mipHeight = m_ReflectionProbeSamplingFramebuffer.getHeight() >> mip;
 
 			glBindRenderbuffer(GL_RENDERBUFFER, m_ReflectionProbeSamplingFramebuffer.getDepthRBO());
 			glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipWidth, mipHeight);

@@ -13,7 +13,7 @@ namespace engine {
 		GLenum TextureMagnificationFilterMode = GL_LINEAR; // 当纹理变得更接近并且多个像素映射到单个纹素时的过滤模式（永远不需要超过双线性，因为这与在这种情况下一样准确）
 
 		// Mip Settings
-		bool GenerateMips = false;
+		bool HasMips = false;
 	};
 
 	class Cubemap {
@@ -39,6 +39,7 @@ namespace engine {
 		unsigned int m_CubemapID;
 
 		unsigned int m_FaceWidth, m_FaceHeight;
+		unsigned int m_FacesGenerated;
 		GLenum m_TextureFormat;
 
 		CubemapSettings m_CubemapSettings;
