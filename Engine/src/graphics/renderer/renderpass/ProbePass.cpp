@@ -54,7 +54,7 @@ namespace engine {
 		textureSettings.HasMips = false;
 
 		Texture* brdfLUT = new Texture(textureSettings);
-		brdfLUT->generate2DTexture(BRDF_LUT_RESOLUTION, BRDF_LUT_RESOLUTION, 
+		brdfLUT->generate2DTexture(BRDF_LUT_RESOLUTION, BRDF_LUT_RESOLUTION,
 			GL_RG16F, GL_RG, 0);
 
 		// 设置lut的帧缓冲区
@@ -63,7 +63,7 @@ namespace engine {
 		brdfBuffer.addTexture2DColorAttachment(false).
 			addDepthRBO(false).createFramebuffer();
 		brdfBuffer.bind();
-		
+
 		m_GLCache->switchShader(brdfIntegrationShader);
 		m_GLCache->setDepthTest(false);
 
@@ -85,7 +85,7 @@ namespace engine {
 		// Initialize step before rendering to the probe's cubemap
 		m_CubemapCamera.setCenterPosition(probePosition);
 		ShadowmapPass shadowPass(m_ActiveScene, &m_SceneCaptureShadowFramebuffer);
-		LightingPass lightingPass(m_ActiveScene, &m_SceneCaptureLightingFramebuffer, false);
+		LightingPass lightingPass(m_ActiveScene, &m_SceneCaptureLightingFramebuffer);
 
 		// Render the scene to the probe's cubemap
 		for (int i = 0; i < 6; i++) {
@@ -98,7 +98,7 @@ namespace engine {
 			// Light pass
 			m_SceneCaptureLightingFramebuffer.bind();
 			m_SceneCaptureLightingFramebuffer.setColorAttachment(m_SceneCaptureCubemap.getCubemapID(), GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
-			lightingPass.executeRenderPass(shadowpassOutput, &m_CubemapCamera);
+			lightingPass.executeRenderPass(shadowpassOutput, &m_CubemapCamera, false);
 			m_SceneCaptureLightingFramebuffer.setColorAttachment(0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
 		}
 
@@ -138,7 +138,7 @@ namespace engine {
 		// 初始化 用于渲染到探针立方体贴图
 		m_CubemapCamera.setCenterPosition(probePosition);
 		ShadowmapPass shadowPass(m_ActiveScene, &m_SceneCaptureShadowFramebuffer);
-		LightingPass lightingPass(m_ActiveScene, &m_SceneCaptureLightingFramebuffer, false);
+		LightingPass lightingPass(m_ActiveScene, &m_SceneCaptureLightingFramebuffer);
 
 		// 将场景渲染到探针的立方体贴图
 		for (int i = 0; i < 6; ++i) {
@@ -148,7 +148,7 @@ namespace engine {
 
 			m_SceneCaptureLightingFramebuffer.bind();
 			m_SceneCaptureLightingFramebuffer.setColorAttachment(m_SceneCaptureCubemap.getCubemapID(), GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
-			lightingPass.executeRenderPass(shadowpassOutput, &m_CubemapCamera);
+			lightingPass.executeRenderPass(shadowpassOutput, &m_CubemapCamera, false);
 			m_SceneCaptureLightingFramebuffer.setColorAttachment(0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
 		}
 

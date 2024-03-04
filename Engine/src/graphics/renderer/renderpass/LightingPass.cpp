@@ -6,7 +6,7 @@
 namespace engine
 {
 
-	LightingPass::LightingPass(Scene3D* scene, bool useIBL) : RenderPass(scene, RenderPassType::LightingPassType), m_UseIBL(useIBL)
+	LightingPass::LightingPass(Scene3D* scene) : RenderPass(scene, RenderPassType::LightingPassType)
 	{
 		m_ModelShader = ShaderLoader::loadShader("src/shaders/pbr_model.vert", "src/shaders/pbr_model.frag");
 		m_TerrainShader = ShaderLoader::loadShader("src/shaders/terrain.vert", "src/shaders/terrain.frag");
@@ -16,7 +16,7 @@ namespace engine
 		m_Framebuffer->addTexture2DColorAttachment(shouldMultisample).addDepthStencilRBO(shouldMultisample).createFramebuffer();
 	}
 
-	LightingPass::LightingPass(Scene3D* scene, Framebuffer* customFramebuffer, bool useIBL) : RenderPass(scene, RenderPassType::LightingPassType), m_Framebuffer(customFramebuffer), m_UseIBL(useIBL)
+	LightingPass::LightingPass(Scene3D* scene, Framebuffer* customFramebuffer) : RenderPass(scene, RenderPassType::LightingPassType), m_Framebuffer(customFramebuffer)
 	{
 		m_ModelShader = ShaderLoader::loadShader("src/shaders/pbr_model.vert", "src/shaders/pbr_model.frag");
 		m_TerrainShader = ShaderLoader::loadShader("src/shaders/terrain.vert", "src/shaders/terrain.frag");
@@ -24,7 +24,7 @@ namespace engine
 
 	LightingPass::~LightingPass() {}
 
-	LightingPassOutput LightingPass::executeRenderPass(ShadowmapPassOutput& shadowmapData, ICamera* camera) {
+	LightingPassOutput LightingPass::executeRenderPass(ShadowmapPassOutput& shadowmapData, ICamera* camera, bool useIBL) {
 		glViewport(0, 0, m_Framebuffer->getWidth(), m_Framebuffer->getHeight());
 		m_Framebuffer->bind();
 		m_Framebuffer->clear();
@@ -47,7 +47,7 @@ namespace engine
 		bindShadowmap(m_ModelShader, shadowmapData);
 
 		// IBL code
-		if (m_UseIBL) {
+		if (useIBL) {
 			m_ModelShader->setUniform1i("computeIBL", 1);
 			glm::vec3 renderPos(0.0f, 0.0f, 0.0f);
 			probeManager->bindProbe(renderPos, m_ModelShader);
