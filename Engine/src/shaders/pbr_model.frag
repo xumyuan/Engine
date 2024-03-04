@@ -77,7 +77,8 @@ void main() {
 	float albedoAlpha = texture(material.texture_albedo, TexCoords).w;
 	vec3 normal = texture(material.texture_normal, TexCoords).rgb;
 	float metallic = texture(material.texture_metallic, TexCoords).r;
-	float roughness = max(texture(material.texture_roughness, TexCoords).r, 0.04);
+	float unclampedRoughness = texture(material.texture_roughness, TexCoords).r; // Used for indirect specular (reflections)
+	float roughness = max(unclampedRoughness, 0.04);
 	float ao = texture(material.texture_ao, TexCoords).r;
 
 	// 法线贴图代码。 选择退出切线空间法线贴图，因为我必须将所有灯光转换为切线空间
@@ -108,7 +109,7 @@ void main() {
 
 		vec3 indirectDiffuse = texture(irradianceMap, normal).rgb * albedo;
 
-		vec3 prefilterColour = textureLod(prefilterMap, reflectionVec, roughness * (reflectionProbeMipCount - 1)).rgb;
+		vec3 prefilterColour = textureLod(prefilterMap, reflectionVec, unclampedRoughness * (reflectionProbeMipCount - 1)).rgb;
 		vec2 brdfIntegration = texture(brdfLUT, vec2(max(dot(normal, fragToView), 0.0), roughness)).rg;
 		vec3 indirectSpecular = prefilterColour * (specularRatio * brdfIntegration.x + brdfIntegration.y);
 
