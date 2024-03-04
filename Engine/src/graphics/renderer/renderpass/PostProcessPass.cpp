@@ -10,7 +10,7 @@ namespace engine
 		m_ScreenRenderTarget(Window::getWidth(), Window::getHeight()),
 		m_GammaCorrectTarget(Window::getWidth(), Window::getHeight())
 	{
-		m_GammaCorrectShader = ShaderLoader::loadShader("src/shaders/gammaCorrect.vert", "src/shaders/gammaCorrect.frag");
+		m_GammaCorrectShader = ShaderLoader::loadShader("src/shaders/post_process/gamma/gammaCorrect.vert", "src/shaders/post_process/gamma/gammaCorrect.frag");
 		m_PassthroughShader = ShaderLoader::loadShader("src/shaders/post_process/copy.vert", "src/shaders/post_process/copy.frag");
 		m_FxaaShader = ShaderLoader::loadShader("src/shaders/post_process/fxaa/fxaa.vert", "src/shaders/post_process/fxaa/fxaa.frag");
 
@@ -29,7 +29,7 @@ namespace engine
 
 		// 如果输入 RenderTarget 是多重采样的。通过将其位块传送到非多重采样的 RenderTarget 来解决它，以便我们可以对其进行后期处理
 		Framebuffer* target = framebufferToProcess;
-		if (framebufferToProcess->isMultisampledColourBuffer()) {
+		if (framebufferToProcess->isMultisampled()) {
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, framebufferToProcess->getFramebuffer());
 			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_ScreenRenderTarget.getFramebuffer());
 			glBlitFramebuffer(0, 0, framebufferToProcess->getWidth(), framebufferToProcess->getHeight(), 0, 0, m_ScreenRenderTarget.getWidth(), m_ScreenRenderTarget.getHeight(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
@@ -47,7 +47,7 @@ namespace engine
 		Framebuffer* framebufferToRenderTo = nullptr;
 		if (m_FxaaEnabled) {
 			framebufferToRenderTo = &m_GammaCorrectTarget;
-				fxaa(framebufferToRenderTo, target->getColorBufferTexture());
+			fxaa(framebufferToRenderTo, target->getColorBufferTexture());
 			target = framebufferToRenderTo;
 		}
 

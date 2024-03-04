@@ -274,8 +274,8 @@
     <None Include="src\shaders\reflectionprobe_importance_sampling.vert" />
     <None Include="src\shaders\terrain.vert" />
     <None Include="src\shaders\pbr_model.frag" />
-    <None Include="src\shaders\gammaCorrect.frag" />
-    <None Include="src\shaders\gammaCorrect.vert" />
+    <None Include="src\shaders\post_process\gamma\gammaCorrect.frag" />
+    <None Include="src\shaders\post_process\gamma\gammaCorrect.vert" />
     <None Include="src\shaders\pbr_model.vert" />
     <None Include="src\shaders\shadowmap.frag" />
     <None Include="src\shaders\shadowmap.vert" />

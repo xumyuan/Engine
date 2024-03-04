@@ -9,18 +9,7 @@ namespace engine {
 	}
 
 	Framebuffer::~Framebuffer() {
-		if (m_ColorTexture != 0)
-		{
-			glDeleteTextures(1, &m_ColorTexture);
-		}
-		if (m_DepthTexture != 0)
-		{
-			glDeleteTextures(1, &m_DepthTexture);
-		}
-		if (m_DepthStencilRBO != 0)
-		{
-			glDeleteRenderbuffers(1, &m_DepthStencilRBO);
-		}
+		glDeleteRenderbuffers(1, &m_DepthStencilRBO);
 
 		glDeleteFramebuffers(1, &m_FBO);
 	}
@@ -42,7 +31,7 @@ namespace engine {
 	}
 
 	Framebuffer& Framebuffer::addTexture2DColorAttachment(bool multisampledBuffer) {
-		m_IsMultisampledColourBuffer = multisampledBuffer;
+		m_IsMultisampled = multisampledBuffer;
 #if DEBUG_ENABLED
 		if (m_ColorTexture != 0) {
 			Logger::getInstance().error("logged_files/error.txt", "Framebuffer initialization", "Framebuffer already has a color attachment");

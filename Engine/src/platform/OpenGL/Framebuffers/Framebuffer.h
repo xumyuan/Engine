@@ -30,18 +30,19 @@ namespace engine {
 		inline unsigned int getDepthStencilRBO() { return m_DepthStencilRBO; }
 		inline unsigned int getDepthTexture() { return m_DepthTexture; }
 
-		inline bool isMultisampledColourBuffer() { return m_IsMultisampledColourBuffer; }
+		inline bool isMultisampled() { return m_IsMultisampled; }
 	private:
 		unsigned int m_FBO;
+		unsigned int m_Width, m_Height;
 
-		bool m_IsMultisampledColourBuffer;
+		bool m_IsMultisampled;
+
 		// Attachments
 		unsigned int m_ColorTexture;
+		unsigned int m_DepthTexture;
 		unsigned int m_DepthRBO;
 		unsigned int m_DepthStencilRBO;
-		unsigned int m_DepthTexture;
-
-		unsigned int m_Width, m_Height;
+	
 	};
 
 
