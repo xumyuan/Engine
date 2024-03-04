@@ -332,16 +332,13 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="src\shaders\terrain.vert" />
-    <None Include="src\shaders\model.frag" />
     <None Include="src\shaders\terrain.frag" />
-    <None Include="src\shaders\postprocess.frag" />
-    <None Include="src\shaders\postprocess.vert" />
+    <None Include="src\shaders\gammaCorrect.frag" />
+    <None Include="src\shaders\gammaCorrect.vert" />
     <None Include="src\shaders\skybox.frag" />
     <None Include="src\shaders\skybox.vert" />
     <None Include="src\shaders\shadowmap.vert" />
     <None Include="src\shaders\shadowmap.frag" />
-    <None Include="src\shaders\model.vert" />
-    <None Include="src\shaders\oldModel.frag" />
     <None Include="src\shaders\pbr_model.vert" />
     <None Include="src\shaders\pbr_model.frag" />
     <None Include="src\shaders\lightprobe_convolution.vert" />

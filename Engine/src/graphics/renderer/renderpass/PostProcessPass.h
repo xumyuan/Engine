@@ -15,15 +15,18 @@ namespace engine
 
 		void executeRenderPass(Framebuffer* framebufferToProcess);
 
-		inline void EnableBlur(bool choice) { m_Blur = choice; }
 	private:
 		Shader *m_PostProcessShader;
 		Quad m_NDC_Plane;
 		Framebuffer m_ScreenRenderTarget; // 仅在启用多重采样时使​​用，以便它可以位块传输到非多重采样缓冲区
 
-		// Post Processing Tweaks
+		// 伽马矫正
 		float m_GammaCorrection = 2.2f;
-		bool m_Blur = false;
+		float m_Exposure = 1.0f;
+
+		// fxaa
+		bool m_FxaaEnabled = true;
+		Shader* m_FxaaShader;
 	};
 
 }

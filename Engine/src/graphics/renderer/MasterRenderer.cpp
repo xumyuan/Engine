@@ -18,6 +18,7 @@ namespace engine
 	void MasterRenderer::init() {
 		// State that should never change
 		glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+		// 环境贴图预计算
 		m_EnvironmentProbePass.pregenerateProbes();
 	}
 
@@ -36,7 +37,7 @@ namespace engine
 		// Lighting Pass
 		LightingPassOutput lightingOutput = m_LightingPass.executeRenderPass(shadowmapOutput, m_ActiveScene->getCamera(), true);
 
-		// Post Process Pass
+		// 后处理 Pass
 #if DEBUG_ENABLED
 		glFinish();
 		m_Timer.reset();
@@ -46,7 +47,6 @@ namespace engine
 		glFinish();
 		RuntimePane::setPostProcessTimer((float)m_Timer.elapsed());
 #endif
-		//m_EnvironmentProbePass.pregenerateProbes();
 	}
 
 }

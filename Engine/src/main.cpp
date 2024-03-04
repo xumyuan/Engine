@@ -37,7 +37,6 @@ int main() {
 
 	engine::Time deltaTime;
 	while (!window.closed()) {
-		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);  // 场景背景色
 		deltaTime.update();
 
 #if DEBUG_ENABLED
@@ -60,7 +59,7 @@ int main() {
 		scene.onUpdate(deltaTime.getDeltaTime());
 		renderer.render();
 
-		// Display panes
+		// 展示ui面板
 		runtimePane.render();
 		debugPane.render();
 
