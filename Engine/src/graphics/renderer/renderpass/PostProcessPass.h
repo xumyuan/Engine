@@ -15,18 +15,25 @@ namespace engine
 
 		void executeRenderPass(Framebuffer* framebufferToProcess);
 
+		void gammaCorrect(Framebuffer* target, unsigned int hdrTexture);
+
 	private:
-		Shader *m_PostProcessShader;
+
 		Quad m_NDC_Plane;
 		Framebuffer m_ScreenRenderTarget; // 仅在启用多重采样时使​​用，以便它可以位块传输到非多重采样缓冲区
 
 		// 伽马矫正
+		Shader* m_GammaCorrectShader;
 		float m_GammaCorrection = 2.2f;
 		float m_Exposure = 1.0f;
+		Framebuffer m_GammaCorrectTarget;
 
 		// fxaa
 		bool m_FxaaEnabled = true;
 		Shader* m_FxaaShader;
+
+		// 处理结果
+		Shader* m_PassthroughShader;
 	};
 
 }

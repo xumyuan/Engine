@@ -39,6 +39,7 @@ namespace engine {
 		// Pre-generation controls only
 		void setMipMode(bool shouldGenMips, int mipBias);
 		inline void setTextureSettings(TextureSettings settings) { m_TextureSettings = settings; }
+		inline bool isGenerated() const { return m_TextureId != 0; }
 		// 不要用它来绑定纹理并使用它。 而是调用 Bind() 函数
 		inline unsigned int getTextureId() { return m_TextureId; }
 		inline unsigned int getWidth() { return m_Width; }
