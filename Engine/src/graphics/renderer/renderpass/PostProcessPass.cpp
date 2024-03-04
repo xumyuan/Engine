@@ -12,11 +12,14 @@ namespace engine
 	{
 		m_GammaCorrectShader = ShaderLoader::loadShader("src/shaders/gammaCorrect.vert", "src/shaders/gammaCorrect.frag");
 		m_PassthroughShader = ShaderLoader::loadShader("src/shaders/post_process/copy.vert", "src/shaders/post_process/copy.frag");
+		m_FxaaShader = ShaderLoader::loadShader("src/shaders/post_process/fxaa/fxaa.vert", "src/shaders/post_process/fxaa/fxaa.frag");
 
 		m_ScreenRenderTarget.addTexture2DColorAttachment(false).addDepthStencilRBO(false).createFramebuffer();
 		m_GammaCorrectTarget.addTexture2DColorAttachment(false).addDepthStencilRBO(false).createFramebuffer();
+
 		DebugPane::bindGammaCorrectionValue(&m_GammaCorrection);
 		DebugPane::bindExposureValue(&m_Exposure);
+		DebugPane::bindFxaaEnabled(&m_FxaaEnabled);
 	}
 
 	PostProcessPass::~PostProcessPass() {}
@@ -41,6 +44,12 @@ namespace engine
 		gammaCorrect(&m_GammaCorrectTarget, target->getColorBufferTexture());
 		target = &m_GammaCorrectTarget;
 
+		Framebuffer* framebufferToRenderTo = nullptr;
+		if (m_FxaaEnabled) {
+			framebufferToRenderTo = &m_GammaCorrectTarget;
+				fxaa(framebufferToRenderTo, target->getColorBufferTexture());
+			target = framebufferToRenderTo;
+		}
 
 		Window::bind();
 		Window::clear();
@@ -73,6 +82,24 @@ namespace engine
 
 		m_ActiveScene->getModelRenderer()->NDC_Plane.Draw();
 
+	}
+
+	void PostProcessPass::fxaa(Framebuffer* target, unsigned int texture) {
+		glViewport(0, 0, target->getWidth(), target->getHeight());
+		m_GLCache->switchShader(m_FxaaShader);
+		m_GLCache->setDepthTest(false);
+		m_GLCache->setBlend(false);
+		m_GLCache->setFaceCull(true);
+		m_GLCache->setCullFace(GL_BACK);
+		m_GLCache->setStencilTest(false);
+		target->bind();
+
+		m_FxaaShader->setUniform2f("texel_size", glm::vec2(1.0f / (float)Window::getWidth(), 1.0f / (float)Window::getHeight()));
+		m_FxaaShader->setUniform1i("input_texture", 0);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture);
+
+		m_ActiveScene->getModelRenderer()->NDC_Plane.Draw();
 	}
 
 }

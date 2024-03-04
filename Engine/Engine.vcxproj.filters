@@ -349,6 +349,8 @@
     <None Include="src\shaders\prebrdf.frag" />
     <None Include="src\shaders\post_process\copy.vert" />
     <None Include="src\shaders\post_process\copy.frag" />
+    <None Include="src\shaders\post_process\fxaa\fxaa.vert" />
+    <None Include="src\shaders\post_process\fxaa\fxaa.frag" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\awesomeface.png">

@@ -266,6 +266,8 @@
     <None Include="src\shaders\lightprobe_convolution.vert" />
     <None Include="src\shaders\post_process\copy.frag" />
     <None Include="src\shaders\post_process\copy.vert" />
+    <None Include="src\shaders\post_process\fxaa\fxaa.frag" />
+    <None Include="src\shaders\post_process\fxaa\fxaa.vert" />
     <None Include="src\shaders\prebrdf.frag" />
     <None Include="src\shaders\prebrdf.vert" />
     <None Include="src\shaders\reflectionprobe_importance_sampling.frag" />

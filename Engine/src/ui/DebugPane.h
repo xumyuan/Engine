@@ -10,6 +10,7 @@ namespace engine {
 
 		virtual void setupPaneObjects();
 
+		static inline void bindFxaaEnabled(bool* ptr) { s_FxaaEnabled = ptr; }
 		static inline void bindCameraPositionValue(glm::vec3* ptr) { s_CameraPosition = ptr; }
 		static inline void bindGammaCorrectionValue(float* ptr) { s_GammaCorrectionValue = ptr; }
 		static inline void bindExposureValue(float* ptr) { s_ExposureValue = ptr; }
@@ -22,6 +23,9 @@ namespace engine {
 		static float* s_ExposureValue;
 
 		static bool s_WireframeMode;
+
+		// fxaa ¿ª¹Ø
+		static bool* s_FxaaEnabled;
 	};
 
 

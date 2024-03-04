@@ -17,6 +17,8 @@ namespace engine
 
 		void gammaCorrect(Framebuffer* target, unsigned int hdrTexture);
 
+		void fxaa(Framebuffer* target, unsigned int texture);
+
 	private:
 
 		Quad m_NDC_Plane;
