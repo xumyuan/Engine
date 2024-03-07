@@ -34,8 +34,9 @@ vec2 IntegrateBRDF(float NdotV,float roughness){
 	for(uint i = 0u;i < SAMPLE_COUNT; i++){
 		//生成一个偏向于首选对齐方向的样本向量（重要性采样）。
 		vec2 Xi = Hammersley(i,SAMPLE_COUNT);
-		vec3 H = ImportanceSampleGGX(Xi,N,roughness);
-		vec3 L = normalize(2.0 * dot(V, H) * H - V);
+		vec3 H = ImportanceSampleGGX(Xi,N,roughness); //采样方向
+		//根据采样方向和观察方向确定的光照方向
+		vec3 L = normalize(2.0 * dot(V, H) * H - V); 
 
 		float NdotL = max(L.z, 0.0);
 		float NdotH = max(H.z, 0.0);

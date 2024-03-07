@@ -24,6 +24,7 @@ void main(){
 	vec3 prefilteredColor = vec3(0.0);
 	for(uint i = 0; i < SAMPLE_COUNT; ++i){
 		vec2 Xi = Hammersley(i, SAMPLE_COUNT);
+		// 这里采用重要性采样，获取了更靠近反射方向的向量
 		vec3 H  = ImportanceSampleGGX(Xi, N, roughness);
 		vec3 L  = normalize(2.0 * dot(V, H) * H - V);
 	
@@ -59,6 +60,7 @@ vec3 ImportanceSampleGGX(vec2 Xi, vec3 N, float roughness){
 	float a = roughness*roughness;
 
 	float phi = 2.0 * PI * Xi.x;
+	// 这里粗糙度越小，costheta越接近1 即角度越接近0，采样越集中
 	float cosTheta = sqrt((1.0-Xi.y)/(1.0+(a*a-1.0)*Xi.y));
 	float sinTheta = sqrt(1.0 - cosTheta*cosTheta);
 
@@ -67,7 +69,7 @@ vec3 ImportanceSampleGGX(vec2 Xi, vec3 N, float roughness){
 	H.y = sin(phi) * sinTheta;
 	H.z = cosTheta;
 
-	// from tangent-space vector to world-space sample vector
+	// 从切线空间转换到世界空间
 	vec3 up        = abs(N.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
 	vec3 tangent   = normalize(cross(up, N));
 	vec3 bitangent = cross(N, tangent);

@@ -14,8 +14,8 @@ namespace engine
 		m_PassthroughShader = ShaderLoader::loadShader("src/shaders/post_process/copy.vert", "src/shaders/post_process/copy.frag");
 		m_FxaaShader = ShaderLoader::loadShader("src/shaders/post_process/fxaa/fxaa.vert", "src/shaders/post_process/fxaa/fxaa.frag");
 
-		m_ScreenRenderTarget.addTexture2DColorAttachment(false).addDepthStencilRBO(false).createFramebuffer();
-		m_GammaCorrectTarget.addTexture2DColorAttachment(false).addDepthStencilRBO(false).createFramebuffer();
+		m_ScreenRenderTarget.addTexture2DColorAttachment(false).addDepthRBO(false).createFramebuffer();
+		m_GammaCorrectTarget.addTexture2DColorAttachment(false).addDepthRBO(false).createFramebuffer();
 
 		DebugPane::bindGammaCorrectionValue(&m_GammaCorrection);
 		DebugPane::bindExposureValue(&m_Exposure);
@@ -32,7 +32,10 @@ namespace engine
 		if (framebufferToProcess->isMultisampled()) {
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, framebufferToProcess->getFramebuffer());
 			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_ScreenRenderTarget.getFramebuffer());
-			glBlitFramebuffer(0, 0, framebufferToProcess->getWidth(), framebufferToProcess->getHeight(), 0, 0, m_ScreenRenderTarget.getWidth(), m_ScreenRenderTarget.getHeight(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+			glBlitFramebuffer(0, 0, framebufferToProcess->getWidth(),
+				framebufferToProcess->getHeight(), 0, 0, m_ScreenRenderTarget.getWidth(), m_ScreenRenderTarget.getHeight(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
 			target = &m_ScreenRenderTarget;
 		}
 
@@ -40,25 +43,28 @@ namespace engine
 		if (DebugPane::getWireframeMode())
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 #endif
+
+
+		Framebuffer* framebufferToRenderTo = nullptr;
 		// Ù¤Âí½ÃÕý
 		gammaCorrect(&m_GammaCorrectTarget, target->getColorBufferTexture());
 		target = &m_GammaCorrectTarget;
 
-		Framebuffer* framebufferToRenderTo = nullptr;
 		if (m_FxaaEnabled) {
-			framebufferToRenderTo = &m_GammaCorrectTarget;
+			framebufferToRenderTo = target;
 			fxaa(framebufferToRenderTo, target->getColorBufferTexture());
 			target = framebufferToRenderTo;
 		}
-
 		Window::bind();
 		Window::clear();
+
 		m_GLCache->switchShader(m_PassthroughShader);
 		m_PassthroughShader->setUniform1i("input_texture", 0);
+
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, target->getColorBufferTexture());
-		m_ActiveScene->getModelRenderer()->NDC_Plane.Draw();
 
+		m_ActiveScene->getModelRenderer()->NDC_Plane.Draw();
 	}
 
 
@@ -95,10 +101,10 @@ namespace engine
 		target->bind();
 
 		m_FxaaShader->setUniform2f("texel_size", glm::vec2(1.0f / (float)Window::getWidth(), 1.0f / (float)Window::getHeight()));
+
 		m_FxaaShader->setUniform1i("input_texture", 0);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture);
-
 		m_ActiveScene->getModelRenderer()->NDC_Plane.Draw();
 	}
 

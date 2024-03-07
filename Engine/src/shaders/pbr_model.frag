@@ -102,13 +102,16 @@ void main() {
 	// 计算漫反射和镜面反射的环境 IBL
 	vec3 ambient = vec3(0.03) * albedo * ao;
 	if (computeIBL) {
+		// 计算镜面反射和漫反射光的比例
 		vec3 specularRatio = FresnelSchlick(max(dot(normal, fragToView), 0.0), baseReflectivity);
 
 		vec3 diffuseRatio = vec3(1.0) - specularRatio;
 		diffuseRatio *= 1.0 - metallic;
 
+		// 环境光照的漫反射项
 		vec3 indirectDiffuse = texture(irradianceMap, normal).rgb * albedo;
 
+		// 镜面反射项
 		vec3 prefilterColour = textureLod(prefilterMap, reflectionVec, unclampedRoughness * (reflectionProbeMipCount - 1)).rgb;
 		vec2 brdfIntegration = texture(brdfLUT, vec2(max(dot(normal, fragToView), 0.0), roughness)).rg;
 		vec3 indirectSpecular = prefilterColour * (specularRatio * brdfIntegration.x + brdfIntegration.y);
@@ -197,6 +200,7 @@ float NormalDistributionGGX(vec3 normal, vec3 halfway, float roughness) {
 }
 
 vec3 CalculateSpotLightRadiance(vec3 albedo, vec3 normal, float metallic, float roughness, vec3 fragToView, vec3 baseReflectivity) {
+
 	vec3 fragToLight = normalize(spotLight.position - FragPos);
 	vec3 halfway = normalize(fragToView + fragToLight);
 	float fragToLightDistance = length(spotLight.position - FragPos);

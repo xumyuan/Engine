@@ -42,7 +42,7 @@ namespace engine {
 		bind();
 		glGenTextures(1, &m_ColorTexture);
 
-		// Generate colour texture attachment
+		// 生成颜色纹理附件
 		if (multisampledBuffer) {
 			glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, m_ColorTexture);
 			glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, MSAA_SAMPLE_AMOUNT, GL_RGBA16F, m_Width, m_Height, GL_TRUE);
