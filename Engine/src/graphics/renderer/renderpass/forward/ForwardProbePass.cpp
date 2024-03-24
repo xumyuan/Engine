@@ -1,15 +1,15 @@
 #include "pch.h"
-#include "ProbePass.h"
+#include "ForwardProbePass.h"
 
 #include <graphics/mesh/common/Cube.h>
 #include <graphics/ibl/ProbeManager.h>
-#include <graphics/renderer/renderpass/LightingPass.h>
+#include <graphics/renderer/renderpass/forward/ForwardLightingPass.h>
 #include <graphics/renderer/renderpass/ShadowmapPass.h>
 #include <utils/loaders/ShaderLoader.h>
 
 namespace engine {
 
-	ProbePass::ProbePass(Scene3D* scene) : RenderPass(scene, RenderPassType::ProbePassType),
+	ForwardProbePass::ForwardProbePass(Scene3D* scene) : RenderPass(scene, RenderPassType::ProbePassType),
 		m_SceneCaptureShadowFramebuffer(IBL_CAPTURE_RESOLUTION, IBL_CAPTURE_RESOLUTION), m_SceneCaptureLightingFramebuffer(IBL_CAPTURE_RESOLUTION, IBL_CAPTURE_RESOLUTION),
 		m_LightProbeConvolutionFramebuffer(LIGHT_PROBE_RESOLUTION, LIGHT_PROBE_RESOLUTION), m_ReflectionProbeSamplingFramebuffer(REFLECTION_PROBE_RESOLUTION, REFLECTION_PROBE_RESOLUTION),
 		m_SceneCaptureCubemap(m_SceneCaptureSettings)
@@ -30,9 +30,9 @@ namespace engine {
 		m_ImportanceSamplingShader = ShaderLoader::loadShader("src/shaders/reflectionprobe_importance_sampling.vert", "src/shaders/reflectionprobe_importance_sampling.frag");
 	}
 
-	ProbePass::~ProbePass() {}
+	ForwardProbePass::~ForwardProbePass() {}
 
-	void ProbePass::pregenerateProbes() {
+	void ForwardProbePass::pregenerateProbes() {
 		generateBRDFLUT();
 
 		glm::vec3 probePosition = glm::vec3(67.0f, 92.0f, 133.0f);
@@ -40,7 +40,7 @@ namespace engine {
 		generateReflectionProbe(probePosition);
 	}
 
-	void ProbePass::generateBRDFLUT() {
+	void ForwardProbePass::generateBRDFLUT() {
 		Shader* brdfIntegrationShader = ShaderLoader::loadShader("src/shaders/prebrdf.vert", "src/shaders/prebrdf.frag");
 		ModelRenderer* modelRenderer = m_ActiveScene->getModelRenderer();
 
@@ -77,7 +77,7 @@ namespace engine {
 		ReflectionProbe::setBRDFLUT(brdfLUT);
 	}
 
-	void ProbePass::generateLightProbe(glm::vec3& probePosition) {
+	void ForwardProbePass::generateLightProbe(glm::vec3& probePosition) {
 		glm::vec2 probeResolution(LIGHT_PROBE_RESOLUTION, LIGHT_PROBE_RESOLUTION);
 		LightProbe* lightProbe = new LightProbe(probePosition, probeResolution);
 		lightProbe->generate();
@@ -85,7 +85,7 @@ namespace engine {
 		// Initialize step before rendering to the probe's cubemap
 		m_CubemapCamera.setCenterPosition(probePosition);
 		ShadowmapPass shadowPass(m_ActiveScene, &m_SceneCaptureShadowFramebuffer);
-		LightingPass lightingPass(m_ActiveScene, &m_SceneCaptureLightingFramebuffer);
+		ForwardLightingPass lightingPass(m_ActiveScene, &m_SceneCaptureLightingFramebuffer);
 
 		// Render the scene to the probe's cubemap
 		for (int i = 0; i < 6; i++) {
@@ -130,7 +130,7 @@ namespace engine {
 		probeManager->addProbe(lightProbe);
 	}
 
-	void ProbePass::generateReflectionProbe(glm::vec3& probePosition) {
+	void ForwardProbePass::generateReflectionProbe(glm::vec3& probePosition) {
 		glm::vec2 probeResolution(REFLECTION_PROBE_RESOLUTION, REFLECTION_PROBE_RESOLUTION);
 		ReflectionProbe* reflectionProbe = new ReflectionProbe(probePosition, probeResolution, true);
 		reflectionProbe->generate();
@@ -138,7 +138,7 @@ namespace engine {
 		// 初始化 用于渲染到探针立方体贴图
 		m_CubemapCamera.setCenterPosition(probePosition);
 		ShadowmapPass shadowPass(m_ActiveScene, &m_SceneCaptureShadowFramebuffer);
-		LightingPass lightingPass(m_ActiveScene, &m_SceneCaptureLightingFramebuffer);
+		ForwardLightingPass lightingPass(m_ActiveScene, &m_SceneCaptureLightingFramebuffer);
 
 		// 将场景渲染到探针的立方体贴图
 		for (int i = 0; i < 6; ++i) {

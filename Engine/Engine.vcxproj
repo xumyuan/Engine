@@ -142,11 +142,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\graphics\ibl\ReflectionProbe.h" />
-    <ClInclude Include="src\graphics\renderer\renderpass\ProbePass.h" />
+    <ClInclude Include="src\graphics\renderer\renderpass\forward\ForwardProbePass.h" />
     <ClInclude Include="src\graphics\ibl\ProbeManager.h" />
     <ClInclude Include="src\utils\loaders\ShaderLoader.h" />
     <ClInclude Include="src\graphics\camera\ICamera.h" />
-    <ClInclude Include="src\graphics\renderer\renderpass\LightingPass.h" />
+    <ClInclude Include="src\graphics\renderer\renderpass\forward\ForwardLightingPass.h" />
     <ClInclude Include="src\graphics\renderer\renderpass\PostProcessPass.h" />
     <ClInclude Include="src\graphics\renderer\renderpass\RenderPass.h" />
     <ClInclude Include="src\graphics\renderer\renderpass\ShadowmapPass.h" />
@@ -198,10 +198,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\graphics\ibl\ReflectionProbe.cpp" />
-    <ClCompile Include="src\graphics\renderer\renderpass\ProbePass.cpp" />
+    <ClCompile Include="src\graphics\renderer\renderpass\forward\ForwardProbePass.cpp" />
     <ClCompile Include="src\graphics\ibl\ProbeManager.cpp" />
     <ClCompile Include="src\utils\loaders\ShaderLoader.cpp" />
-    <ClCompile Include="src\graphics\renderer\renderpass\LightingPass.cpp" />
+    <ClCompile Include="src\graphics\renderer\renderpass\forward\ForwardLightingPass.cpp" />
     <ClCompile Include="src\graphics\renderer\renderpass\PostProcessPass.cpp" />
     <ClCompile Include="src\graphics\renderer\renderpass\RenderPass.cpp" />
     <ClCompile Include="src\graphics\renderer\renderpass\ShadowmapPass.cpp" />

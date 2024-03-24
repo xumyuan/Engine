@@ -7,12 +7,12 @@
 namespace engine
 {
 
-	class LightingPass : public RenderPass
+	class ForwardLightingPass : public RenderPass
 	{
 	public:
-		LightingPass(Scene3D* scene);
-		LightingPass(Scene3D* scene, Framebuffer* customFramebuffer);
-		virtual ~LightingPass() override;
+		ForwardLightingPass(Scene3D* scene);
+		ForwardLightingPass(Scene3D* scene, Framebuffer* customFramebuffer);
+		virtual ~ForwardLightingPass() override;
 
 		LightingPassOutput executeRenderPass(ShadowmapPassOutput& shadowmapData, ICamera* camera, bool useIBL);
 	private:

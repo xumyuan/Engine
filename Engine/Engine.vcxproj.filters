@@ -150,7 +150,7 @@
     <ClInclude Include="src\graphics\renderer\MasterRenderer.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\graphics\renderer\renderpass\LightingPass.h">
+    <ClInclude Include="src\graphics\renderer\renderpass\forward\ForwardLightingPass.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\graphics\renderer\renderpass\PostProcessPass.h">
@@ -171,7 +171,7 @@
     <ClInclude Include="src\graphics\ibl\ProbeManager.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\graphics\renderer\renderpass\ProbePass.h">
+    <ClInclude Include="src\graphics\renderer\renderpass\forward\ForwardProbePass.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\graphics\ibl\ReflectionProbe.h">
@@ -305,7 +305,7 @@
     <ClCompile Include="src\graphics\renderer\MasterRenderer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\graphics\renderer\renderpass\LightingPass.cpp">
+    <ClCompile Include="src\graphics\renderer\renderpass\forward\ForwardLightingPass.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\graphics\renderer\renderpass\PostProcessPass.cpp">
@@ -323,7 +323,7 @@
     <ClCompile Include="src\graphics\ibl\ProbeManager.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\graphics\renderer\renderpass\ProbePass.cpp">
+    <ClCompile Include="src\graphics\renderer\renderpass\forward\ForwardProbePass.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\graphics\ibl\ReflectionProbe.cpp">
