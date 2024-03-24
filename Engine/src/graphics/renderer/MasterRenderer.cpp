@@ -33,10 +33,8 @@ namespace engine
 		glFinish();
 		RuntimePane::setShadowmapTimer((float)m_Timer.elapsed());
 #endif
-
 		// Lighting Pass
 		LightingPassOutput lightingOutput = m_LightingPass.executeRenderPass(shadowmapOutput, m_ActiveScene->getCamera(), true);
-
 		// ∫Û¥¶¿Ì Pass
 #if DEBUG_ENABLED
 		glFinish();

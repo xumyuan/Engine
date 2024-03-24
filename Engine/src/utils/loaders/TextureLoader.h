@@ -11,9 +11,9 @@ namespace engine {
 
 		// isSRGB是否要线性化的标志
 		// 所有颜色纹理都应线性化，而法线、高度、金属贴图不用
-		static Texture* load2DTexture(const std::string& path, bool isSRGB, TextureSettings* settings = nullptr);
+		static Texture* load2DTexture(const std::string& path, TextureSettings* settings = nullptr);
 
-		static Cubemap* loadCubemapTexture(const std::string& right, const std::string& left, const std::string& top, const std::string& bottom, const std::string& back, const std::string& front, bool isSRGB, CubemapSettings* settings = nullptr);
+		static Cubemap* loadCubemapTexture(const std::string& right, const std::string& left, const std::string& top, const std::string& bottom, const std::string& back, const std::string& front, CubemapSettings* settings = nullptr);
 
 		inline static Texture* getDefaultAlbedo() { return s_DefaultAlbedo; }
 		inline static Texture* getDefaultNormal() { return s_DefaultNormal; }

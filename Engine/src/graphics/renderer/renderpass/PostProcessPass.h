@@ -15,9 +15,9 @@ namespace engine
 
 		void executeRenderPass(Framebuffer* framebufferToProcess);
 
-		void gammaCorrect(Framebuffer* target, unsigned int hdrTexture);
+		void gammaCorrect(Framebuffer* target, Texture* hdrTexture);
 
-		void fxaa(Framebuffer* target, unsigned int texture);
+		void fxaa(Framebuffer* target, Texture* texture);
 
 	private:
 

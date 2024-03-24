@@ -28,9 +28,7 @@ int main() {
 	// 准备ui
 	engine::RuntimePane runtimePane(glm::vec2(256.0f, 90.0f));
 	engine::DebugPane debugPane(glm::vec2(256.0f, 115.0f));
-
 	renderer.init();
-
 #if DEBUG_ENABLED
 	engine::Timer timer;
 #endif
@@ -46,18 +44,24 @@ int main() {
 		else
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 #endif
+
+		window.bind();
 		window.clear();
+
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
+
 #if DEBUG_ENABLED
 		glFinish();
 		timer.reset();
 #endif
 		if (engine::InputManager::isKeyPressed(GLFW_KEY_ESCAPE))
 			window.close();
+
 		scene.onUpdate(deltaTime.getDeltaTime());
 		renderer.render();
+
 
 		// 展示ui面板
 		runtimePane.render();

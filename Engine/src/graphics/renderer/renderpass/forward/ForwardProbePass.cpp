@@ -10,19 +10,26 @@
 namespace engine {
 
 	ForwardProbePass::ForwardProbePass(Scene3D* scene) : RenderPass(scene, RenderPassType::ProbePassType),
-		m_SceneCaptureShadowFramebuffer(IBL_CAPTURE_RESOLUTION, IBL_CAPTURE_RESOLUTION), m_SceneCaptureLightingFramebuffer(IBL_CAPTURE_RESOLUTION, IBL_CAPTURE_RESOLUTION),
-		m_LightProbeConvolutionFramebuffer(LIGHT_PROBE_RESOLUTION, LIGHT_PROBE_RESOLUTION), m_ReflectionProbeSamplingFramebuffer(REFLECTION_PROBE_RESOLUTION, REFLECTION_PROBE_RESOLUTION),
+		m_SceneCaptureShadowFramebuffer(IBL_CAPTURE_RESOLUTION, IBL_CAPTURE_RESOLUTION, false),
+		m_SceneCaptureLightingFramebuffer(IBL_CAPTURE_RESOLUTION, IBL_CAPTURE_RESOLUTION, false),
+		m_LightProbeConvolutionFramebuffer(LIGHT_PROBE_RESOLUTION, LIGHT_PROBE_RESOLUTION, false), m_ReflectionProbeSamplingFramebuffer(REFLECTION_PROBE_RESOLUTION, REFLECTION_PROBE_RESOLUTION, false),
 		m_SceneCaptureCubemap(m_SceneCaptureSettings)
 	{
-		m_SceneCaptureShadowFramebuffer.addDepthAttachment(false).createFramebuffer();
-		m_SceneCaptureLightingFramebuffer.addTexture2DColorAttachment(false).addDepthStencilRBO(false).createFramebuffer();
+		m_SceneCaptureSettings.TextureFormat = GL_RGBA16F;
+		m_SceneCaptureCubemap.setCubemapSettings(m_SceneCaptureSettings);
 
-		m_LightProbeConvolutionFramebuffer.addTexture2DColorAttachment(false).addDepthRBO(false).createFramebuffer();
-		m_ReflectionProbeSamplingFramebuffer.addTexture2DColorAttachment(false).addDepthRBO(false).createFramebuffer();
+		m_SceneCaptureShadowFramebuffer.addDepthStencilTexture(NormalizedDepthOnly).createFramebuffer();
+		m_SceneCaptureLightingFramebuffer.addColorTexture(FloatingPoint16)
+			.addDepthStencilRBO(NormalizedDepthOnly).createFramebuffer();
+
+		m_LightProbeConvolutionFramebuffer.addColorTexture(FloatingPoint16)
+			.createFramebuffer();
+		m_ReflectionProbeSamplingFramebuffer.addColorTexture(FloatingPoint16).
+			createFramebuffer();
 
 
 		for (int i = 0; i < 6; i++) {
-			m_SceneCaptureCubemap.generateCubemapFace(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, IBL_CAPTURE_RESOLUTION, IBL_CAPTURE_RESOLUTION, GL_RGBA16F, GL_RGB, nullptr);
+			m_SceneCaptureCubemap.generateCubemapFace(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, IBL_CAPTURE_RESOLUTION, IBL_CAPTURE_RESOLUTION, GL_RGB, nullptr);
 		}
 
 		m_ConvolutionShader = ShaderLoader::loadShader("src/shaders/lightprobe_convolution.vert", "src/shaders/lightprobe_convolution.frag");
@@ -33,6 +40,7 @@ namespace engine {
 	ForwardProbePass::~ForwardProbePass() {}
 
 	void ForwardProbePass::pregenerateProbes() {
+
 		generateBRDFLUT();
 
 		glm::vec3 probePosition = glm::vec3(67.0f, 92.0f, 133.0f);
@@ -54,14 +62,12 @@ namespace engine {
 		textureSettings.HasMips = false;
 
 		Texture* brdfLUT = new Texture(textureSettings);
-		brdfLUT->generate2DTexture(BRDF_LUT_RESOLUTION, BRDF_LUT_RESOLUTION,
-			GL_RG16F, GL_RG, 0);
+		brdfLUT->generate2DTexture(BRDF_LUT_RESOLUTION, BRDF_LUT_RESOLUTION, GL_RG);
 
 		// 设置lut的帧缓冲区
-		Framebuffer brdfBuffer(BRDF_LUT_RESOLUTION, BRDF_LUT_RESOLUTION);
+		Framebuffer brdfBuffer(BRDF_LUT_RESOLUTION, BRDF_LUT_RESOLUTION, false);
 
-		brdfBuffer.addTexture2DColorAttachment(false).
-			addDepthRBO(false).createFramebuffer();
+		brdfBuffer.addColorTexture(Normalized8).createFramebuffer();
 		brdfBuffer.bind();
 
 		m_GLCache->switchShader(brdfIntegrationShader);
@@ -167,8 +173,8 @@ namespace engine {
 			unsigned int mipWidth = m_ReflectionProbeSamplingFramebuffer.getWidth() >> mip;
 			unsigned int mipHeight = m_ReflectionProbeSamplingFramebuffer.getHeight() >> mip;
 
-			glBindRenderbuffer(GL_RENDERBUFFER, m_ReflectionProbeSamplingFramebuffer.getDepthRBO());
-			glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipWidth, mipHeight);
+			/*	glBindRenderbuffer(GL_RENDERBUFFER, m_ReflectionProbeSamplingFramebuffer.getDepthStencilRBO());
+				glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipWidth, mipHeight);*/
 			glViewport(0, 0, mipWidth, mipHeight);
 
 			float mipRoughnessLevel = (float)mip / (float)(REFLECTION_PROBE_MIP_COUNT - 1);
@@ -177,7 +183,6 @@ namespace engine {
 				// Setup the camera's view
 				m_CubemapCamera.switchCameraToFace(i);
 				m_ImportanceSamplingShader->setUniformMat4("view", m_CubemapCamera.getViewMatrix());
-
 				// 对场景捕获的重要性进行采样并将其存储在反射探针的立方体贴图中
 				m_ReflectionProbeSamplingFramebuffer.setColorAttachment(reflectionProbe->getPrefilterMap()->getCubemapID(), GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, mip);
 				m_ActiveScene->getModelRenderer()->NDC_Cube.Draw(); // Since we are sampling a cubemap, just use a cube

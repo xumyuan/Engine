@@ -132,7 +132,10 @@ namespace engine {
 			mat->GetTexture(type, 0, &str); // 只获取一个纹理，标准着色器只支持每种类型一个纹理
 
 			std::string fileToSearch = (m_Directory + "/" + std::string(str.C_Str())).c_str();
-			return TextureLoader::load2DTexture(fileToSearch, isSRGB);
+
+			TextureSettings textureSettings;
+			textureSettings.IsSRGB = isSRGB;
+			return TextureLoader::load2DTexture(fileToSearch, &textureSettings);
 		}
 
 		return nullptr;

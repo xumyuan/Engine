@@ -7,16 +7,17 @@ namespace engine
 {
 
 	PostProcessPass::PostProcessPass(Scene3D* scene) : RenderPass(scene, RenderPassType::PostProcessPassType),
-		m_ScreenRenderTarget(Window::getWidth(), Window::getHeight()),
-		m_GammaCorrectTarget(Window::getWidth(), Window::getHeight())
+		m_ScreenRenderTarget(Window::getWidth(), Window::getHeight(), false),
+		m_GammaCorrectTarget(Window::getWidth(), Window::getHeight(), false)
 	{
 		m_GammaCorrectShader = ShaderLoader::loadShader("src/shaders/post_process/gamma/gammaCorrect.vert", "src/shaders/post_process/gamma/gammaCorrect.frag");
 		m_PassthroughShader = ShaderLoader::loadShader("src/shaders/post_process/copy.vert", "src/shaders/post_process/copy.frag");
 		m_FxaaShader = ShaderLoader::loadShader("src/shaders/post_process/fxaa/fxaa.vert", "src/shaders/post_process/fxaa/fxaa.frag");
 
-		m_ScreenRenderTarget.addTexture2DColorAttachment(false).addDepthRBO(false).createFramebuffer();
+		m_ScreenRenderTarget.addColorTexture(FloatingPoint16).addDepthStencilRBO(NormalizedDepthOnly).createFramebuffer();
 
-		m_GammaCorrectTarget.addTexture2DColorAttachment(false, false).addDepthRBO(false).createFramebuffer();
+		m_GammaCorrectTarget.addColorTexture(FloatingPoint16).addDepthStencilRBO(NormalizedDepthOnly).createFramebuffer();
+
 
 		DebugPane::bindGammaCorrectionValue(&m_GammaCorrection);
 		DebugPane::bindExposureValue(&m_Exposure);
@@ -40,6 +41,7 @@ namespace engine
 			target = &m_ScreenRenderTarget;
 		}
 
+
 #if DEBUG_ENABLED
 		if (DebugPane::getWireframeMode())
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -49,7 +51,7 @@ namespace engine
 		Framebuffer* framebufferToRenderTo = target;
 		// todo: 这里交换fxaa和伽马矫正的顺序会导致图像右上角出现花屏
 		// 暂未找到原因
-
+		
 		// fxaa
 		if (m_FxaaEnabled) {
 			framebufferToRenderTo = target;
@@ -67,14 +69,13 @@ namespace engine
 		m_GLCache->switchShader(m_PassthroughShader);
 		m_PassthroughShader->setUniform1i("input_texture", 0);
 
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, target->getColorBufferTexture());
+		target->getColorBufferTexture()->bind(0);
 
 		m_ActiveScene->getModelRenderer()->NDC_Plane.Draw();
 	}
 
 
-	void PostProcessPass::gammaCorrect(Framebuffer* target, unsigned int hdrTexture) {
+	void PostProcessPass::gammaCorrect(Framebuffer* target, Texture* hdrTexture) {
 		glViewport(0, 0, target->getWidth(), target->getHeight());
 		m_GLCache->switchShader(m_GammaCorrectShader);
 		m_GLCache->setDepthTest(false);
@@ -88,15 +89,13 @@ namespace engine
 		m_GammaCorrectShader->setUniform1f("exposure", m_Exposure);
 		m_GammaCorrectShader->setUniform1i("screen_texture", 0);
 
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, hdrTexture);
-		//hdrTexture->bind(0);
+		hdrTexture->bind(0);
 
 		m_ActiveScene->getModelRenderer()->NDC_Plane.Draw();
 
 	}
 
-	void PostProcessPass::fxaa(Framebuffer* target, unsigned int texture) {
+	void PostProcessPass::fxaa(Framebuffer* target, Texture* texture) {
 		glViewport(0, 0, target->getWidth(), target->getHeight());
 		m_GLCache->switchShader(m_FxaaShader);
 
@@ -110,8 +109,7 @@ namespace engine
 		m_FxaaShader->setUniform2f("texel_size", glm::vec2(1.0f / (float)Window::getWidth(), 1.0f / (float)Window::getHeight()));
 
 		m_FxaaShader->setUniform1i("input_texture", 0);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture);
+		texture->bind(0);
 
 		m_ActiveScene->getModelRenderer()->NDC_Plane.Draw();
 	}

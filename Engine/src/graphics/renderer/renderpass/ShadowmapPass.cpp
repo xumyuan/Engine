@@ -9,8 +9,9 @@ namespace engine
 	ShadowmapPass::ShadowmapPass(Scene3D* scene) : RenderPass(scene, RenderPassType::ShadowmapPassType)
 	{
 		m_ShadowmapShader = ShaderLoader::loadShader("src/shaders/shadowmap.vert", "src/shaders/shadowmap.frag");
-		m_ShadowmapFramebuffer = new Framebuffer(SHADOWMAP_RESOLUTION_X, SHADOWMAP_RESOLUTION_Y);
-		m_ShadowmapFramebuffer->addDepthAttachment(false).createFramebuffer();
+		m_ShadowmapFramebuffer = new Framebuffer(SHADOWMAP_RESOLUTION_X, SHADOWMAP_RESOLUTION_Y, false);
+		m_ShadowmapFramebuffer->addDepthStencilTexture(NormalizedDepthOnly).
+			createFramebuffer();
 	}
 
 	ShadowmapPass::ShadowmapPass(Scene3D* scene, Framebuffer* customFramebuffer) : RenderPass(scene, RenderPassType::ShadowmapPassType), m_ShadowmapFramebuffer(customFramebuffer)

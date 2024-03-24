@@ -53,15 +53,18 @@ namespace engine {
 		}
 
 		// Textures
-		m_Textures[0] = TextureLoader::load2DTexture(std::string("res/terrain/grass.png"), true);
-		m_Textures[1] = TextureLoader::load2DTexture(std::string("res/terrain/dirt.png"), true);
-		m_Textures[2] = TextureLoader::load2DTexture(std::string("res/terrain/sand.png"), true);
-		m_Textures[3] = TextureLoader::load2DTexture(std::string("res/terrain/stone.png"), true);
-		m_Textures[4] = TextureLoader::load2DTexture(std::string("res/terrain/blendMap.png"), false);
-		m_Textures[5] = TextureLoader::load2DTexture(std::string("res/terrain/grass_normal.png"), false);
-		m_Textures[6] = TextureLoader::load2DTexture(std::string("res/terrain/dirt_normal.png"), false);
-		m_Textures[7] = TextureLoader::load2DTexture(std::string("res/terrain/sand_normal.png"), false);
-		m_Textures[8] = TextureLoader::load2DTexture(std::string("res/terrain/stone_normal.png"), false);
+		TextureSettings srgbTextureSettings;
+		srgbTextureSettings.IsSRGB = true;
+
+		m_Textures[0] = TextureLoader::load2DTexture(std::string("res/terrain/grass.png"), &srgbTextureSettings);
+		m_Textures[1] = TextureLoader::load2DTexture(std::string("res/terrain/dirt.png"), &srgbTextureSettings);
+		m_Textures[2] = TextureLoader::load2DTexture(std::string("res/terrain/sand.png"), &srgbTextureSettings);
+		m_Textures[3] = TextureLoader::load2DTexture(std::string("res/terrain/stone.png"), &srgbTextureSettings);
+		m_Textures[4] = TextureLoader::load2DTexture(std::string("res/terrain/blendMap.png"));
+		m_Textures[5] = TextureLoader::load2DTexture(std::string("res/terrain/grass_normal.png"));
+		m_Textures[6] = TextureLoader::load2DTexture(std::string("res/terrain/dirt_normal.png"));
+		m_Textures[7] = TextureLoader::load2DTexture(std::string("res/terrain/sand_normal.png"));
+		m_Textures[8] = TextureLoader::load2DTexture(std::string("res/terrain/stone_normal.png"));
 
 		m_Mesh = new Mesh(positions, uvs, normals, indices);
 		m_Mesh->LoadData(true);

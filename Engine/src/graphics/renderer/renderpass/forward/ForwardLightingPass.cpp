@@ -10,10 +10,10 @@ namespace engine
 	{
 		m_ModelShader = ShaderLoader::loadShader("src/shaders/pbr_model.vert", "src/shaders/pbr_model.frag");
 		m_TerrainShader = ShaderLoader::loadShader("src/shaders/terrain.vert", "src/shaders/terrain.frag");
-
-		m_Framebuffer = new Framebuffer(Window::getWidth(), Window::getHeight());
 		bool shouldMultisample = MSAA_SAMPLE_AMOUNT > 1.0 ? true : false;
-		m_Framebuffer->addTexture2DColorAttachment(shouldMultisample).addDepthStencilRBO(shouldMultisample).createFramebuffer();
+		m_Framebuffer = new Framebuffer(Window::getWidth(), Window::getHeight(), shouldMultisample);
+
+		m_Framebuffer->addColorTexture(FloatingPoint16).addDepthStencilRBO(NormalizedDepthStencil).createFramebuffer();
 	}
 
 	ForwardLightingPass::ForwardLightingPass(Scene3D* scene, Framebuffer* customFramebuffer) : RenderPass(scene, RenderPassType::LightingPassType), m_Framebuffer(customFramebuffer)
@@ -29,23 +29,27 @@ namespace engine
 		m_Framebuffer->bind();
 		m_Framebuffer->clear();
 
+		if (m_Framebuffer->isMultisampled()) {
+			m_GLCache->setMultisample(true);
+		}
+		else {
+			m_GLCache->setMultisample(false);
+		}
+
 		// Setup
 		ModelRenderer* modelRenderer = m_ActiveScene->getModelRenderer();
 		Terrain* terrain = m_ActiveScene->getTerrain();
 		DynamicLightManager* lightManager = m_ActiveScene->getDynamicLightManager();
 		Skybox* skybox = m_ActiveScene->getSkybox();
 		ProbeManager* probeManager = m_ActiveScene->getProbeManager();
-
 		// View setup + lighting setup
 		m_GLCache->switchShader(m_ModelShader);
 		lightManager->setupLightingUniforms(m_ModelShader);
 		m_ModelShader->setUniform3f("viewPos", camera->getPosition());
 		m_ModelShader->setUniformMat4("view", camera->getViewMatrix());
 		m_ModelShader->setUniformMat4("projection", camera->getProjectionMatrix());
-
 		// Shadowmap code
 		bindShadowmap(m_ModelShader, shadowmapData);
-
 		// IBL code
 		if (useIBL) {
 			m_ModelShader->setUniform1i("computeIBL", 1);
@@ -56,11 +60,9 @@ namespace engine
 			m_ModelShader->setUniform1i("computeIBL", 0);
 
 		}
-
 		// Render the scene
 		m_ActiveScene->addModelsToRenderer();
 		modelRenderer->flushOpaque(m_ModelShader, m_RenderPassType);
-
 
 		m_GLCache->switchShader(m_TerrainShader);
 		lightManager->setupLightingUniforms(m_TerrainShader);
@@ -72,7 +74,6 @@ namespace engine
 		m_TerrainShader->setUniformMat4("view", camera->getViewMatrix());
 		m_TerrainShader->setUniformMat4("projection", camera->getProjectionMatrix());
 		bindShadowmap(m_TerrainShader, shadowmapData);
-
 		terrain->Draw(m_TerrainShader, m_RenderPassType);
 
 		skybox->Draw(camera);
@@ -87,8 +88,8 @@ namespace engine
 	}
 
 	void ForwardLightingPass::bindShadowmap(Shader* shader, ShadowmapPassOutput& shadowmapData) {
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, shadowmapData.shadowmapFramebuffer->getDepthTexture());
+		shadowmapData.shadowmapFramebuffer->getDepthStencilTexture()->bind(0);
+
 		shader->setUniform1i("shadowmap", 0);
 		shader->setUniformMat4("lightSpaceViewProjectionMatrix", shadowmapData.directionalLightViewProjMatrix);
 	}
