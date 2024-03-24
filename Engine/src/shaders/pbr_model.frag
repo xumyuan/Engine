@@ -77,7 +77,7 @@ void main() {
 	float albedoAlpha = texture(material.texture_albedo, TexCoords).w;
 	vec3 normal = texture(material.texture_normal, TexCoords).rgb;
 	float metallic = texture(material.texture_metallic, TexCoords).r;
-	float unclampedRoughness = texture(material.texture_roughness, TexCoords).r; // Used for indirect specular (reflections)
+	float unclampedRoughness = texture(material.texture_roughness, TexCoords).r; // 用于间接镜面反射
 	float roughness = max(unclampedRoughness, 0.04);
 	float ao = texture(material.texture_ao, TexCoords).r;
 

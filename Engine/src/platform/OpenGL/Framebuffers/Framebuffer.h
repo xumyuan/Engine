@@ -9,7 +9,7 @@ namespace engine {
 		~Framebuffer();
 
 		void createFramebuffer();
-		Framebuffer& addTexture2DColorAttachment(bool multisampledBuffer);
+		Framebuffer& addTexture2DColorAttachment(bool multisampledBuffer, bool isFloat = true);
 		Framebuffer& addDepthRBO(bool multisampledBuffer);
 		Framebuffer& addDepthStencilRBO(bool multisampledBuffer);
 		Framebuffer& addDepthAttachment(bool multisampledBuffer);
@@ -42,7 +42,7 @@ namespace engine {
 		unsigned int m_DepthTexture;
 		unsigned int m_DepthRBO;
 		unsigned int m_DepthStencilRBO;
-	
+
 	};
 
 

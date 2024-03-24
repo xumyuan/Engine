@@ -15,7 +15,8 @@ namespace engine
 		m_FxaaShader = ShaderLoader::loadShader("src/shaders/post_process/fxaa/fxaa.vert", "src/shaders/post_process/fxaa/fxaa.frag");
 
 		m_ScreenRenderTarget.addTexture2DColorAttachment(false).addDepthRBO(false).createFramebuffer();
-		m_GammaCorrectTarget.addTexture2DColorAttachment(false).addDepthRBO(false).createFramebuffer();
+
+		m_GammaCorrectTarget.addTexture2DColorAttachment(false, false).addDepthRBO(false).createFramebuffer();
 
 		DebugPane::bindGammaCorrectionValue(&m_GammaCorrection);
 		DebugPane::bindExposureValue(&m_Exposure);
@@ -45,16 +46,21 @@ namespace engine
 #endif
 
 
-		Framebuffer* framebufferToRenderTo = nullptr;
-		// 伽马矫正
-		gammaCorrect(&m_GammaCorrectTarget, target->getColorBufferTexture());
-		target = &m_GammaCorrectTarget;
+		Framebuffer* framebufferToRenderTo = target;
+		// todo: 这里交换fxaa和伽马矫正的顺序会导致图像右上角出现花屏
+		// 暂未找到原因
 
+		// fxaa
 		if (m_FxaaEnabled) {
 			framebufferToRenderTo = target;
 			fxaa(framebufferToRenderTo, target->getColorBufferTexture());
 			target = framebufferToRenderTo;
 		}
+
+		// 伽马矫正
+		gammaCorrect(&m_GammaCorrectTarget, target->getColorBufferTexture());
+		target = &m_GammaCorrectTarget;
+
 		Window::bind();
 		Window::clear();
 
@@ -93,6 +99,7 @@ namespace engine
 	void PostProcessPass::fxaa(Framebuffer* target, unsigned int texture) {
 		glViewport(0, 0, target->getWidth(), target->getHeight());
 		m_GLCache->switchShader(m_FxaaShader);
+
 		m_GLCache->setDepthTest(false);
 		m_GLCache->setBlend(false);
 		m_GLCache->setFaceCull(true);
@@ -105,6 +112,7 @@ namespace engine
 		m_FxaaShader->setUniform1i("input_texture", 0);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture);
+
 		m_ActiveScene->getModelRenderer()->NDC_Plane.Draw();
 	}
 
