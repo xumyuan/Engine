@@ -24,6 +24,8 @@ namespace engine
 		Quad m_NDC_Plane;
 		Framebuffer m_ScreenRenderTarget; // 仅在启用多重采样时使​​用，以便它可以位块传输到非多重采样缓冲区
 
+		Framebuffer m_FullRenderTarget;
+
 		// 伽马矫正
 		Shader* m_GammaCorrectShader;
 		float m_GammaCorrection = 2.2f;

@@ -8,15 +8,17 @@ namespace engine
 
 	PostProcessPass::PostProcessPass(Scene3D* scene) : RenderPass(scene, RenderPassType::PostProcessPassType),
 		m_ScreenRenderTarget(Window::getWidth(), Window::getHeight(), false),
-		m_GammaCorrectTarget(Window::getWidth(), Window::getHeight(), false)
+		m_GammaCorrectTarget(Window::getWidth(), Window::getHeight(), false),
+		m_FullRenderTarget(Window::getWidth(), Window::getHeight(), false)
 	{
 		m_GammaCorrectShader = ShaderLoader::loadShader("src/shaders/post_process/gamma/gammaCorrect.vert", "src/shaders/post_process/gamma/gammaCorrect.frag");
 		m_PassthroughShader = ShaderLoader::loadShader("src/shaders/post_process/copy.vert", "src/shaders/post_process/copy.frag");
 		m_FxaaShader = ShaderLoader::loadShader("src/shaders/post_process/fxaa/fxaa.vert", "src/shaders/post_process/fxaa/fxaa.frag");
 
-		m_ScreenRenderTarget.addColorTexture(FloatingPoint16).addDepthStencilRBO(NormalizedDepthOnly).createFramebuffer();
 
-		m_GammaCorrectTarget.addColorTexture(FloatingPoint16).addDepthStencilRBO(NormalizedDepthOnly).createFramebuffer();
+		m_GammaCorrectTarget.addColorTexture(Normalized8).addDepthStencilRBO(NormalizedDepthOnly).createFramebuffer();
+		m_ScreenRenderTarget.addColorTexture(FloatingPoint16).addDepthStencilRBO(NormalizedDepthOnly).createFramebuffer();
+		m_FullRenderTarget.addColorTexture(FloatingPoint16).createFramebuffer();
 
 
 		DebugPane::bindGammaCorrectionValue(&m_GammaCorrection);
@@ -30,7 +32,7 @@ namespace engine
 		glViewport(0, 0, Window::getWidth(), Window::getHeight());
 
 		// 如果输入 RenderTarget 是多重采样的。通过将其位块传送到非多重采样的 RenderTarget 来解决它，以便我们可以对其进行后期处理
-		Framebuffer* target = framebufferToProcess;
+		Framebuffer* supersampledTarget = framebufferToProcess;
 		if (framebufferToProcess->isMultisampled()) {
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, framebufferToProcess->getFramebuffer());
 			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_ScreenRenderTarget.getFramebuffer());
@@ -38,9 +40,9 @@ namespace engine
 			glBlitFramebuffer(0, 0, framebufferToProcess->getWidth(),
 				framebufferToProcess->getHeight(), 0, 0, m_ScreenRenderTarget.getWidth(), m_ScreenRenderTarget.getHeight(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
-			target = &m_ScreenRenderTarget;
+			supersampledTarget = &m_ScreenRenderTarget;
 		}
-
+		Framebuffer* target = supersampledTarget;
 
 #if DEBUG_ENABLED
 		if (DebugPane::getWireframeMode())
@@ -48,29 +50,29 @@ namespace engine
 #endif
 
 
-		Framebuffer* framebufferToRenderTo = target;
+		Framebuffer* framebufferToRenderTo = nullptr;
 		// todo: 这里交换fxaa和伽马矫正的顺序会导致图像右上角出现花屏
 		// 暂未找到原因
-		
-		// fxaa
-		if (m_FxaaEnabled) {
-			framebufferToRenderTo = target;
-			fxaa(framebufferToRenderTo, target->getColorBufferTexture());
-			target = framebufferToRenderTo;
-		}
+		// 3.26 解决的方法是fullrendertarget的纹理格式为FloatingPoint16
 
 		// 伽马矫正
 		gammaCorrect(&m_GammaCorrectTarget, target->getColorBufferTexture());
 		target = &m_GammaCorrectTarget;
+
+		// fxaa
+		if (m_FxaaEnabled) {
+			framebufferToRenderTo = &m_FullRenderTarget;
+			fxaa(framebufferToRenderTo, target->getColorBufferTexture());
+			target = framebufferToRenderTo;
+		}
+
 
 		Window::bind();
 		Window::clear();
 
 		m_GLCache->switchShader(m_PassthroughShader);
 		m_PassthroughShader->setUniform1i("input_texture", 0);
-
 		target->getColorBufferTexture()->bind(0);
-
 		m_ActiveScene->getModelRenderer()->NDC_Plane.Draw();
 	}
 
