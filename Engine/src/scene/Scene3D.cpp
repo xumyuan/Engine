@@ -43,7 +43,7 @@ namespace engine {
 		pbrGun->getMeshes()[0].getMaterial().setAmbientOcclusionMap(TextureLoader::load2DTexture(std::string("res/3D_Models/Cerberus_Gun/Textures/Cerberus_AO.tga"), false));*/
 
 		// Temp testing code
-		int nrRows = 1;
+		/*int nrRows = 1;
 		int nrColumns = 1;
 		float spacing = 2.5;
 		for (int row = 0; row < nrRows; row++) {
@@ -62,7 +62,7 @@ namespace engine {
 							(float)(row - (nrRows / 2)) * spacing + 90, 130.0f),
 						glm::vec3(20.0f, 20.0f, 20.0f), glm::vec3(1.0f, 0.0f, 0.0f), 0.0f, sphere, nullptr, false, false));
 			}
-		}
+		}*/
 
 
 		// Skybox
