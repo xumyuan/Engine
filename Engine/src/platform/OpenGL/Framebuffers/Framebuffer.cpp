@@ -31,7 +31,7 @@ namespace engine {
 			//转换为时分秒，string类型
 			std::string dt = ctime(&now);
 
-			Logger::getInstance().error("logged_files/error.txt", "Framebuffer initialization", dt + "：Could not initialize the framebuffer");
+			spdlog::error("[{0}]:Could not initialize the frameBuffer", dt);
 			return;
 		}
 		unbind();
@@ -40,7 +40,7 @@ namespace engine {
 	Framebuffer& Framebuffer::addColorTexture(ColorAttachmentFormat textureFormat) {
 #if DEBUG_ENABLED
 		if (m_ColorTexture.isGenerated()) {
-			Logger::getInstance().error("logged_files/error.txt", "Framebuffer initialization", "Framebuffer already has a color attachment");
+			spdlog::error("Framebuffer already has a color attachment");
 			return *this;
 		}
 #endif
@@ -75,7 +75,8 @@ namespace engine {
 	Framebuffer& Framebuffer::addDepthStencilTexture(DepthStencilAttachmentFormat textureFormat) {
 #if DEBUG_ENABLED
 		if (m_DepthStencilTexture.isGenerated()) {
-			Logger::getInstance().error("logged_files/error.txt", "Framebuffer initialization", "Framebuffer already has a depth attachment");
+			spdlog::error("Framebuffer already has a depth attachment");
+
 			return *this;
 		}
 #endif
@@ -117,7 +118,7 @@ namespace engine {
 
 #if DEBUG_ENABLED
 		if (m_DepthStencilRBO != 0) {
-			Logger::getInstance().error("logged_files/error.txt", "Framebuffer initialization", "Framebuffer already has a depth+stencil RBO attachment");
+			spdlog::error("Framebuffer already has a depth+stencil RBO attachment");
 			return *this;
 		}
 #endif

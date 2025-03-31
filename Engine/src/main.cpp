@@ -17,8 +17,10 @@
 #include "utils/Timer.h"
 
 int main() {
-
+	spdlog::info("window create...");
 	engine::Window window("Engine", WINDOW_X_RESOLUTION, WINDOW_Y_RESOLUTION);
+	spdlog::info("window create succeed£¡");
+
 	engine::TextureLoader::initializeDefaultTextures();
 
 	//´´½¨³¡¾°

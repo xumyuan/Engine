@@ -37,7 +37,7 @@ namespace engine {
 
 	void JoystickManager::joystickConnectionCallback(int joystick, int event) {
 		if (joystick >= MAX_JOYSTICKS) {
-			Logger::getInstance().error("logged_files/input_errors.txt", "Joystick Check", "Too many Joysticks connected");
+			spdlog::error("Too many Joysticks connected");
 			return;
 		}
 

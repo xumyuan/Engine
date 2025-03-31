@@ -30,7 +30,7 @@ namespace engine {
 
 	bool InputManager::isKeyPressed(unsigned int keycode) {
 		if (keycode >= MAX_KEYS) {
-			Logger::getInstance().error("logged_files/input_errors.txt", "Input Check", "Key checked is out of bounds (ie not supported)");
+			spdlog::error("Key checked is out of bounds (ie not supported)");
 			return false;
 		}
 		else {
@@ -40,7 +40,7 @@ namespace engine {
 
 	float InputManager::getKeyPressure(unsigned int keycode) {
 		if (keycode >= MAX_KEYS) {
-			Logger::getInstance().error("logged_files/input_errors.txt", "Input Check", "Key checked is out of bounds (ie not supported)");
+			spdlog::error("Key checked is out of bounds (ie not supported)");
 			return 0.0f;
 		}
 		else {
@@ -50,7 +50,7 @@ namespace engine {
 
 	bool InputManager::isMouseButtonPressed(unsigned int code) {
 		if (code >= MAX_BUTTONS) {
-			Logger::getInstance().error("logged_files/input_errors.txt", "Input Check", "Mouse button checked is out of bounds (ie not supported)");
+			spdlog::error("Mouse button checked is out of bounds (ie not supported)");
 			return false;
 		}
 		else {

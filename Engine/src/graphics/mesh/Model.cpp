@@ -32,7 +32,7 @@ namespace engine {
 		const aiScene * scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
 
 		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-			Logger::getInstance().error("logged_files/model_loading.txt", "model initialization", import.GetErrorString());
+			spdlog::error("{0} model initialization {1}", path, import.GetErrorString());
 			return;
 		}
 
@@ -124,7 +124,7 @@ namespace engine {
 	{
 		// Log material constraints are being violated (1 texture per type for the standard shader)
 		if (mat->GetTextureCount(type) > 1)
-			Logger::getInstance().error("logged_files/material_creation.txt", "Mesh Loading", "Mesh's default material contains more than 1 texture for the same type, which currently isn't supported by the standard shader");
+			spdlog::error("Mesh's default material contains more than 1 texture for the same type, which currently isn't supported by the standard shader");
 
 		// 加载某种类型的纹理，假定只有一个
 		if (mat->GetTextureCount(type) > 0) {

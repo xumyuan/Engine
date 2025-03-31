@@ -27,7 +27,7 @@ namespace engine {
 		void setOutputFile(const std::string& filePath);
 
 		enum {
-			DEBUG, INFO, WARNING, ERROR
+			DEBUG, INFO, WARNING
 		};
 		std::vector<std::string> filePaths;
 

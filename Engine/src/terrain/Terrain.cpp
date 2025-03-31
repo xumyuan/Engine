@@ -16,7 +16,7 @@ namespace engine {
 		unsigned char* heightMapImage = stbi_load("res/terrain/heightMap.png", &mapWidth, &mapHeight, 0, SOIL_LOAD_L);
 		if (mapWidth != mapHeight) {
 			std::cout << "ERROR: Can't use a heightmap with a different width and height" << std::endl;
-			Logger::getInstance().error("logged_files/terrain_creation.txt", "terrain initialization", "Can't use a heightmap with a different width and height");
+			spdlog::error("Can't use a heightmap with a different width and height");
 			return;
 		}
 

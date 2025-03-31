@@ -61,7 +61,7 @@ namespace engine {
 		glDrawBuffers(3, attachments);
 
 		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-			Logger::getInstance().error("logged_files/error.txt", "Framebuffer initialization", "Could not initialize GBuffer");
+			spdlog::error("GBuffer init error!");
 			return;
 		}
 		unbind();

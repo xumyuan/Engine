@@ -126,11 +126,11 @@ namespace engine {
 
 					//ARC_LOG_ERROR("Shader Compile Error: {0} - {1}", m_ShaderFilePath, errorString);
 
-					Logger::getInstance().error("logged_files/shader_creation.txt", "Shader Compile:"+ m_ShaderFilePath, errorString);
+					spdlog::error("Shader Compile Error:{0}-{1}", m_ShaderFilePath, errorString);
 				}
 				else {
 					//ARC_LOG_ERROR("Shader Compile Error: {0} - Unknown Error", m_ShaderFilePath);
-					Logger::getInstance().error("logged_files/shader_creation.txt", "Shader Compile:" + m_ShaderFilePath, "Unknown Error!");
+					spdlog::error("Shader Compile Error:{0}-{1}", m_ShaderFilePath, "Unknown Error!");
 
 				}
 				glDeleteShader(shader);
