@@ -1,1 +1,0 @@
-(texture load (OpenGL) fail path:): res/3D_Models/McCree/Base Color .png

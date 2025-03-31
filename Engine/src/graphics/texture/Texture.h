@@ -26,9 +26,11 @@ namespace engine {
 		bool HasMips = true;
 		int MipBias = 0; // 正值表示选择较模糊的纹理，负值表示较清晰的纹理，可以显示纹理锯齿
 	};
+
 	class Texture {
 	public:
-		Texture(const TextureSettings& settings = TextureSettings());
+		Texture();
+		Texture(const TextureSettings& settings);
 		Texture(const Texture& teture);
 		~Texture();
 
@@ -69,7 +71,7 @@ namespace engine {
 		GLenum m_TextureTarget;
 
 		unsigned int m_Width, m_Height;
-		GLenum m_TextureFormat;
+		//GLenum m_TextureFormat;
 
 		TextureSettings m_TextureSettings;
 	};

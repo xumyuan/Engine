@@ -180,6 +180,9 @@
     <ClInclude Include="src\graphics\renderer\renderpass\defferred\DeferredGeometryPass.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="src\platform\OpenGL\Framebuffers\GBuffer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\graphics\shader.cpp">
@@ -335,28 +338,21 @@
     <ClCompile Include="src\graphics\renderer\renderpass\defferred\DeferredGeometryPass.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\platform\OpenGL\Framebuffers\GBuffer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\shaders\terrain.vert" />
-    <None Include="src\shaders\terrain.frag" />
-    <None Include="src\shaders\post_process\gamma\gammaCorrect.frag" />
-    <None Include="src\shaders\post_process\gamma\gammaCorrect.vert" />
-    <None Include="src\shaders\skybox.frag" />
-    <None Include="src\shaders\skybox.vert" />
-    <None Include="src\shaders\shadowmap.vert" />
-    <None Include="src\shaders\shadowmap.frag" />
-    <None Include="src\shaders\pbr_model.vert" />
-    <None Include="src\shaders\pbr_model.frag" />
-    <None Include="src\shaders\lightprobe_convolution.vert" />
-    <None Include="src\shaders\lightprobe_convolution.frag" />
-    <None Include="src\shaders\reflectionprobe_importance_sampling.vert" />
-    <None Include="src\shaders\reflectionprobe_importance_sampling.frag" />
-    <None Include="src\shaders\prebrdf.vert" />
-    <None Include="src\shaders\prebrdf.frag" />
-    <None Include="src\shaders\post_process\copy.vert" />
-    <None Include="src\shaders\post_process\copy.frag" />
-    <None Include="src\shaders\post_process\fxaa\fxaa.vert" />
-    <None Include="src\shaders\post_process\fxaa\fxaa.frag" />
+    <None Include="src\shaders\terrain.glsl" />
+    <None Include="src\shaders\post_process\gammaCorrect.glsl" />
+    <None Include="src\shaders\skybox.glsl" />
+    <None Include="src\shaders\shadowmap.glsl" />
+    <None Include="src\shaders\pbr_model.glsl" />
+    <None Include="src\shaders\lightprobe_convolution.glsl" />
+    <None Include="src\shaders\reflectionprobe_importance_sampling.glsl" />
+    <None Include="src\shaders\prebrdf.glsl" />
+    <None Include="src\shaders\post_process\copy.glsl" />
+    <None Include="src\shaders\post_process\fxaa.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\awesomeface.png">

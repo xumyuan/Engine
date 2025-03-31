@@ -11,6 +11,7 @@
 #include <array>
 #include <iterator>
 #include <fstream>
+#include <array>
 
 #include <gl/glew.h>
 

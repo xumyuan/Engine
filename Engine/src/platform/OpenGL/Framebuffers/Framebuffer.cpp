@@ -19,7 +19,7 @@ namespace engine {
 	void Framebuffer::createFramebuffer() {
 		bind();
 		if (!m_ColorTexture.isGenerated()) {
-			// 改帧缓冲区没有颜色附件
+			// 该帧缓冲区没有颜色附件
 			glDrawBuffer(GL_NONE);
 			glReadBuffer(GL_NONE);
 		}
@@ -146,7 +146,6 @@ namespace engine {
 		unbind();
 		return *this;
 	}
-
 
 	void Framebuffer::setColorAttachment(unsigned int target, unsigned int targetType, int mipToWriteTo) {
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, targetType, target, mipToWriteTo);

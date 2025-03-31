@@ -8,10 +8,10 @@ namespace engine {
 	class Shader {
 	private:
 		GLuint m_ShaderID;
-		const char* m_VertPath, * m_FragPath, * m_GeomPath;
+		std::string m_ShaderFilePath;
+
 	public:
-		Shader(const char* vertPath, const char* fragPath);
-		Shader(const char* vertPath, const char* fragPath, const char* geoPath);
+		Shader(const std::string& path);
 		~Shader();
 
 		void enable() const;
@@ -26,6 +26,12 @@ namespace engine {
 		void setUniformMat3(const char* name, const glm::mat3& matrix);
 
 		inline GLuint getShaderID() { return m_ShaderID; }
+	private:
+		int GetUniformLocation(const char* name);
+
+		static GLenum ShaderTypeFromString(const std::string& type);
+		std::unordered_map<GLenum, std::string> PreProcessShaderBinary(std::string& source);
+		void Compile(const std::unordered_map<GLenum, std::string>& shaderSources);
 	private:
 		GLint getUniformLocation(const GLchar* name);
 		GLuint load();

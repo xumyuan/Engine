@@ -3,6 +3,8 @@
 
 namespace engine {
 
+	Texture::Texture() : m_TextureId(0), m_TextureTarget(0), m_Width(0), m_Height(0), m_TextureSettings() {}
+
 	Texture::Texture(const Texture& texture) : m_TextureId(0), m_TextureTarget(texture.getTextureTarget()), m_Width(texture.getWidth()), m_Height(texture.getHeight()), m_TextureSettings(texture.getTextureSettings()) {
 		glGenTextures(1, &m_TextureId);
 		bind();
@@ -13,6 +15,7 @@ namespace engine {
 
 		unbind();
 	}
+
 	Texture::Texture(const TextureSettings& settings) : m_TextureId(0), m_TextureTarget(0), m_Width(0), m_Height(0), m_TextureSettings(settings) {}
 
 	Texture::~Texture() {

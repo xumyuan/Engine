@@ -3,125 +3,14 @@
 
 namespace engine {
 
-	Shader::Shader(const char* vertPath, const char* fragPath)
-		: m_VertPath(vertPath), m_FragPath(fragPath), m_GeomPath("")
-	{
-		m_ShaderID = load();
-	}
-
-	Shader::Shader(const char* vertPath, const char* fragPath, const char* geoPath)
-		: m_VertPath(vertPath), m_FragPath(fragPath), m_GeomPath(geoPath)
-	{
-		m_ShaderID = load();
+	Shader::Shader(const std::string& path) : m_ShaderFilePath(path) {
+		std::string shaderBinary = FileUtils::readFile(m_ShaderFilePath);
+		auto shaderSources = PreProcessShaderBinary(shaderBinary);
+		Compile(shaderSources);
 	}
 
 	Shader::~Shader() {
 		glDeleteProgram(m_ShaderID);
-	}
-
-	GLuint Shader::load() {
-		// Create the program and shaders
-		GLuint program = glCreateProgram();
-		GLuint vertex = glCreateShader(GL_VERTEX_SHADER);
-		GLuint fragment = glCreateShader(GL_FRAGMENT_SHADER);
-
-		// Variables need to be declared or the character pointers will become dangling pointers
-		std::string vertSourceString = FileUtils::readFile(m_VertPath);
-		std::string fragSourceString = FileUtils::readFile(m_FragPath);
-		const char* vertSource = vertSourceString.c_str();
-		const char* fragSource = fragSourceString.c_str();
-
-		// 顶点着色器
-		glShaderSource(vertex, 1, &vertSource, NULL);
-		glCompileShader(vertex);
-		GLint result;
-
-		// Check to see if it was successful
-		glGetShaderiv(vertex, GL_COMPILE_STATUS, &result);
-		if (result == GL_FALSE) {
-			GLint length;
-			glGetShaderiv(vertex, GL_INFO_LOG_LENGTH, &length);
-			if (length > 0) {
-				std::vector<char> error(length);
-				glGetShaderInfoLog(vertex, length, &length, &error[0]);
-				Logger::getInstance().error("logged_files/shader_creation.txt", "shader initialization", "failed to compile vertex shader " + error[0]);
-			}
-			else {
-				Logger::getInstance().error("logged_files/shader_creation.txt", "shader initialization", "failed to compile vertex shader");
-			}
-			glDeleteShader(vertex);
-			return 0;
-		}
-
-		//片段着色器
-		glShaderSource(fragment, 1, &fragSource, NULL);
-		glCompileShader(fragment);
-
-		// Check to see if it was successful
-		glGetShaderiv(fragment, GL_COMPILE_STATUS, &result);
-		if (result == GL_FALSE) {
-			GLint length;
-			glGetShaderiv(fragment, GL_INFO_LOG_LENGTH, &length);
-			std::vector<char> error(length);
-			if (length > 0) {
-				glGetShaderInfoLog(fragment, length, &length, &error[0]);
-				std::cout << "Failed to Compile Fragment Shader" << std::endl << &error[0] << std::endl;
-				Logger::getInstance().error("logged_files/shader_creation.txt", "shader initialization", "failed to compile fragment shader " + error[0]);
-			}
-			else {
-				Logger::getInstance().error("logged_files/shader_creation.txt", "shader initialization", "failed to compile fragment shader");
-			}
-			glDeleteShader(fragment);
-			return 0;
-		}
-
-		GLuint geometry;
-		// 几何着色器是否存在
-		if (m_GeomPath != "") {
-			geometry = glCreateShader(GL_GEOMETRY_SHADER);
-			std::string geomSourceString = FileUtils::readFile(m_GeomPath);
-			const char* geomSource = geomSourceString.c_str();
-
-			// Geometry Shader
-			glShaderSource(geometry, 1, &geomSource, NULL);
-			glCompileShader(geometry);
-			GLint result;
-
-			// Check to see if it was successful
-			glGetShaderiv(geometry, GL_COMPILE_STATUS, &result);
-			if (result == GL_FALSE) {
-				GLint length;
-				glGetShaderiv(geometry, GL_INFO_LOG_LENGTH, &length);
-				if (length > 0) {
-					std::vector<char> error(length);
-					glGetShaderInfoLog(geometry, length, &length, &error[0]);
-					Logger::getInstance().error("logged_files/shader_creation.txt", "shader initialization", "failed to compile geometry shader " + error[0]);
-				}
-				else {
-					Logger::getInstance().error("logged_files/shader_creation.txt", "shader initialization", "failed to compile geometry shader");
-				}
-				glDeleteShader(geometry);
-				return 0;
-			}
-		}
-
-
-		// Attach the shaders to the program and link them
-		glAttachShader(program, vertex);
-		glAttachShader(program, fragment);
-		if (m_GeomPath != "")
-			glAttachShader(program, geometry);
-		glLinkProgram(program);
-		glValidateProgram(program);
-
-		// Delete the vertex and fragment shaders
-		glDeleteShader(vertex);
-		glDeleteShader(fragment);
-		if (m_GeomPath != "")
-			glDeleteShader(geometry);
-
-		// Return the program id
-		return program;
 	}
 
 	GLint Shader::getUniformLocation(const GLchar* name) {
@@ -162,6 +51,99 @@ namespace engine {
 
 	void Shader::disable() const {
 		glUseProgram(0);
+	}
+
+
+	GLenum Shader::ShaderTypeFromString(const std::string& type) {
+		if (type == "vertex") {
+			return GL_VERTEX_SHADER;
+		}
+		else if (type == "fragment") {
+			return GL_FRAGMENT_SHADER;
+		}
+		else if (type == "geometry") {
+			return GL_GEOMETRY_SHADER;
+		}
+		else if (type == "hull") {
+			return GL_TESS_CONTROL_SHADER;
+		}
+		else if (type == "domain") {
+			return GL_TESS_EVALUATION_SHADER;
+		}
+		else if (type == "compute") {
+			return GL_COMPUTE_SHADER;
+		}
+
+		// TODO: Should assert false here, unknown shader type: 'type'
+		return 0;
+	}
+
+	std::unordered_map<GLenum, std::string> Shader::PreProcessShaderBinary(std::string& source) {
+		std::unordered_map<GLenum, std::string> shaderSources;
+
+		const char* shaderTypeToken = "#shader-type";
+		size_t shaderTypeTokenLength = strlen(shaderTypeToken);
+		size_t pos = source.find(shaderTypeToken);
+		while (pos != std::string::npos) {
+			size_t eol = source.find_first_of("\r\n", pos);
+			// TODO: eol == std::string::npos, if so then we have a syntax error
+			size_t begin = pos + shaderTypeTokenLength + 1;
+			std::string shaderType = source.substr(begin, eol - begin);
+			// TODO: type != "vertex" || fragment || hull || domain || compute, if so then we have an invalid shader type specified
+
+			size_t nextLinePos = source.find_first_not_of("\r\n", eol);
+			pos = source.find(shaderTypeToken, nextLinePos);
+			shaderSources[ShaderTypeFromString(shaderType)] = source.substr(nextLinePos, pos - (nextLinePos == std::string::npos ? source.size() - 1 : nextLinePos));
+		}
+
+		return shaderSources;
+	}
+
+	void Shader::Compile(const std::unordered_map<GLenum, std::string>& shaderSources) {
+		m_ShaderID = glCreateProgram();
+
+		// Attach different components of the shader (vertex, fragment, geometry, hull, domain, or compute)
+		for (auto& item : shaderSources) {
+			GLenum type = item.first;
+			const std::string& source = item.second;
+
+			GLuint shader = glCreateShader(type);
+			const GLchar* shaderSource = source.c_str();
+			glShaderSource(shader, 1, &shaderSource, NULL);
+			glCompileShader(shader);
+
+			// Check to see if compiling was successful
+			GLint wasCompiled;
+			glGetShaderiv(shader, GL_COMPILE_STATUS, &wasCompiled);
+			if (wasCompiled == GL_FALSE || source.empty()) {
+				int length;
+				glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
+
+				if (length > 0) {
+					std::vector<char> error(length);
+					glGetShaderInfoLog(shader, length, &length, &error[0]);
+					std::string errorString(error.begin(), error.end());
+
+					//ARC_LOG_ERROR("Shader Compile Error: {0} - {1}", m_ShaderFilePath, errorString);
+
+					Logger::getInstance().error("logged_files/shader_creation.txt", "Shader Compile:"+ m_ShaderFilePath, errorString);
+				}
+				else {
+					//ARC_LOG_ERROR("Shader Compile Error: {0} - Unknown Error", m_ShaderFilePath);
+					Logger::getInstance().error("logged_files/shader_creation.txt", "Shader Compile:" + m_ShaderFilePath, "Unknown Error!");
+
+				}
+				glDeleteShader(shader);
+				break;
+			}
+
+			glAttachShader(m_ShaderID, shader);
+			glDeleteShader(shader);
+		}
+
+		// Validate shader
+		glLinkProgram(m_ShaderID);
+		glValidateProgram(m_ShaderID);
 	}
 
 

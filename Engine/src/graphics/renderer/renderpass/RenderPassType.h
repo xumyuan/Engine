@@ -1,13 +1,16 @@
 #pragma once
 #include <platform/OpenGL/Framebuffers/Framebuffer.h>
 
+#include <platform/OpenGL/Framebuffers/GBuffer.h>
+
 namespace engine {
 
 	enum RenderPassType {
 		ShadowmapPassType,
 		LightingPassType,
 		PostProcessPassType,
-		ProbePassType
+		ProbePassType,
+		GeometryPassType
 	};
 
 	struct ShadowmapPassOutput
@@ -19,6 +22,11 @@ namespace engine {
 	struct LightingPassOutput
 	{
 		Framebuffer* outputFramebuffer;
+	};
+
+	struct GeometryPassOutput
+	{
+		GBuffer* outputGBuffer = nullptr;
 	};
 
 }

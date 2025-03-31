@@ -11,9 +11,9 @@ namespace engine
 		m_GammaCorrectTarget(Window::getWidth(), Window::getHeight(), false),
 		m_FullRenderTarget(Window::getWidth(), Window::getHeight(), false)
 	{
-		m_GammaCorrectShader = ShaderLoader::loadShader("src/shaders/post_process/gamma/gammaCorrect.vert", "src/shaders/post_process/gamma/gammaCorrect.frag");
-		m_PassthroughShader = ShaderLoader::loadShader("src/shaders/post_process/copy.vert", "src/shaders/post_process/copy.frag");
-		m_FxaaShader = ShaderLoader::loadShader("src/shaders/post_process/fxaa/fxaa.vert", "src/shaders/post_process/fxaa/fxaa.frag");
+		m_GammaCorrectShader = ShaderLoader::loadShader("src/shaders/post_process/gammaCorrect.glsl");
+		m_PassthroughShader = ShaderLoader::loadShader("src/shaders/post_process/copy.glsl");
+		m_FxaaShader = ShaderLoader::loadShader("src/shaders/post_process/fxaa.glsl");
 
 
 		m_GammaCorrectTarget.addColorTexture(Normalized8).addDepthStencilRBO(NormalizedDepthOnly).createFramebuffer();

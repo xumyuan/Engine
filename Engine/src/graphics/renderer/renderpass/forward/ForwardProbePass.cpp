@@ -32,9 +32,9 @@ namespace engine {
 			m_SceneCaptureCubemap.generateCubemapFace(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, IBL_CAPTURE_RESOLUTION, IBL_CAPTURE_RESOLUTION, GL_RGB, nullptr);
 		}
 
-		m_ConvolutionShader = ShaderLoader::loadShader("src/shaders/lightprobe_convolution.vert", "src/shaders/lightprobe_convolution.frag");
+		m_ConvolutionShader = ShaderLoader::loadShader("src/shaders/lightprobe_convolution.glsl");
 
-		m_ImportanceSamplingShader = ShaderLoader::loadShader("src/shaders/reflectionprobe_importance_sampling.vert", "src/shaders/reflectionprobe_importance_sampling.frag");
+		m_ImportanceSamplingShader = ShaderLoader::loadShader("src/shaders/reflectionprobe_importance_sampling.glsl");
 	}
 
 	ForwardProbePass::~ForwardProbePass() {}
@@ -49,7 +49,7 @@ namespace engine {
 	}
 
 	void ForwardProbePass::generateBRDFLUT() {
-		Shader* brdfIntegrationShader = ShaderLoader::loadShader("src/shaders/prebrdf.vert", "src/shaders/prebrdf.frag");
+		Shader* brdfIntegrationShader = ShaderLoader::loadShader("src/shaders/prebrdf.glsl");
 		ModelRenderer* modelRenderer = m_ActiveScene->getModelRenderer();
 
 		// brdfµÄÎÆÀíÉèÖÃ

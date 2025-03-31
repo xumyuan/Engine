@@ -1,1 +1,0 @@
-(shader initialization): failed to compile fragment shader

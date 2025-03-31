@@ -26,6 +26,7 @@ namespace engine {
 		Framebuffer& addColorTexture(ColorAttachmentFormat textureFormat);
 		Framebuffer& addDepthStencilTexture(DepthStencilAttachmentFormat textureFormat);
 		Framebuffer& addDepthStencilRBO(DepthStencilAttachmentFormat rboFormat);
+		//Framebuffer& addDepthAttachment();
 
 		void bind();
 		void unbind();
@@ -46,7 +47,7 @@ namespace engine {
 		inline unsigned int getDepthStencilRBO() { return m_DepthStencilRBO; }
 
 
-	private:
+	protected:
 		unsigned int m_FBO;
 		unsigned int m_Width, m_Height;
 

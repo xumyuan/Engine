@@ -8,8 +8,8 @@ namespace engine
 
 	ForwardLightingPass::ForwardLightingPass(Scene3D* scene) : RenderPass(scene, RenderPassType::LightingPassType)
 	{
-		m_ModelShader = ShaderLoader::loadShader("src/shaders/pbr_model.vert", "src/shaders/pbr_model.frag");
-		m_TerrainShader = ShaderLoader::loadShader("src/shaders/terrain.vert", "src/shaders/terrain.frag");
+		m_ModelShader = ShaderLoader::loadShader("src/shaders/pbr_model.glsl");
+		m_TerrainShader = ShaderLoader::loadShader("src/shaders/terrain.glsl");
 		bool shouldMultisample = MSAA_SAMPLE_AMOUNT > 1.0 ? true : false;
 		m_Framebuffer = new Framebuffer(Window::getWidth(), Window::getHeight(), shouldMultisample);
 
@@ -18,8 +18,8 @@ namespace engine
 
 	ForwardLightingPass::ForwardLightingPass(Scene3D* scene, Framebuffer* customFramebuffer) : RenderPass(scene, RenderPassType::LightingPassType), m_Framebuffer(customFramebuffer)
 	{
-		m_ModelShader = ShaderLoader::loadShader("src/shaders/pbr_model.vert", "src/shaders/pbr_model.frag");
-		m_TerrainShader = ShaderLoader::loadShader("src/shaders/terrain.vert", "src/shaders/terrain.frag");
+		m_ModelShader = ShaderLoader::loadShader("src/shaders/pbr_model.glsl");
+		m_TerrainShader = ShaderLoader::loadShader("src/shaders/terrain.glsl");
 	}
 
 	ForwardLightingPass::~ForwardLightingPass() {}
