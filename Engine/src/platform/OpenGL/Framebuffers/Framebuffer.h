@@ -17,6 +17,12 @@ namespace engine {
 		FloatingPointDepthStencil = GL_DEPTH32F_STENCIL8
 	};
 
+	enum StencilValue : int
+	{
+		ModelStencilValue = 0x01,
+		TerrainStencilValue = 0x02
+	};
+
 	class Framebuffer {
 	public:
 		Framebuffer(unsigned int width, unsigned int height, bool isMultisampled);

@@ -30,3 +30,6 @@
 #define SHADOWMAP_RESOLUTION_Y 2048
 #define SHADOWMAP_NEAR_PLANE 1.0f
 #define SHADOWMAP_FAR_PLANE 400.0f
+
+//  «∑Ò«∞œÚ‰÷»æ
+#define FORWARD_RENDER 1

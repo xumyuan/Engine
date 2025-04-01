@@ -5,10 +5,10 @@
 namespace engine
 {
 
-	enum DeferredStencilValue :int {
+	/*enum DeferredStencilValue :int {
 		ModelStencilValue = 0x01,
 		LightStencilValue = 0x02,
-	};
+	};*/
 
 	class Shader;
 	class Scene3D;
@@ -17,6 +17,7 @@ namespace engine
 
 	class DeferredGeometryPass :public RenderPass
 	{
+	public:
 		DeferredGeometryPass(Scene3D* scene);
 		DeferredGeometryPass(Scene3D* scene, GBuffer* customGBuffer);
 		virtual ~DeferredGeometryPass() override;
@@ -24,7 +25,7 @@ namespace engine
 	private:
 		bool m_AllocatedGBuffer;
 		GBuffer* m_GBuffer;
-		Shader* m_ModelShader, * m_SkinnedModelShader, * m_TerrainShader;
+		Shader* m_ModelShader, /** m_SkinnedModelShader,*/* m_TerrainShader;
 	};
 }
 

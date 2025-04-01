@@ -108,12 +108,20 @@ namespace engine {
 			aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
 			// 颜色类型的贴图需要伽马矫正
+			//newMesh.m_Material.setAlbedoMap(loadMaterialTexture(material, aiTextureType_BASE_COLOR, true));
+			//newMesh.m_Material.setNormalMap(loadMaterialTexture(material, aiTextureType_NORMAL_CAMERA, false));
+			////newMesh.m_Material.setSpecularMap(loadMaterialTexture(material, aiTextureType_SPECULAR, false));
+			////newMesh.m_Material.setSpecularMap(loadMaterialTexture(material, aiTextureType_SPECULAR, false));
+			//newMesh.m_Material.setAmbientOcclusionMap(loadMaterialTexture(material, aiTextureType_AMBIENT_OCCLUSION, false));
+			//newMesh.m_Material.setEmissionMap(loadMaterialTexture(material, aiTextureType_EMISSION_COLOR, true));
+			//newMesh.m_Material.setRoughnessMap(loadMaterialTexture(material, aiTextureType_DIFFUSE_ROUGHNESS, false));
+			//newMesh.m_Material.setMetallicMap(loadMaterialTexture(material, aiTextureType_METALNESS, false));
+
 			newMesh.m_Material.setAlbedoMap(loadMaterialTexture(material, aiTextureType_DIFFUSE, true));
 			newMesh.m_Material.setNormalMap(loadMaterialTexture(material, aiTextureType_NORMALS, false));
-			//newMesh.m_Material.setSpecularMap(loadMaterialTexture(material, aiTextureType_SPECULAR, false));
-			//newMesh.m_Material.setSpecularMap(loadMaterialTexture(material, aiTextureType_SPECULAR, false));
 			newMesh.m_Material.setAmbientOcclusionMap(loadMaterialTexture(material, aiTextureType_AMBIENT, false));
 			newMesh.m_Material.setEmissionMap(loadMaterialTexture(material, aiTextureType_EMISSIVE, true));
+
 		}
 
 		return newMesh;

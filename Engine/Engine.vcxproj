@@ -272,6 +272,8 @@
     <ClCompile Include="src\graphics\texture\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="src\shaders\deferred\PBR_Model_GeometryPass.glsl" />
+    <None Include="src\shaders\deferred\PBR_Terrain_GeometryPass.glsl" />
     <None Include="src\shaders\lightprobe_convolution.glsl" />
     <None Include="src\shaders\post_process\copy.glsl" />
     <None Include="src\shaders\post_process\fxaa.glsl" />

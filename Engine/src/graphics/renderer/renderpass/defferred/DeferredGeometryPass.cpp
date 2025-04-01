@@ -5,16 +5,24 @@
 #include <utils/loaders/ShaderLoader.h>
 #include <platform/OpenGL/Framebuffers/GBuffer.h>
 #include <graphics/renderer/renderpass/RenderPassType.h>
+#include <graphics/Window.h>
 
 namespace engine {
 
-	DeferredGeometryPass::DeferredGeometryPass(Scene3D* scene) : RenderPass(scene, RenderPassType::GeometryPassType),m_AllocatedGBuffer(true)
+	DeferredGeometryPass::DeferredGeometryPass(Scene3D* scene) : RenderPass(scene, RenderPassType::GeometryPassType),
+		m_AllocatedGBuffer(true),m_GBuffer(nullptr)
 	{
-		m_ModelShader = ShaderLoader::loadShader("deferred/PBR_Model_GeometryPass.glsl");
-		m_SkinnedModelShader = ShaderLoader::loadShader("deferred/PBR_Skinned_Model_GeometryPass.glsl");
-		m_TerrainShader = ShaderLoader::loadShader("deferred/PBR_Terrain_GeometryPass.glsl");
+		m_ModelShader = ShaderLoader::loadShader("src/shaders/deferred/PBR_Model_GeometryPass.glsl");
+		//m_SkinnedModelShader = ShaderLoader::loadShader("src/shaders/deferred/PBR_Skinned_Model_GeometryPass.glsl");
+		m_TerrainShader = ShaderLoader::loadShader("src/shaders/deferred/PBR_Terrain_GeometryPass.glsl");
 
-		//m_GBuffer = new GBuffer(Window::GetRenderResolutionWidth(), Window::GetRenderResolutionHeight());
+		m_GBuffer = new GBuffer(Window::getWidth(), Window::getHeight());
+	}
+
+	DeferredGeometryPass::DeferredGeometryPass(Scene3D* scene, GBuffer* customGBuffer) : RenderPass(scene, RenderPassType::GeometryPassType), m_AllocatedGBuffer(false), m_GBuffer(customGBuffer)
+	{
+		m_ModelShader = ShaderLoader::loadShader("src/shaders/deferred/PBR_Model_GeometryPass.glsl");
+		m_TerrainShader = ShaderLoader::loadShader("src/shaders/deferred/PBR_Terrain_GeometryPass.glsl");
 	}
 
 	DeferredGeometryPass::~DeferredGeometryPass()
@@ -22,6 +30,60 @@ namespace engine {
 		if (m_AllocatedGBuffer) {
 			delete m_GBuffer;
 		}
+	}
+
+	GeometryPassOutput DeferredGeometryPass::ExecuteGeometryPass(ICamera* camera, bool renderOnlyStatic)
+	{
+		glViewport(0, 0, m_GBuffer->getWidth(), m_GBuffer->getHeight());
+		m_GBuffer->bind();
+		m_GBuffer->createFramebuffer();
+		m_GLCache->setBlend(false);
+		m_GLCache->setMultisample(false);
+
+		// Setup initial stencil state
+		m_GLCache->setStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+		m_GLCache->setStencilWriteMask(0x00);
+		m_GLCache->setStencilTest(true);
+
+		m_GLCache->switchShader(m_ModelShader);
+		m_ModelShader->setUniform3f("viewPos", camera->getPosition());
+		m_ModelShader->setUniformMat4("view", camera->getViewMatrix());
+		m_ModelShader->setUniformMat4("projection", camera->getProjectionMatrix());
+	
+		// Render opaque objects (use stencil to denote models for the deferred lighting pass)
+		m_GLCache->setStencilWriteMask(0xFF);
+		m_GLCache->setStencilFunc(GL_ALWAYS, StencilValue::ModelStencilValue, 0xFF);
+
+		ModelRenderer* modelRenderer = m_ActiveScene->getModelRenderer();
+		
+		m_ActiveScene->addModelsToRenderer();
+
+		modelRenderer->flushOpaque(m_ModelShader, m_RenderPassType);
+		m_GLCache->setStencilWriteMask(0x00);
+
+		Terrain* terrain = m_ActiveScene->getTerrain();
+		if (terrain)
+		{
+			// Setup terrain information
+			m_GLCache->switchShader(m_TerrainShader);
+			m_TerrainShader->setUniformMat4("view", camera->getViewMatrix());
+			m_TerrainShader->setUniformMat4("projection", camera->getProjectionMatrix());
+
+			// Render the terrain (use stencil to denote the terrain for the deferred lighting pass)
+			m_GLCache->setStencilWriteMask(0xFF);
+			m_GLCache->setStencilFunc(GL_ALWAYS, StencilValue::TerrainStencilValue, 0xFF);
+			terrain->Draw(m_TerrainShader, m_RenderPassType);
+			m_GLCache->setStencilWriteMask(0x00);
+			
+		}
+
+		// Reset state
+		m_GLCache->setStencilTest(false);
+
+		// Render pass output
+		GeometryPassOutput passOutput;
+		passOutput.outputGBuffer = m_GBuffer;
+		return passOutput;
 	}
 
 }

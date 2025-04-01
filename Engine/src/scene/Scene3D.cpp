@@ -34,8 +34,19 @@ namespace engine {
 			nullptr, false));*/
 
 			//pbr ÁÙÊ±´úÂë
+		//Model* McCree = new engine::Model("res/3D_Models/Overwatch/McCree/McCree.FBX");
+
 		Model* pbrGun = new engine::Model("res/3D_Models/Cerberus_Gun/Cerberus_LP.FBX");
+		auto& gunMat = pbrGun->getMeshes()[0].getMaterial();
+		gunMat.setNormalMap(TextureLoader::load2DTexture("res/3D_Models/Cerberus_Gun/Textures/Cerberus_N.tga"));
+		gunMat.setAmbientOcclusionMap(TextureLoader::load2DTexture("res/3D_Models/Cerberus_Gun/Textures/Cerberus_AO.tga"));
+		gunMat.setMetallicMap(TextureLoader::load2DTexture("res/3D_Models/Cerberus_Gun/Textures/Cerberus_M.tga"));
+		gunMat.setRoughnessMap(TextureLoader::load2DTexture("res/3D_Models/Cerberus_Gun/Textures/Cerberus_R.tga"));
+
+
 		m_RenderableModels.push_back(new RenderableModel(glm::vec3(120.0f, 75.0f, 120.0f), glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(-90.0f), pbrGun, nullptr, false));
+
+		/*m_RenderableModels.push_back(new RenderableModel(glm::vec3(100.0f, 60.0f, 120.0f), glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(-90.0f), McCree, nullptr, false));*/
 		/*pbrGun->getMeshes()[0].getMaterial().setAlbedoMap(TextureLoader::load2DTexture(std::string("res/3D_Models/Cerberus_Gun/Textures/Cerberus_A.tga"), true));
 		pbrGun->getMeshes()[0].getMaterial().setNormalMap(TextureLoader::load2DTexture(std::string("res/3D_Models/Cerberus_Gun/Textures/Cerberus_N.tga"), false));
 		pbrGun->getMeshes()[0].getMaterial().setMetallicMap(TextureLoader::load2DTexture(std::string("res/3D_Models/Cerberus_Gun/Textures/Cerberus_M.tga"), false));

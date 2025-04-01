@@ -353,6 +353,8 @@
     <None Include="src\shaders\prebrdf.glsl" />
     <None Include="src\shaders\post_process\copy.glsl" />
     <None Include="src\shaders\post_process\fxaa.glsl" />
+    <None Include="src\shaders\deferred\PBR_Model_GeometryPass.glsl" />
+    <None Include="src\shaders\deferred\PBR_Terrain_GeometryPass.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\awesomeface.png">

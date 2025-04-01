@@ -2,6 +2,7 @@
 
 #include <graphics/renderer/renderpass/forward/ForwardProbePass.h>
 #include <graphics/renderer/renderpass/forward/ForwardLightingPass.h>
+#include <graphics/renderer/renderpass/defferred/DeferredGeometryPass.h>
 #include <graphics/renderer/renderpass/PostProcessPass.h>
 #include <graphics/renderer/renderpass/ShadowmapPass.h>
 #include <scene/Scene3D.h>
@@ -22,11 +23,16 @@ namespace engine
 
 		GLCache* m_GLCache;
 
-		// Render passes
-		ShadowmapPass m_ShadowmapPass;
-		ForwardLightingPass m_LightingPass;
+		// other passes 
 		PostProcessPass m_PostProcessPass;
+		ShadowmapPass m_ShadowmapPass;
+
+		// Forward passes
+		ForwardLightingPass m_LightingPass;
 		ForwardProbePass m_EnvironmentProbePass;
+
+		// Deferred passes
+		DeferredGeometryPass m_DeferredGeometryPass;
 
 
 		Timer m_Timer;

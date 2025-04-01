@@ -10,7 +10,8 @@ namespace engine
 		m_ShadowmapPass(scene),
 		m_LightingPass(scene),
 		m_PostProcessPass(scene),
-		m_EnvironmentProbePass(scene)
+		m_EnvironmentProbePass(scene),
+		m_DeferredGeometryPass(scene)
 	{
 		m_GLCache = GLCache::getInstance();
 	}
@@ -23,11 +24,13 @@ namespace engine
 	}
 
 	void MasterRenderer::render() {
-		// Shadow map pass
+
+#if FORWARD_RENDER
 #if DEBUG_ENABLED
 		glFinish();
 		m_Timer.reset();
 #endif
+		// Shadow map pass
 		ShadowmapPassOutput shadowmapOutput = m_ShadowmapPass.generateShadowmaps(m_ActiveScene->getCamera());
 #if DEBUG_ENABLED
 		glFinish();
@@ -45,6 +48,14 @@ namespace engine
 		glFinish();
 		RuntimePane::setPostProcessTimer((float)m_Timer.elapsed());
 #endif
+#else
+		ShadowmapPassOutput shadowmapOutput = m_ShadowmapPass.generateShadowmaps(m_ActiveScene->getCamera());
+		GeometryPassOutput geometryOutput = m_DeferredGeometryPass.ExecuteGeometryPass(m_ActiveScene->getCamera(), false);
+		//m_PostProcessPass.executeRenderPass(geometryOutput.outputGBuffer);
+
+#endif // FORWARD_RENDER
+		
+
 	}
 
 }

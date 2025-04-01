@@ -14,7 +14,8 @@ namespace engine {
 		}
 		else
 		{
-			std::cout << "File read error:" << filepath << std::endl;
+			spdlog::error("File read error:{0}", filepath);
+			//std::cout << "File read error:" << filepath << std::endl;
 		}
 
 		return result;
