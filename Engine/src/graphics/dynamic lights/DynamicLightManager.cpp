@@ -36,7 +36,8 @@ namespace engine {
 
 	// TODO: Dynamically change the size of the lights (LIMIT OF 5 CURRENTLY FOR POINTLIGHTS)
 	void DynamicLightManager::setupLightingUniforms(Shader* shader) {
-		shader->setUniform1i("numPointLights", m_PointLights.size());
+		shader->setUniform("numPointLights", (int)m_PointLights.size());
+		shader->setUniform("numDirPointSpotLights", glm::ivec4(1,2,1,0));
 
 		m_DirectionalLight.setupUniforms(shader, 0);
 		m_SpotLight.setupUniforms(shader, 0);

@@ -13,7 +13,7 @@ namespace engine {
 
 	void GBuffer::init() {
 		
-		addDepthStencilTexture(NormalizedDepthOnly);
+		addDepthStencilTexture(NormalizedDepthStencil);
 
 		bind();
 

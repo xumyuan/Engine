@@ -71,7 +71,7 @@ namespace engine
 		Window::clear();
 
 		m_GLCache->switchShader(m_PassthroughShader);
-		m_PassthroughShader->setUniform1i("input_texture", 0);
+		m_PassthroughShader->setUniform("input_texture", 0);
 		target->getColorBufferTexture()->bind(0);
 		m_ActiveScene->getModelRenderer()->NDC_Plane.Draw();
 	}
@@ -87,9 +87,9 @@ namespace engine
 		m_GLCache->setStencilTest(false);
 		target->bind();
 
-		m_GammaCorrectShader->setUniform1f("gamma_inverse", 1.0f / m_GammaCorrection);
-		m_GammaCorrectShader->setUniform1f("exposure", m_Exposure);
-		m_GammaCorrectShader->setUniform1i("screen_texture", 0);
+		m_GammaCorrectShader->setUniform("gamma_inverse", 1.0f / m_GammaCorrection);
+		m_GammaCorrectShader->setUniform("exposure", m_Exposure);
+		m_GammaCorrectShader->setUniform("screen_texture", 0);
 
 		hdrTexture->bind(0);
 
@@ -108,9 +108,9 @@ namespace engine
 		m_GLCache->setStencilTest(false);
 		target->bind();
 
-		m_FxaaShader->setUniform2f("texel_size", glm::vec2(1.0f / (float)Window::getWidth(), 1.0f / (float)Window::getHeight()));
+		m_FxaaShader->setUniform("texel_size", glm::vec2(1.0f / (float)Window::getWidth(), 1.0f / (float)Window::getHeight()));
 
-		m_FxaaShader->setUniform1i("input_texture", 0);
+		m_FxaaShader->setUniform("input_texture", 0);
 		texture->bind(0);
 
 		m_ActiveScene->getModelRenderer()->NDC_Plane.Draw();

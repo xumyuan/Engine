@@ -46,9 +46,9 @@ namespace engine {
 		m_GLCache->setStencilTest(true);
 
 		m_GLCache->switchShader(m_ModelShader);
-		m_ModelShader->setUniform3f("viewPos", camera->getPosition());
-		m_ModelShader->setUniformMat4("view", camera->getViewMatrix());
-		m_ModelShader->setUniformMat4("projection", camera->getProjectionMatrix());
+		m_ModelShader->setUniform("viewPos", camera->getPosition());
+		m_ModelShader->setUniform("view", camera->getViewMatrix());
+		m_ModelShader->setUniform("projection", camera->getProjectionMatrix());
 	
 		// Render opaque objects (use stencil to denote models for the deferred lighting pass)
 		m_GLCache->setStencilWriteMask(0xFF);
@@ -66,8 +66,8 @@ namespace engine {
 		{
 			// Setup terrain information
 			m_GLCache->switchShader(m_TerrainShader);
-			m_TerrainShader->setUniformMat4("view", camera->getViewMatrix());
-			m_TerrainShader->setUniformMat4("projection", camera->getProjectionMatrix());
+			m_TerrainShader->setUniform("view", camera->getViewMatrix());
+			m_TerrainShader->setUniform("projection", camera->getProjectionMatrix());
 
 			// Render the terrain (use stencil to denote the terrain for the deferred lighting pass)
 			m_GLCache->setStencilWriteMask(0xFF);

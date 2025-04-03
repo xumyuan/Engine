@@ -22,7 +22,13 @@ namespace engine {
 
 	private:
 		Texture* m_AlbedoMap, * m_NormalMap, * m_MetallicMap, * m_RoughnessMap, * m_AmbientOcclusionMap, * m_EmissionMap;
+		float m_ParallaxStrength = 0.07f;
+		glm::vec4 m_AlbedoColour = glm::vec4(0.894f, 0.023f, 0.992f, 1.0f);
+		float m_MetallicValue = 0.0f, m_RoughnessValue = 0.0f;
 
+		// Emission values
+		float m_EmissionIntensity = 1.0f;
+		glm::vec3 m_EmissionColour = glm::vec3(0.0f, 0.0f, 0.0f);
 	};
 }
 

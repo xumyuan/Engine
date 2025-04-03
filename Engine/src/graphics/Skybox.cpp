@@ -57,10 +57,10 @@ namespace engine {
 
 		// Pass the texture to the shader
 		m_SkyboxCubemap->bind(0);
-		m_SkyboxShader->setUniform1i("skyboxCubemap", 0);
+		m_SkyboxShader->setUniform("skyboxCubemap", 0);
 
-		m_SkyboxShader->setUniformMat4("view", camera->getViewMatrix());
-		m_SkyboxShader->setUniformMat4("projection", camera->getProjectionMatrix());
+		m_SkyboxShader->setUniform("view", camera->getViewMatrix());
+		m_SkyboxShader->setUniform("projection", camera->getProjectionMatrix());
 
 		m_GLCache->setDepthFunc(GL_LEQUAL);
 		m_SkyboxVAO.bind();

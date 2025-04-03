@@ -11,7 +11,8 @@ namespace engine
 		m_LightingPass(scene),
 		m_PostProcessPass(scene),
 		m_EnvironmentProbePass(scene),
-		m_DeferredGeometryPass(scene)
+		m_DeferredGeometryPass(scene),
+		m_DeferredLightingPass(scene)
 	{
 		m_GLCache = GLCache::getInstance();
 	}
@@ -51,7 +52,8 @@ namespace engine
 #else
 		ShadowmapPassOutput shadowmapOutput = m_ShadowmapPass.generateShadowmaps(m_ActiveScene->getCamera());
 		GeometryPassOutput geometryOutput = m_DeferredGeometryPass.ExecuteGeometryPass(m_ActiveScene->getCamera(), false);
-		//m_PostProcessPass.executeRenderPass(geometryOutput.outputGBuffer);
+		LightingPassOutput deferredLightingOutput = m_DeferredLightingPass.ExecuteLightingPass(shadowmapOutput, geometryOutput.outputGBuffer,m_ActiveScene->getCamera(),true);
+		m_PostProcessPass.executeRenderPass(deferredLightingOutput.outputFramebuffer);
 
 #endif // FORWARD_RENDER
 		

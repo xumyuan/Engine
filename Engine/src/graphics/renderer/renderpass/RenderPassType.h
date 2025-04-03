@@ -29,4 +29,9 @@ namespace engine {
 		GBuffer* outputGBuffer = nullptr;
 	};
 
+	struct PreLightingPassOutput
+	{
+		Texture* ssaoTexture = nullptr;
+	};
+
 }

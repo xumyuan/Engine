@@ -15,17 +15,20 @@ namespace engine {
 		// 纹理单元 3 保留给 brdfLUT
 		int currentTextureUnit = 4;
 
-		shader->setUniform1i("material.texture_albedo", currentTextureUnit);
+		shader->setUniform("material.albedoColour", m_AlbedoColour);
+		shader->setUniform("material.texture_albedo", currentTextureUnit);
 		if (m_AlbedoMap) {
 			m_AlbedoMap->bind(currentTextureUnit++);
+			shader->setUniform("material.hasAlbedoTexture", true);
 		}
 		else {
 			TextureLoader::getDefaultAlbedo()->bind(currentTextureUnit++);
+			shader->setUniform("material.hasAlbedoTexture", false);
 		}
 
 
 
-		shader->setUniform1i("material.texture_normal", currentTextureUnit);
+		shader->setUniform("material.texture_normal", currentTextureUnit);
 		if (m_NormalMap) {
 			m_NormalMap->bind(currentTextureUnit++);
 		}
@@ -33,23 +36,30 @@ namespace engine {
 			TextureLoader::getDefaultNormal()->bind(currentTextureUnit++);
 		}
 
-		shader->setUniform1i("material.texture_metallic", currentTextureUnit);
+		shader->setUniform("material.texture_metallic", currentTextureUnit);
 		if (m_MetallicMap) {
 			m_MetallicMap->bind(currentTextureUnit++);
+			shader->setUniform("material.hasMetallicTexture", true);
+
 		}
 		else {
 			TextureLoader::getDefaultMetallic()->bind(currentTextureUnit++);
+			shader->setUniform("material.hasMetallicTexture", false);
 		}
 
-		shader->setUniform1i("material.texture_roughness", currentTextureUnit);
+		shader->setUniform("material.texture_roughness", currentTextureUnit);
 		if (m_RoughnessMap) {
 			m_RoughnessMap->bind(currentTextureUnit++);
+			shader->setUniform("material.hasRoughnessTexture", true);
+
 		}
 		else {
 			TextureLoader::getDefaultRoughness()->bind(currentTextureUnit++);
+			shader->setUniform("material.hasRoughnessTexture", false);
+
 		}
 
-		shader->setUniform1i("material.texture_ao", currentTextureUnit);
+		shader->setUniform("material.texture_ao", currentTextureUnit);
 		if (m_AmbientOcclusionMap) {
 			m_AmbientOcclusionMap->bind(currentTextureUnit++);
 		}
@@ -57,7 +67,7 @@ namespace engine {
 			TextureLoader::getDefaultAO()->bind(currentTextureUnit++);
 		}
 
-		shader->setUniform1i("material.texture_emission", currentTextureUnit);
+		shader->setUniform("material.texture_emission", currentTextureUnit);
 		if (m_EmissionMap) {
 			m_EmissionMap->bind(currentTextureUnit++);
 		}

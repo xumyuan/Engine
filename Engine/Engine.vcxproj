@@ -124,6 +124,10 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)vcpkg_installed\x64-windows\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /Y /S "$(ProjectDir)res\*.*" "$(OutDir)res\"
+xcopy /Y /S "$(ProjectDir)src\shaders\*.*" "$(OutDir)src\shaders\"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -149,6 +153,7 @@
   <ItemGroup>
     <ClInclude Include="src\graphics\renderer\renderpass\defferred\DeferredGeometryPass.h" />
     <ClInclude Include="src\graphics\ibl\ReflectionProbe.h" />
+    <ClInclude Include="src\graphics\renderer\renderpass\defferred\DeferredLightingPass.h" />
     <ClInclude Include="src\graphics\renderer\renderpass\forward\ForwardProbePass.h" />
     <ClInclude Include="src\graphics\ibl\ProbeManager.h" />
     <ClInclude Include="src\platform\OpenGL\Framebuffers\GBuffer.h" />
@@ -207,6 +212,7 @@
   <ItemGroup>
     <ClCompile Include="src\graphics\renderer\renderpass\defferred\DeferredGeometryPass.cpp" />
     <ClCompile Include="src\graphics\ibl\ReflectionProbe.cpp" />
+    <ClCompile Include="src\graphics\renderer\renderpass\defferred\DeferredLightingPass.cpp" />
     <ClCompile Include="src\graphics\renderer\renderpass\forward\ForwardProbePass.cpp" />
     <ClCompile Include="src\graphics\ibl\ProbeManager.cpp" />
     <ClCompile Include="src\platform\OpenGL\Framebuffers\GBuffer.cpp" />
@@ -272,6 +278,7 @@
     <ClCompile Include="src\graphics\texture\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="src\shaders\deferred\PBR_LightingPass.glsl" />
     <None Include="src\shaders\deferred\PBR_Model_GeometryPass.glsl" />
     <None Include="src\shaders\deferred\PBR_Terrain_GeometryPass.glsl" />
     <None Include="src\shaders\lightprobe_convolution.glsl" />

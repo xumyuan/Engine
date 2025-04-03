@@ -3,6 +3,7 @@
 #include <graphics/renderer/renderpass/forward/ForwardProbePass.h>
 #include <graphics/renderer/renderpass/forward/ForwardLightingPass.h>
 #include <graphics/renderer/renderpass/defferred/DeferredGeometryPass.h>
+#include <graphics/renderer/renderpass/defferred/DeferredLightingPass.h>
 #include <graphics/renderer/renderpass/PostProcessPass.h>
 #include <graphics/renderer/renderpass/ShadowmapPass.h>
 #include <scene/Scene3D.h>
@@ -33,6 +34,7 @@ namespace engine
 
 		// Deferred passes
 		DeferredGeometryPass m_DeferredGeometryPass;
+		DeferredLightingPass m_DeferredLightingPass;
 
 
 		Timer m_Timer;

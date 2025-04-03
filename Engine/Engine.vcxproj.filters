@@ -183,6 +183,9 @@
     <ClInclude Include="src\platform\OpenGL\Framebuffers\GBuffer.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="src\graphics\renderer\renderpass\defferred\DeferredLightingPass.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\graphics\shader.cpp">
@@ -341,6 +344,9 @@
     <ClCompile Include="src\platform\OpenGL\Framebuffers\GBuffer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\graphics\renderer\renderpass\defferred\DeferredLightingPass.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\shaders\terrain.glsl" />
@@ -355,6 +361,7 @@
     <None Include="src\shaders\post_process\fxaa.glsl" />
     <None Include="src\shaders\deferred\PBR_Model_GeometryPass.glsl" />
     <None Include="src\shaders\deferred\PBR_Terrain_GeometryPass.glsl" />
+    <None Include="src\shaders\deferred\PBR_LightingPass.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\awesomeface.png">

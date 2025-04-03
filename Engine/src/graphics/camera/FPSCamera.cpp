@@ -44,9 +44,9 @@ namespace engine {
 			processKeyboard(engine::LEFT, deltaTime);
 		if (InputManager::isKeyPressed(GLFW_KEY_D))
 			processKeyboard(engine::RIGHT, deltaTime);
-		if (InputManager::isKeyPressed(GLFW_KEY_SPACE))
+		if (InputManager::isKeyPressed(GLFW_KEY_SPACE)|| InputManager::isKeyPressed(GLFW_KEY_E))
 			processKeyboard(engine::UPWARDS, deltaTime);
-		if (InputManager::isKeyPressed(GLFW_KEY_LEFT_CONTROL))
+		if (InputManager::isKeyPressed(GLFW_KEY_LEFT_CONTROL) || InputManager::isKeyPressed(GLFW_KEY_Q))
 			processKeyboard(engine::DOWNWARDS, deltaTime);
 		if (InputManager::isKeyPressed(GLFW_KEY_LEFT_SHIFT))
 			m_MovementSpeed = SPEED * 4.0f;

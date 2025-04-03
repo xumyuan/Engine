@@ -40,7 +40,7 @@ namespace engine {
 			else {
 				// Fallback to skybox
 				m_Skybox->getSkyboxCubemap()->bind(1);
-				shader->setUniform1i("irradianceMap", 1);
+				shader->setUniform("irradianceMap", 1);
 			}
 
 			// Reflection Probes
@@ -49,25 +49,25 @@ namespace engine {
 			}
 			else {
 				// Fallback to skybox
-				shader->setUniform1i("reflectionProbeMipCount", REFLECTION_PROBE_MIP_COUNT);
+				shader->setUniform("reflectionProbeMipCount", REFLECTION_PROBE_MIP_COUNT);
 				m_Skybox->getSkyboxCubemap()->bind(2);
-				shader->setUniform1i("prefilterMap", 2);
+				shader->setUniform("prefilterMap", 2);
 				ReflectionProbe::getBRDFLUT()->bind(3);
-				shader->setUniform1i("brdfLUT", 3);
+				shader->setUniform("brdfLUT", 3);
 			}
 		}
 		// If probes are disabled just use the skybox
 		else if (m_ProbeBlendSetting == PROBES_DISABLED) {
 			// Light Probes
 			m_Skybox->getSkyboxCubemap()->bind(1);
-			shader->setUniform1i("irradianceMap", 1);
+			shader->setUniform("irradianceMap", 1);
 
 			// Reflection Probes
-			shader->setUniform1i("reflectionProbeMipCount", REFLECTION_PROBE_MIP_COUNT);
+			shader->setUniform("reflectionProbeMipCount", REFLECTION_PROBE_MIP_COUNT);
 			m_Skybox->getSkyboxCubemap()->bind(2);
-			shader->setUniform1i("prefilterMap", 2);
+			shader->setUniform("prefilterMap", 2);
 			ReflectionProbe::getBRDFLUT()->bind(3);
-			shader->setUniform1i("brdfLUT", 3);
+			shader->setUniform("brdfLUT", 3);
 		}
 	}
 }

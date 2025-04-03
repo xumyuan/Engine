@@ -7,8 +7,8 @@ namespace engine {
 	// TODO: 添加多方向光支持
 	void DirectionalLight::setupUniforms(Shader* shader, int currentLightIndex) {
 		if (isActive) {
-			shader->setUniform3f("dirLight.direction", direction);
-			shader->setUniform3f("dirLight.lightColour", lightColor);
+			shader->setUniform("dirLight.direction", direction);
+			shader->setUniform("dirLight.lightColour", lightColor);
 		}
 	}
 
