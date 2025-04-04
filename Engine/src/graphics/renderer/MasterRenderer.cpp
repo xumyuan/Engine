@@ -52,7 +52,7 @@ namespace engine
 #else
 		ShadowmapPassOutput shadowmapOutput = m_ShadowmapPass.generateShadowmaps(m_ActiveScene->getCamera());
 		GeometryPassOutput geometryOutput = m_DeferredGeometryPass.ExecuteGeometryPass(m_ActiveScene->getCamera(), false);
-		LightingPassOutput deferredLightingOutput = m_DeferredLightingPass.ExecuteLightingPass(shadowmapOutput, geometryOutput.outputGBuffer,m_ActiveScene->getCamera(),true);
+		LightingPassOutput deferredLightingOutput = m_DeferredLightingPass.ExecuteLightingPass(shadowmapOutput, geometryOutput.outputGBuffer,m_ActiveScene->getCamera(),false);
 		m_PostProcessPass.executeRenderPass(deferredLightingOutput.outputFramebuffer);
 
 #endif // FORWARD_RENDER

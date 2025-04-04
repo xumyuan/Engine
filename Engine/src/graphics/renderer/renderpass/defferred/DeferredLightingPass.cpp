@@ -49,7 +49,7 @@ namespace engine
 		glBlitFramebuffer(0, 0, inputGbuffer->getWidth(), inputGbuffer->getHeight(), 0, 0, m_Framebuffer->getWidth(), m_Framebuffer->getHeight(), GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, GL_NEAREST);
 
 		// Setup initial stencil state
-		m_GLCache->setStencilTest(true);
+		m_GLCache->setStencilTest(false);
 		m_GLCache->setStencilWriteMask(0x00); // Do not update stencil values
 
 		DynamicLightManager* lightManager = m_ActiveScene->getDynamicLightManager();
@@ -106,9 +106,12 @@ namespace engine
 		m_GLCache->setStencilFunc(GL_EQUAL, StencilValue::ModelStencilValue, 0xFF);
 		m_ActiveScene->getModelRenderer()->NDC_Plane.Draw();
 
-
+	
 		// Reset state
 		m_GLCache->setDepthTest(true);
+		Skybox* skybox = m_ActiveScene->getSkybox();
+		skybox->Draw(camera);
+
 		m_GLCache->setStencilTest(false);
 
 		// Render pass output

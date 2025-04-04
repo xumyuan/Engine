@@ -36,7 +36,7 @@ namespace engine {
 	{
 		glViewport(0, 0, m_GBuffer->getWidth(), m_GBuffer->getHeight());
 		m_GBuffer->bind();
-		m_GBuffer->createFramebuffer();
+		m_GBuffer->clear();
 		m_GLCache->setBlend(false);
 		m_GLCache->setMultisample(false);
 

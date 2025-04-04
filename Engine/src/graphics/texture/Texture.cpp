@@ -65,8 +65,8 @@ namespace engine {
 
 		glGenTextures(1, &m_TextureId);
 		bind();
-		glTexImage2D(GL_TEXTURE_2D, 0, m_TextureSettings.TextureFormat, width, height, 0, dataFormat, pixelDataType, data);
 
+		glTexImage2D(GL_TEXTURE_2D, 0, m_TextureSettings.TextureFormat, width, height, 0, dataFormat, pixelDataType, data);
 		applyTextureSettings();
 
 		unbind();

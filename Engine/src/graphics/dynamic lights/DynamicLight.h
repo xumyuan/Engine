@@ -12,6 +12,7 @@ namespace engine {
 
 		glm::vec3 lightColor;
 		bool isActive;
+		float intensity = 1.0f;
 	};
 
 }

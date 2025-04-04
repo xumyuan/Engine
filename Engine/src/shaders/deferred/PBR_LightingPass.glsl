@@ -171,6 +171,7 @@ void main() {
 	}
 
 	color = vec4(ambient + directLightIrradiance, 1.0);
+	//color = vec4(1.0);
 }
 
 vec3 CalculateDirectionalLightRadiance(vec3 albedo, vec3 normal, float metallic, float roughness, vec3 fragPos, vec3 fragToViewNorm, vec3 baseReflectivity) {
