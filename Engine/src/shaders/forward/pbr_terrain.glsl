@@ -240,7 +240,7 @@ vec3 CalculateDirectionalLightRadiance(vec3 albedo, vec3 normal, float metallic,
 
 		// Calculate shadows, but first check to make sure the current light index is the shadow caster
 		float shadowAmount = 0.0f;
-		if (i == dirLightShadowData.lightShadowIndex)
+		//if (i == dirLightShadowData.lightShadowIndex)
 			shadowAmount = CalculateDirLightShadow();
 
 		// Add the light's radiance to the irradiance sum

@@ -86,9 +86,9 @@ uniform sampler2D brdfLUT;
 
 uniform sampler2D shadowmap;
 uniform int numPointLights;
-uniform DirLight dirLight;
+uniform DirLight dirLights[MAX_POINT_LIGHTS];
 uniform PointLight pointLights[MAX_POINT_LIGHTS];
-uniform SpotLight spotLight;
+uniform SpotLight spotLights[MAX_POINT_LIGHTS];
 
 uniform Material material;
 
@@ -159,9 +159,9 @@ void main() {
 }
 
 vec3 CalculateDirectionalLightRadiance(vec3 albedo, vec3 normal, float metallic, float roughness, vec3 fragToView, vec3 baseReflectivity) {
-	vec3 lightDir = normalize(-dirLight.direction);
+	vec3 lightDir = normalize(-dirLights[0].direction);
 	vec3 halfway = normalize(lightDir + fragToView);
-	vec3 radiance = dirLight.lightColour;
+	vec3 radiance = dirLights[0].lightColour;
 
 	// Cook-Torrance Specular BRDF calculations
 	float normalDistribution = NormalDistributionGGX(normal, halfway, roughness);
@@ -236,16 +236,16 @@ float NormalDistributionGGX(vec3 normal, vec3 halfway, float roughness) {
 
 vec3 CalculateSpotLightRadiance(vec3 albedo, vec3 normal, float metallic, float roughness, vec3 fragToView, vec3 baseReflectivity) {
 
-	vec3 fragToLight = normalize(spotLight.position - FragPos);
+	vec3 fragToLight = normalize(spotLights[0].position - FragPos);
 	vec3 halfway = normalize(fragToView + fragToLight);
-	float fragToLightDistance = length(spotLight.position - FragPos);
+	float fragToLightDistance = length(spotLights[0].position - FragPos);
 
 	// Check if it is in the spotlight's circle
-	float theta = dot(normalize(spotLight.direction), -fragToLight);
-	float difference = spotLight.cutOff - spotLight.outerCutOff;
-	float intensity = clamp((theta - spotLight.outerCutOff) / difference, 0.0, 1.0);
+	float theta = dot(normalize(spotLights[0].direction), -fragToLight);
+	float difference = spotLights[0].cutOff - spotLights[0].outerCutOff;
+	float intensity = clamp((theta - spotLights[0].outerCutOff) / difference, 0.0, 1.0);
 	float attenuation = intensity * (1.0 / (fragToLightDistance * fragToLightDistance));
-	vec3 radiance = spotLight.lightColour * attenuation;
+	vec3 radiance = spotLights[0].lightColour * attenuation;
 
 	// Cook-Torrance Specular BRDF calculations
 	float normalDistribution = NormalDistributionGGX(normal, halfway, roughness);

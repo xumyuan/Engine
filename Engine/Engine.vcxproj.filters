@@ -349,11 +349,11 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\shaders\terrain.glsl" />
+    <None Include="src\shaders\forward\pbr_terrain.glsl" />
     <None Include="src\shaders\post_process\gammaCorrect.glsl" />
     <None Include="src\shaders\skybox.glsl" />
     <None Include="src\shaders\shadowmap.glsl" />
-    <None Include="src\shaders\pbr_model.glsl" />
+    <None Include="src\shaders\forward\pbr_model.glsl" />
     <None Include="src\shaders\lightprobe_convolution.glsl" />
     <None Include="src\shaders\reflectionprobe_importance_sampling.glsl" />
     <None Include="src\shaders\prebrdf.glsl" />

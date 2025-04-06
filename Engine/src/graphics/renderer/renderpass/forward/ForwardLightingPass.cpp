@@ -8,8 +8,8 @@ namespace engine
 
 	ForwardLightingPass::ForwardLightingPass(Scene3D* scene) : RenderPass(scene, RenderPassType::LightingPassType)
 	{
-		m_ModelShader = ShaderLoader::loadShader("src/shaders/pbr_model.glsl");
-		m_TerrainShader = ShaderLoader::loadShader("src/shaders/terrain.glsl");
+		m_ModelShader = ShaderLoader::loadShader("src/shaders/forward/pbr_model.glsl");
+		m_TerrainShader = ShaderLoader::loadShader("src/shaders/forward/pbr_terrain.glsl");
 		bool shouldMultisample = MSAA_SAMPLE_AMOUNT > 1.0 ? true : false;
 		m_Framebuffer = new Framebuffer(Window::getWidth(), Window::getHeight(), shouldMultisample);
 
@@ -18,8 +18,8 @@ namespace engine
 
 	ForwardLightingPass::ForwardLightingPass(Scene3D* scene, Framebuffer* customFramebuffer) : RenderPass(scene, RenderPassType::LightingPassType), m_Framebuffer(customFramebuffer)
 	{
-		m_ModelShader = ShaderLoader::loadShader("src/shaders/pbr_model.glsl");
-		m_TerrainShader = ShaderLoader::loadShader("src/shaders/terrain.glsl");
+		m_ModelShader = ShaderLoader::loadShader("src/shaders/forward/pbr_model.glsl");
+		m_TerrainShader = ShaderLoader::loadShader("src/shaders/forward/pbr_terrain.glsl");
 	}
 
 	ForwardLightingPass::~ForwardLightingPass() {}
@@ -90,8 +90,12 @@ namespace engine
 	void ForwardLightingPass::bindShadowmap(Shader* shader, ShadowmapPassOutput& shadowmapData) {
 		shadowmapData.shadowmapFramebuffer->getDepthStencilTexture()->bind(0);
 
-		shader->setUniform("shadowmap", 0);
-		shader->setUniform("lightSpaceViewProjectionMatrix", shadowmapData.directionalLightViewProjMatrix);
+		/*shader->setUniform("shadowmap", 0);
+		shader->setUniform("lightSpaceViewProjectionMatrix", shadowmapData.directionalLightViewProjMatrix);*/
+
+		shader->setUniform("dirLightShadowData.shaowBias", 0.01f);
+		shader->setUniform("dirLightShadowData.lightSpaceViewProjectionMatrix", shadowmapData.directionalLightViewProjMatrix);
+		shader->setUniform("dirLightShadowData.lightShadowIndex", 1);
 	}
 
 }
