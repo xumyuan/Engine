@@ -73,7 +73,7 @@ namespace engine
 		m_GLCache->switchShader(m_PassthroughShader);
 		m_PassthroughShader->setUniform("input_texture", 0);
 		target->getColorBufferTexture()->bind(0);
-		m_ActiveScene->getModelRenderer()->NDC_Plane.Draw();
+		ModelRenderer::drawNdcPlane();
 	}
 
 
@@ -93,7 +93,7 @@ namespace engine
 
 		hdrTexture->bind(0);
 
-		m_ActiveScene->getModelRenderer()->NDC_Plane.Draw();
+		ModelRenderer::drawNdcPlane();
 
 	}
 
@@ -113,7 +113,7 @@ namespace engine
 		m_FxaaShader->setUniform("input_texture", 0);
 		texture->bind(0);
 
-		m_ActiveScene->getModelRenderer()->NDC_Plane.Draw();
+		ModelRenderer::drawNdcPlane();
 	}
 
 }

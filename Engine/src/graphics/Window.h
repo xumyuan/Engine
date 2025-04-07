@@ -24,6 +24,9 @@ namespace engine {
 		void update();
 		void close() const;
 		bool closed() const;
+
+		inline void show() { glfwShowWindow(m_Window); }
+		
 		static void clear();
 		static void bind();
 

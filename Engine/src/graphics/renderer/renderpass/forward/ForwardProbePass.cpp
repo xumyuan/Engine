@@ -75,7 +75,7 @@ namespace engine {
 
 		glViewport(0, 0, BRDF_LUT_RESOLUTION, BRDF_LUT_RESOLUTION);
 		brdfBuffer.setColorAttachment(brdfLUT->getTextureId(), GL_TEXTURE_2D);
-		modelRenderer->NDC_Plane.Draw();
+		ModelRenderer::drawNdcPlane();
 		brdfBuffer.setColorAttachment(0, GL_TEXTURE_2D);
 
 		m_GLCache->setDepthTest(true);
@@ -94,7 +94,7 @@ namespace engine {
 		ForwardLightingPass lightingPass(m_ActiveScene, &m_SceneCaptureLightingFramebuffer);
 
 		// Render the scene to the probe's cubemap
-		for (int i = 0; i < 6; i++) {
+	for (int i = 0; i < 6; i++) {
 			// Setup the camera's view
 			m_CubemapCamera.switchCameraToFace(i);
 
@@ -118,6 +118,9 @@ namespace engine {
 		m_ConvolutionShader->setUniform("sceneCaptureCubemap", 0);
 
 		m_LightProbeConvolutionFramebuffer.bind();
+
+		auto * skybox = m_ActiveScene->getSkybox()->getSkyboxCubemap();
+		skybox->bind(0);
 		glViewport(0, 0, m_LightProbeConvolutionFramebuffer.getWidth(), m_LightProbeConvolutionFramebuffer.getHeight());
 		for (int i = 0; i < 6; i++) {
 			// Setup the camera's view
@@ -126,7 +129,8 @@ namespace engine {
 
 			// 对场景的捕捉进行卷积并将其存储在光探针的立方体贴图中
 			m_LightProbeConvolutionFramebuffer.setColorAttachment(lightProbe->getIrradianceMap()->getCubemapID(), GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
-			m_ActiveScene->getModelRenderer()->NDC_Cube.Draw(); // 由于我们正在对立方体贴图进行采样，因此只需使用 NDC 空间中的立方体
+			// 由于我们正在对立方体贴图进行采样，因此只需使用 NDC 空间中的立方体
+			ModelRenderer::drawNdcCube();
 			m_LightProbeConvolutionFramebuffer.setColorAttachment(0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
 		}
 		m_GLCache->setFaceCull(true);
@@ -185,7 +189,8 @@ namespace engine {
 				m_ImportanceSamplingShader->setUniform("view", m_CubemapCamera.getViewMatrix());
 				// 对场景捕获的重要性进行采样并将其存储在反射探针的立方体贴图中
 				m_ReflectionProbeSamplingFramebuffer.setColorAttachment(reflectionProbe->getPrefilterMap()->getCubemapID(), GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, mip);
-				m_ActiveScene->getModelRenderer()->NDC_Cube.Draw(); // Since we are sampling a cubemap, just use a cube
+				// Since we are sampling a cubemap, just use a cube
+				ModelRenderer::drawNdcCube();
 				m_ReflectionProbeSamplingFramebuffer.setColorAttachment(0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
 			}
 		}

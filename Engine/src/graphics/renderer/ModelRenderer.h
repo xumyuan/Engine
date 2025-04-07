@@ -19,9 +19,12 @@ namespace engine {
 
 		void flushOpaque(Shader* shader, RenderPassType pass);
 		void flushTransparent(Shader* shader, RenderPassType pass);
+
+		static void drawNdcCube();
+		static void drawNdcPlane();
 	public:
-		Quad NDC_Plane;
-		Cube NDC_Cube;
+	 static	Quad* NDC_Plane;
+	 static Cube* NDC_Cube;
 
 	private:
 		void setupModelMatrix(RenderableModel* renderable, Shader* shader, RenderPassType pass);

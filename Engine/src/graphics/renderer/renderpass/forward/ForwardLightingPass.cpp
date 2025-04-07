@@ -89,7 +89,7 @@ namespace engine
 
 	void ForwardLightingPass::bindShadowmap(Shader* shader, ShadowmapPassOutput& shadowmapData) {
 		shadowmapData.shadowmapFramebuffer->getDepthStencilTexture()->bind(0);
-
+		shader->setUniform("dirLightShadowmap", 0);
 		/*shader->setUniform("shadowmap", 0);
 		shader->setUniform("lightSpaceViewProjectionMatrix", shadowmapData.directionalLightViewProjMatrix);*/
 

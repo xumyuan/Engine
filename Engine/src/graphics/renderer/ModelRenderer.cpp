@@ -3,13 +3,19 @@
 
 namespace engine {
 
+	Quad* ModelRenderer::NDC_Plane = nullptr;
+	Cube* ModelRenderer::NDC_Cube = nullptr;
+
 	ModelRenderer::ModelRenderer(FPSCamera* camera) :
-		m_Camera(camera), NDC_Plane(), NDC_Cube()
+		m_Camera(camera)
 	{
 		m_GLCache = GLCache::getInstance();
 		m_GLCache->setDepthTest(true);
 		m_GLCache->setBlend(false);
 		m_GLCache->setFaceCull(true);
+
+		NDC_Cube = new Cube();
+		NDC_Plane = new Quad();
 	}
 
 	//不透明渲染队列
@@ -101,4 +107,11 @@ namespace engine {
 		}
 	}
 
+
+	void ModelRenderer::drawNdcCube() {
+		NDC_Cube->Draw();
+	}
+	void ModelRenderer::drawNdcPlane() {
+		NDC_Plane->Draw();
+	}
 }

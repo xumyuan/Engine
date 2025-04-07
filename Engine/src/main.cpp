@@ -17,25 +17,36 @@
 #include "utils/Timer.h"
 
 int main() {
+	
 	spdlog::info("window create...");
 	engine::Window window("Engine", WINDOW_X_RESOLUTION, WINDOW_Y_RESOLUTION);
 	spdlog::info("window create succeed！");
 
+	spdlog::info("load textures...");
 	engine::TextureLoader::initializeDefaultTextures();
+	spdlog::info("load textures over.");
 
 	//创建场景
+	spdlog::info("create scene...");
 	engine::Scene3D scene(&window);
+	spdlog::info("create scene over.");
+
+
 	engine::MasterRenderer renderer(&scene);
 
 	// 准备ui
 	engine::RuntimePane runtimePane(glm::vec2(256.0f, 90.0f));
 	engine::DebugPane debugPane(glm::vec2(256.0f, 115.0f));
 	renderer.init();
+
+	window.show();
 #if DEBUG_ENABLED
 	engine::Timer timer;
 #endif
 
 	engine::Time deltaTime;
+
+	
 	while (!window.closed()) {
 		deltaTime.update();
 

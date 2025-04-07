@@ -31,8 +31,9 @@ void main() {
 	// SampleDirection是卷积半球方向
 	vec3 normal = normalize(SampleDirection);
 	// 将向量从切线转换到世界空间，因为立方体贴图位于世界空间中
-	vec3 up = vec3(0.0, 1.0, 0.0);
-	vec3 right = cross(up, normal);
+	//vec3 up = vec3(0.0, 1.0, 0.0);
+	vec3 up = abs(normal.y) < 0.999 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
+	vec3 right = normalize(cross(up, normal));
 	up = cross(normal, right);
 
 	vec3 irradiance = vec3(0.0, 0.0, 0.0);
@@ -50,7 +51,7 @@ void main() {
 			vec3 worldSample = tangentSample.x * right + tangentSample.y * up + tangentSample.z * normal;
 
 			irradiance += texture(sceneCaptureCubemap, worldSample).rgb * cos(theta) * sin(theta);
-			nrSamples++;
+			nrSamples+=1.0;
 		}
 	}
 

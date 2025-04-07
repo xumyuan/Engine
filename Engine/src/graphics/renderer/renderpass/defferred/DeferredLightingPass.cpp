@@ -90,7 +90,7 @@ namespace engine
 		
 		m_LightingShader->setUniform("computeIBL", 0);
 		m_GLCache->setStencilFunc(GL_EQUAL, StencilValue::TerrainStencilValue, 0xFF);
-		m_ActiveScene->getModelRenderer()->NDC_Plane.Draw();
+		ModelRenderer::drawNdcPlane();
 		
 
 		// Perform lighting on the models in the scene
@@ -104,9 +104,8 @@ namespace engine
 			m_LightingShader->setUniform("computeIBL", 0);
 		}
 		m_GLCache->setStencilFunc(GL_EQUAL, StencilValue::ModelStencilValue, 0xFF);
-		m_ActiveScene->getModelRenderer()->NDC_Plane.Draw();
+		ModelRenderer::drawNdcPlane();
 
-	
 		// Reset state
 		m_GLCache->setDepthTest(true);
 		Skybox* skybox = m_ActiveScene->getSkybox();
