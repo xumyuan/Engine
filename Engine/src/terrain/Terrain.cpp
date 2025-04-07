@@ -5,12 +5,14 @@
 namespace engine {
 	Terrain::Terrain(const glm::vec3& worldPosition) : m_Position(worldPosition)
 	{
+
 		m_TextureTilingAmount = 8;
 		m_ModelMatrix = glm::translate(glm::mat4(1), worldPosition);
 
 		std::vector<glm::vec3> positions;
 		std::vector<glm::vec2> uvs;
 		std::vector<glm::vec3> normals;
+		
 		std::vector<unsigned int> indices;
 
 
@@ -61,6 +63,10 @@ namespace engine {
 		m_TerrainSize = 4;
 		m_HeightMapScale = 220;
 
+		
+		std::vector<glm::vec3> tangents(m_VertexSideCount*m_VertexSideCount,glm::vec3(0.0f));
+		std::vector<glm::vec3> bitangents(m_VertexSideCount * m_VertexSideCount, glm::vec3(0.0f));
+
 		// 顶点生成
 		for (GLuint z = 0; z < m_VertexSideCount; z++) {
 			for (GLuint x = 0; x < m_VertexSideCount; x++) {
@@ -77,19 +83,75 @@ namespace engine {
 		// 统一三角形顶点顺序，允许使用背面剔除
 		for (GLuint height = 0; height < m_VertexSideCount - 1; ++height) {
 			for (GLuint width = 0; width < m_VertexSideCount - 1; ++width) {
+				//  T: top  B: bottom
+				//  L: left R: right
+				unsigned int indexTL = width + (height * m_VertexSideCount);
+				unsigned int indexTR = 1 + width + (height * m_VertexSideCount);
+				unsigned int indexBL = m_VertexSideCount + width + (height * m_VertexSideCount);
+				unsigned int indexBR = 1 + m_VertexSideCount + width + (height * m_VertexSideCount);
+
 				// Triangle 1
-				indices.push_back(width + (height * m_VertexSideCount));
-				indices.push_back(1 + m_VertexSideCount + width + (height * m_VertexSideCount));
-				indices.push_back(1 + width + (height * m_VertexSideCount));
+				indices.push_back(indexTL);
+				indices.push_back(indexBR);
+				indices.push_back(indexTR);
 
 				// Triangle 2
-				indices.push_back(width + (height * m_VertexSideCount));
-				indices.push_back(m_VertexSideCount + width + (height * m_VertexSideCount));
-				indices.push_back(1 + m_VertexSideCount + width + (height * m_VertexSideCount));
+				indices.push_back(indexTL);
+				indices.push_back(indexBL);
+				indices.push_back(indexBR);
+
+				// Triangle 1 tangents 
+				glm::vec3& v0 = positions[indexTL];
+				glm::vec3& v1 = positions[indexBR];
+				glm::vec3& v2 = positions[indexTR];
+				glm::vec2& uv0 = uvs[indexTL];
+				glm::vec2& uv1 = uvs[indexBR];
+				glm::vec2& uv2 = uvs[indexTR];
+
+				glm::vec3 deltaPos1 = v1 - v0;
+				glm::vec3 deltaPos2 = v2 - v0;
+				glm::vec2 deltaUV1 = uv1 - uv0;
+				glm::vec2 deltaUV2 = uv2 - uv0;
+
+				float r = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
+				glm::vec3 tangent = (deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y) * r;
+				tangents[indexTL] += tangent;
+				tangents[indexBR] += tangent;
+				tangents[indexTR] += tangent;
+
+				// Triangle 2 tangent
+				v0 = positions[indexTL];
+				v1 = positions[indexBR];
+				v2 = positions[indexTR];
+				uv0 = uvs[indexTL];
+				uv1 = uvs[indexBR];
+				uv2 = uvs[indexTR];
+				deltaPos1 = v1 - v0;
+				deltaPos2 = v2 - v0;
+				deltaUV1 = uv1 - uv0;
+				deltaUV2 = uv2 - uv0;
+				r = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
+				tangent = (deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y) * r;
+				tangents[indexTL] += tangent;
+				tangents[indexBL] += tangent;
+				tangents[indexBR] += tangent;
 			}
 		}
 
-		m_Mesh = new Mesh(positions, uvs, normals, indices);
+		for (unsigned int i = 0; i < tangents.size(); i++)
+		{
+			const glm::vec3& normal = normals[i];
+			glm::vec3 tangent = glm::normalize(tangents[i]);
+
+			tangent = glm::normalize(tangent - glm::dot(tangent, normal) * normal);
+			glm::vec3 bitangent = glm::normalize(glm::cross(normal, tangent));
+
+			tangents[i] = tangent;
+			bitangents[i] = bitangent;
+		}
+
+
+		m_Mesh = new Mesh(positions, uvs, normals,tangents,bitangents,indices);
 		m_Mesh->LoadData(true);
 	}
 
