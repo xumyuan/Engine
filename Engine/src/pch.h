@@ -12,6 +12,10 @@
 #include <iterator>
 #include <fstream>
 #include <array>
+#include <functional>
+#include <thread>
+#include <atomic>
+#include <queue>
 
 #include <gl/glew.h>
 

@@ -113,7 +113,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>Default</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)Engine\src;$(SolutionDir)Engine\dependencies;$(SolutionDir)vcpkg_installed\x64-windows\include</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -137,7 +137,7 @@ xcopy /Y /S "$(ProjectDir)src\shaders\*.*" "$(OutDir)src\shaders\"</Command>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>Default</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)Engine\src;$(SolutionDir)Engine\dependencies;$(SolutionDir)vcpkg_installed\x64-windows\include</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -157,6 +157,8 @@ xcopy /Y /S "$(ProjectDir)src\shaders\*.*" "$(OutDir)src\shaders\"</Command>
     <ClInclude Include="src\graphics\renderer\renderpass\forward\ForwardProbePass.h" />
     <ClInclude Include="src\graphics\ibl\ProbeManager.h" />
     <ClInclude Include="src\platform\OpenGL\Framebuffers\GBuffer.h" />
+    <ClInclude Include="src\thread\spin_lock.h" />
+    <ClInclude Include="src\thread\thread_pool.h" />
     <ClInclude Include="src\utils\loaders\ShaderLoader.h" />
     <ClInclude Include="src\graphics\camera\ICamera.h" />
     <ClInclude Include="src\graphics\renderer\renderpass\forward\ForwardLightingPass.h" />
@@ -216,6 +218,7 @@ xcopy /Y /S "$(ProjectDir)src\shaders\*.*" "$(OutDir)src\shaders\"</Command>
     <ClCompile Include="src\graphics\renderer\renderpass\forward\ForwardProbePass.cpp" />
     <ClCompile Include="src\graphics\ibl\ProbeManager.cpp" />
     <ClCompile Include="src\platform\OpenGL\Framebuffers\GBuffer.cpp" />
+    <ClCompile Include="src\thread\thread_pool.cpp" />
     <ClCompile Include="src\utils\loaders\ShaderLoader.cpp" />
     <ClCompile Include="src\graphics\renderer\renderpass\forward\ForwardLightingPass.cpp" />
     <ClCompile Include="src\graphics\renderer\renderpass\PostProcessPass.cpp" />
