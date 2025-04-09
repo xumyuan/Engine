@@ -15,6 +15,8 @@ namespace engine {
 
 		static Cubemap* loadCubemapTexture(const std::string& right, const std::string& left, const std::string& top, const std::string& bottom, const std::string& back, const std::string& front, CubemapSettings* settings = nullptr);
 
+		static void processMainThreadTasks(); 
+
 		inline static Texture* getDefaultAlbedo() { return s_DefaultAlbedo; }
 		inline static Texture* getDefaultNormal() { return s_DefaultNormal; }
 		inline static Texture* getDefaultMetallic() { return s_NoMetallic; }
@@ -35,6 +37,10 @@ namespace engine {
 		static Texture* s_FullRoughness, * s_NoRoughness;
 		static Texture* s_DefaultAO;
 		static Texture* s_DefaultEmission;
+
+
+		static std::queue<std::function<void()>> mainThreadTasks;
+		static std::mutex taskMutex;
 	};
 
 

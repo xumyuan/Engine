@@ -2,7 +2,7 @@
 #include "thread_pool.h"
 
 ThreadPool thread_pool{};
-
+ 
 void ThreadPool::WorkerThread(ThreadPool* master) {
 
 	while (master->m_alive == 1)
@@ -83,13 +83,6 @@ private:
 	size_t x, y, chunk_width, chunk_height;
 	std::function<void(size_t, size_t)> lambda;
 
-};
-
-struct AssetLoadTask :public Task {
-
-private:
-	std::string m_path;
-	std::function<void(const std::string&)> m_lambda;
 };
 
 void ThreadPool::parallelFor(size_t width, size_t height, const std::function<void(size_t, size_t)>& lambda, bool complex) {

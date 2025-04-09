@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "TextureLoader.h"
+#include "thread/thread_pool.h"
 
 namespace engine {
 
@@ -12,6 +13,10 @@ namespace engine {
 	Texture* TextureLoader::s_DefaultAO;
 	Texture* TextureLoader::s_DefaultEmission;
 
+	std::queue<std::function<void()>> TextureLoader::mainThreadTasks;
+	std::mutex TextureLoader::taskMutex;
+
+
 	Texture* TextureLoader::load2DTexture(const std::string& path, TextureSettings* settings) {
 		// Check the cache
 		auto iter = m_TextureCache.find(path);
@@ -19,32 +24,35 @@ namespace engine {
 			return iter->second;
 		}
 
-		// Load the texture
-		int width, height, numComponents;
-		unsigned char* data = stbi_load(path.c_str(), &width, &height, &numComponents, 0);
-		if (!data) {
-			spdlog::error("texture load fail - path:{0}", path);
-			stbi_image_free(data);
-			return nullptr;
-		}
+		Texture* texture = (settings != nullptr) ? new Texture(*settings) : new Texture();
+		m_TextureCache[path] = texture;
+		
+		thread_pool.addTask(new TextureLoadTask([=]() {
+			// Load the texture
+			int width, height, numComponents;
+			unsigned char* data = stbi_load(path.c_str(), &width, &height, &numComponents, 0);
+			if (!data) {
+				spdlog::error("texture load fail - path:{0}", path);
+				return nullptr;
+			}
 
-		GLenum dataFormat;
-		switch (numComponents) {
-		case 1: dataFormat = GL_RED;  break;
-		case 3: dataFormat = GL_RGB;  break;
-		case 4: dataFormat = GL_RGBA; break;
-		}
+			GLenum dataFormat;
+			switch (numComponents) {
+			case 1: dataFormat = GL_RED;  break;
+			case 3: dataFormat = GL_RGB;  break;
+			case 4: dataFormat = GL_RGBA; break;
+			}
 
-		Texture* texture = nullptr;
-		if (settings != nullptr)
-			texture = new Texture(*settings);
-		else
-			texture = new Texture();
-
-		texture->generate2DTexture(width, height, dataFormat, GL_UNSIGNED_BYTE, data);
-
-		m_TextureCache.insert(std::pair<std::string, Texture*>(path, texture));
-
+			{
+				std::lock_guard<std::mutex> lock(taskMutex);
+				mainThreadTasks.push([=] {
+					texture->generate2DTexture(width, height, dataFormat, GL_UNSIGNED_BYTE, data);
+					stbi_image_free(data);
+					}
+				);
+			}
+			
+			}));
 		return m_TextureCache[path];
 	}
 
@@ -128,4 +136,12 @@ namespace engine {
 	}
 
 
+	void TextureLoader::processMainThreadTasks() {
+		std::lock_guard<std::mutex> lock(taskMutex);
+		while (!mainThreadTasks.empty()) {
+			auto task = mainThreadTasks.front();
+			mainThreadTasks.pop();
+			task();
+		}
+	}
 }

@@ -6,6 +6,8 @@
 #include "graphics/mesh/common/Sphere.h"
 #include "graphics/mesh/common/Quad.h"
 
+#include "thread/thread_pool.h"
+
 namespace engine {
 	Scene3D::Scene3D(Window* window)
 		:m_SceneCamera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 0.0f, 0.0f),
@@ -86,6 +88,9 @@ namespace engine {
 		skyboxFilePaths.push_back("res/skybox/front.png");
 		m_Skybox = new Skybox(skyboxFilePaths);
 		m_ProbeManager.init(m_Skybox);
+
+		thread_pool.wait();
+		TextureLoader::processMainThreadTasks();
 	}
 
 	void Scene3D::onUpdate(float deltaTime) {

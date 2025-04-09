@@ -11,6 +11,17 @@ public:
 	virtual ~Task() = default;
 };
 
+struct TextureLoadTask :public Task {
+public:
+	TextureLoadTask(std::function<void(void)> lambda) : m_lambda(lambda) {}
+
+	void run() override {
+		m_lambda();
+	}
+private:
+	//std::string m_path;
+	std::function<void(void)> m_lambda;
+};
 
 
 class ThreadPool
