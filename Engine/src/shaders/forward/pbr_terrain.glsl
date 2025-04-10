@@ -413,7 +413,7 @@ float CalculateDirLightShadow() {
 	for (float y = -1.5; y < 1.0; y += 2.0) {
 		for (float x = -1.5; x < 1.0; x += 2.0) {
 			float sampledDepthPCF = texture(dirLightShadowmap, depthmapCoords.xy + (texelSize * vec2(x, y))).r;
-			shadow += currentDepth > sampledDepthPCF + dirLightShadowData.shadowBias ? 1.0 : 0.0; // Add shadow bias to avoid shadow acne. However too much bias can cause peter panning
+			shadow += (currentDepth > sampledDepthPCF + dirLightShadowData.shadowBias) ? 1.0 : 0.0; // Add shadow bias to avoid shadow acne. However too much bias can cause peter panning
 		}
 	}
 	shadow *= 0.25;
