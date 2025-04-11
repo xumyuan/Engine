@@ -20,6 +20,9 @@ namespace engine {
 		inline void setAmbientOcclusionMap(Texture* texture) { m_AmbientOcclusionMap = texture; }
 		inline void setEmissionMap(Texture* texture) { m_EmissionMap = texture; }
 
+
+		inline void SetAlbedoColour(glm::vec4 value) { m_AlbedoColour = value; }
+
 	private:
 		Texture* m_AlbedoMap, * m_NormalMap, * m_MetallicMap, * m_RoughnessMap, * m_AmbientOcclusionMap, * m_EmissionMap;
 		float m_ParallaxStrength = 0.07f;

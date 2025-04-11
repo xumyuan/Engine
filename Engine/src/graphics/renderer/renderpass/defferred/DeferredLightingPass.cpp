@@ -49,7 +49,7 @@ namespace engine
 		glBlitFramebuffer(0, 0, inputGbuffer->getWidth(), inputGbuffer->getHeight(), 0, 0, m_Framebuffer->getWidth(), m_Framebuffer->getHeight(), GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, GL_NEAREST);
 
 		// Setup initial stencil state
-		m_GLCache->setStencilTest(false);
+		m_GLCache->setStencilTest(true);
 		m_GLCache->setStencilWriteMask(0x00); // Do not update stencil values
 
 		DynamicLightManager* lightManager = m_ActiveScene->getDynamicLightManager();
@@ -84,7 +84,8 @@ namespace engine
 
 		// IBL Bindings
 		glm::vec3 cameraPosition = camera->getPosition();
-		probeManager->bindProbe(cameraPosition, m_LightingShader); // TODO: Should use camera component
+		probeManager->bindProbe(cameraPosition, m_LightingShader); 
+		// TODO: Should use camera component
 
 		// Perform lighting on the terrain (turn IBL off)
 		
@@ -109,9 +110,9 @@ namespace engine
 		// Reset state
 		m_GLCache->setDepthTest(true);
 		Skybox* skybox = m_ActiveScene->getSkybox();
-		skybox->Draw(camera);
-
 		m_GLCache->setStencilTest(false);
+
+		skybox->Draw(camera);
 
 		// Render pass output
 		LightingPassOutput passOutput;
@@ -122,8 +123,9 @@ namespace engine
 	void DeferredLightingPass::BindShadowmap(Shader* shader, ShadowmapPassOutput& shadowmapData)
 	{
 		shadowmapData.shadowmapFramebuffer->getDepthStencilTexture()->bind(0);
-		shader->setUniform("ShadowData.shaowBias", 0.01f);
-		shader->setUniform("ShadowData.lightSpaceViewProjectionMatrix", shadowmapData.directionalLightViewProjMatrix);
-		shader->setUniform("ShadowData.lightShadowIndex", 1);
+		shader->setUniform("dirLightShadowmap", 0);
+		shader->setUniform("dirLightShadowData.shadowBias", 0.01f);
+		shader->setUniform("dirLightShadowData.lightSpaceViewProjectionMatrix", shadowmapData.directionalLightViewProjMatrix);
+		shader->setUniform("dirLightShadowData.lightShadowIndex", 1);
 	}
 }

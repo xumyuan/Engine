@@ -35,11 +35,12 @@ namespace engine {
 	GeometryPassOutput DeferredGeometryPass::ExecuteGeometryPass(ICamera* camera, bool renderOnlyStatic)
 	{
 		glViewport(0, 0, m_GBuffer->getWidth(), m_GBuffer->getHeight());
+		m_GLCache->setStencilWriteMask(0xFF);
 		m_GBuffer->bind();
 		m_GBuffer->clear();
 		m_GLCache->setBlend(false);
 		m_GLCache->setMultisample(false);
-
+		
 		// Setup initial stencil state
 		m_GLCache->setStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 		m_GLCache->setStencilWriteMask(0x00);

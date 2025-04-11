@@ -13,6 +13,7 @@ namespace engine {
 				+ "].position").c_str(), position);
 			shader->setUniform(("pointLights[" + std::to_string(currentLightIndex) + "].lightColour").c_str(), lightColor);
 			shader->setUniform(("pointLights[" + std::to_string(currentLightIndex) + "].intensity").c_str(), intensity);
+			shader->setUniform(("pointLights[" + std::to_string(currentLightIndex) + "].attenuationRadius").c_str(), attenuationRadius);
 		}
 	}
 

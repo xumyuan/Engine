@@ -15,6 +15,7 @@ namespace engine {
 			shader->setUniform(("spotLights[" + std::to_string(currentLightIndex) + "].cutOff").c_str(), cutOff);
 			shader->setUniform(("spotLights[" + std::to_string(currentLightIndex) + "].outerCutOff").c_str(), outerCutOff);
 			shader->setUniform(("spotLights[" + std::to_string(currentLightIndex) + "].intensity").c_str(), intensity);
+			shader->setUniform(("spotLights[" + std::to_string(currentLightIndex) + "].attenuationRadius").c_str(), attenuationRadius);
 
 		}
 	}

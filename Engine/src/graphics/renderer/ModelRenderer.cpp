@@ -35,7 +35,7 @@ namespace engine {
 
 		m_GLCache->setDepthTest(true);
 		m_GLCache->setBlend(false);
-		m_GLCache->setStencilTest(false);
+		//m_GLCache->setStencilTest(false);
 		m_GLCache->setFaceCull(true);
 		m_GLCache->setCullFace(GL_BACK);
 

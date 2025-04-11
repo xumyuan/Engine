@@ -13,6 +13,7 @@ namespace engine {
 
 		glm::vec3 position;
 		float constant, linear, quadratic;
+		float attenuationRadius = 30.0f;
 	};
 
 }

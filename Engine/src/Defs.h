@@ -32,4 +32,4 @@
 #define SHADOWMAP_FAR_PLANE 400.0f
 
 //  «∑Ò«∞œÚ‰÷»æ
-#define FORWARD_RENDER 1
+#define FORWARD_RENDER 0

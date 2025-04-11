@@ -44,6 +44,7 @@ namespace engine {
 		gunMat.setAmbientOcclusionMap(TextureLoader::load2DTexture("res/3D_Models/Cerberus_Gun/Textures/Cerberus_AO.tga"));
 		gunMat.setMetallicMap(TextureLoader::load2DTexture("res/3D_Models/Cerberus_Gun/Textures/Cerberus_M.tga"));
 		gunMat.setRoughnessMap(TextureLoader::load2DTexture("res/3D_Models/Cerberus_Gun/Textures/Cerberus_R.tga"));
+		gunMat.SetAlbedoColour(glm::vec4(1.0f));
 
 
 		m_RenderableModels.push_back(new RenderableModel(glm::vec3(120.0f, 130.0f, 100.0f), glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(-90.0f), pbrGun, nullptr, false));

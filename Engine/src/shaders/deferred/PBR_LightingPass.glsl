@@ -135,9 +135,9 @@ void main() {
 	float unclampedRoughness = texture(materialInfoTexture, TexCoords).g; // Used for indirect specular (reflections)
 	float roughness = max(unclampedRoughness, 0.04); // Used for calculations since specular highlights will be too fine, and will cause flicker
 	float materialAO = texture(materialInfoTexture, TexCoords).b;
-	float sceneAO = texture(ssaoTexture, TexCoords).r;
-	float ao = min(materialAO, sceneAO);
-
+	//float sceneAO = texture(ssaoTexture, TexCoords).r;
+	//float ao = min(materialAO, sceneAO);
+	float ao = materialAO;
 	// Reconstruct fragPos
 	vec3 fragPos = WorldPosFromDepth();
 
@@ -155,7 +155,7 @@ void main() {
 	directLightIrradiance += CalculateSpotLightRadiance(albedo, normal, metallic, roughness, fragPos, fragToViewNorm, baseReflectivity);
 
 	// Calcualte ambient IBL for both diffuse and specular
-	vec3 ambient = vec3(0.05) * albedo * ao;
+	vec3 ambient = vec3(0.03) * albedo * ao;
 	if (computeIBL) {
 		vec3 specularRatio = FresnelSchlick(max(dot(normal, fragToViewNorm), 0.0), baseReflectivity);
 		vec3 diffuseRatio = vec3(1.0) - specularRatio;
@@ -171,7 +171,7 @@ void main() {
 	}
 
 	color = vec4(ambient + directLightIrradiance, 1.0);
-	//color = vec4(1.0);
+	//color = vec4(normal , 1.0);
 }
 
 vec3 CalculateDirectionalLightRadiance(vec3 albedo, vec3 normal, float metallic, float roughness, vec3 fragPos, vec3 fragToViewNorm, vec3 baseReflectivity) {

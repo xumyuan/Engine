@@ -13,6 +13,7 @@ namespace engine {
 
 		glm::vec3 position, direction;
 		float cutOff, outerCutOff;
+		float attenuationRadius = 30.0f;
 	};
 
 }
