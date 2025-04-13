@@ -32,6 +32,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <spdlog/spdlog.h>
+#include <nlohmann/json.hpp>
 
 #include "Defs.h"
 //#include "utils/Logger.h"

@@ -9,6 +9,23 @@
 #include "thread/thread_pool.h"
 
 namespace engine {
+
+	struct SceneJSON
+	{
+		struct ModelJSON
+		{
+			std::string modelPath;
+			glm::vec3 position;
+			glm::vec3 scale;
+			glm::vec3 rotationAxis;
+			float radianRotation;
+			bool isStatic;
+			bool isTransparent;
+			std::unordered_map<std::string, std::string> customMatTexList;
+		};
+	};
+
+
 	Scene3D::Scene3D(Window* window)
 		:m_SceneCamera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 0.0f, 0.0f),
 		m_ModelRenderer(getCamera()),

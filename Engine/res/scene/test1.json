@@ -1,0 +1,28 @@
+{
+    "modelList":[
+        {
+            "modelPath":"res/3D_Models/Cerberus_Gun/Cerberus_LP.FBX",
+            "position":[120.0, 130.0, 100.0],
+            "scale":[0.5, 0.5, 0.5],
+            "rotationAxis":[1.0, 0.0, 0.0],
+            "radianRotation":-90.0,
+            "isStatic":false,
+            "isTransparent":false,
+            "customMatTexList":{
+                "NormalMap":"res/3D_Models/Cerberus_Gun/Textures/Cerberus_N.tga",
+                "AmbientOcclusionMap":"res/3D_Models/Cerberus_Gun/Textures/Cerberus_AO.tga",
+                "MetallicMap":"res/3D_Models/Cerberus_Gun/Textures/Cerberus_M.tga",
+                "RoughnessMap":"res/3D_Models/Cerberus_Gun/Textures/Cerberus_R.tga",
+                "AlbedoColour":[1.0,1.0,1.0,1.0]
+            }
+        }
+    ],
+    "skybox":{
+        "right":"res/skybox/right.png",
+        "left":"res/skybox/left.png",
+        "top":"res/skybox/top.png",
+        "bottom":"res/skybox/bottom.png",
+        "front":"res/skybox/front.png",
+        "back":"res/skybox/back.png"
+    }
+}
