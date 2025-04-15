@@ -2,6 +2,7 @@
 #include "graphics/Shader.h"
 #include "graphics/texture/Texture.h"
 #include "utils/loaders/TextureLoader.h"
+#include "utils/json/json_type.h"
 
 namespace engine {
 	class Material
@@ -12,6 +13,7 @@ namespace engine {
 
 		void BindMaterialInformation(Shader* shader) const;
 
+		void processMaterial(const SceneInfo::ModelInfo& modelinfo);
 
 		inline void setAlbedoMap(Texture* texture) { m_AlbedoMap = texture; }
 		inline void setNormalMap(Texture* texture) { m_NormalMap = texture; }

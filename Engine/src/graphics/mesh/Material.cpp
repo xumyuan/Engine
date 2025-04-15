@@ -76,4 +76,69 @@ namespace engine {
 		}
 	}
 
+	void Material::processMaterial(const SceneInfo::ModelInfo& modelinfo) {
+		const std::unordered_map<
+			std::string,
+			std::function<void(const std::variant<std::string, glm::vec4, float, bool>&)>
+		> matHandlers = {
+			{"NormalMap",[&](const auto& value) {
+				if (auto path = std::get_if<std::string>(&value)) {
+					m_NormalMap = TextureLoader::load2DTexture(*path);
+				}
+			} },
+			{ "AlbedoMap",[&](const auto& value) {
+				if (auto path = std::get_if<std::string>(&value)) {
+					TextureSettings srgbSettings;
+					srgbSettings.IsSRGB = true;
+					m_AlbedoMap = TextureLoader::load2DTexture(*path, &srgbSettings);
+				}
+			} },
+			{ "MetallicMap",[&](const auto& value) {
+				if (auto path = std::get_if<std::string>(&value)) {
+					m_MetallicMap = TextureLoader::load2DTexture(*path);
+				}
+			} },
+			{ "RoughnessMap",[&](const auto& value) {
+				if (auto path = std::get_if<std::string>(&value)) {
+					m_RoughnessMap = TextureLoader::load2DTexture(*path);
+				}
+			} },
+			{ "AmbientOcclusionMap",[&](const auto& value) {
+				if (auto path = std::get_if<std::string>(&value)) {
+					m_AmbientOcclusionMap = TextureLoader::load2DTexture(*path);
+				}
+			} },
+			{ "EmissionMap",[&](const auto& value) {
+				if (auto path = std::get_if<std::string>(&value)) {
+					m_EmissionMap = TextureLoader::load2DTexture(*path);
+				}
+			}},
+			{"AlbedoColour",[&](const auto& value) {
+				if (auto color = std::get_if<glm::vec4>(&value)) {
+					m_AlbedoColour = *color;
+				}
+			}},
+			{"MetallicValue",[&](const auto& value) {
+				if (auto metallicValue = std::get_if<float>(&value)) {
+					m_MetallicValue = *metallicValue;
+				}
+			}},
+			{"RoughnessValue",[&](const auto& value) {
+				if (auto roughnessValue = std::get_if<float>(&value)) {
+					m_RoughnessValue = *roughnessValue;
+				}
+			}},
+			{"ParallaxStrength",[&](const auto& value) {
+				if (auto parallaxStrength = std::get_if<float>(&value)) {
+					m_ParallaxStrength = *parallaxStrength;
+				}
+			}},
+		};
+	
+		for (const auto& [key, value] : modelinfo.customMatTexList) {
+			if (auto handler = matHandlers.find(key); handler != matHandlers.end()) {
+				handler->second(value);
+			}
+		}
+	}
 }

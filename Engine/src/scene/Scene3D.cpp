@@ -8,23 +8,12 @@
 
 #include "thread/thread_pool.h"
 
+#include "utils/json/typeProcess.h"
+#include "utils/json/json_type.h"
+
+#define NEW_LOAD 1
+
 namespace engine {
-
-	struct SceneJSON
-	{
-		struct ModelJSON
-		{
-			std::string modelPath;
-			glm::vec3 position;
-			glm::vec3 scale;
-			glm::vec3 rotationAxis;
-			float radianRotation;
-			bool isStatic;
-			bool isTransparent;
-			std::unordered_map<std::string, std::string> customMatTexList;
-		};
-	};
-
 
 	Scene3D::Scene3D(Window* window)
 		:m_SceneCamera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 0.0f, 0.0f),
@@ -42,19 +31,64 @@ namespace engine {
 	}
 
 	void Scene3D::init() {
+		using json = nlohmann::json;
+
 		m_GLCache->setMultisample(true);
-		// 纳米装模型
-		/*m_RenderableModels.push_back(new Renderable3D(
-			glm::vec3(90.0f, 60.0f, 90.0f),
-			glm::vec3(3.0f, 3.0f, 3.0f),
-			glm::vec3(0.0f, 1.0f, 0.0f),
-			0,
-			new engine::Model("res/3D_Models/nanosuit_model/nanosuit.obj"),
-			nullptr, false));*/
+#ifdef NEW_LOAD
+		try
+		{
+			std::ifstream file("res/scene/test1.json");
+			json j;
+			file >> j;
 
-			//pbr 临时代码
-		//Model* McCree = new engine::Model("res/3D_Models/Overwatch/McCree/McCree.FBX");
+			SceneInfo sceneInfo = j.get<SceneInfo>();
 
+			auto& modelList = sceneInfo.modelInfoList;
+
+			for (auto& model : modelList) {
+				std::string& modelPath = model.modelPath;
+				glm::vec3& position = model.position;
+				glm::vec3& scale = model.scale;
+				glm::vec3& rotationAxis = model.rotationAxis;
+				float radianRotation = model.radianRotation;
+				bool isStatic = model.isStatic;
+				bool isTransparent = model.isTransparent;
+				Model* modelPtr = new engine::Model(modelPath.c_str());
+
+				if (!model.customMatTexList.empty())
+				{
+					auto& modelMat = modelPtr->getMeshes()[0].getMaterial();
+					modelMat.processMaterial(model);
+				}
+
+				m_RenderableModels.push_back(new RenderableModel(position, scale, rotationAxis, glm::radians(radianRotation), modelPtr, nullptr, isStatic, isTransparent));
+			}
+			 // progress skybox info
+			{
+				auto& skyboxInfo = sceneInfo.skyboxInfo;
+				auto& skyboxFilePaths = skyboxInfo.skyboxFilePaths;
+				if (skyboxFilePaths.size() != 6) {
+					spdlog::error("Skybox file paths are not valid");
+				}
+				else {
+					m_Skybox = new Skybox(skyboxFilePaths);
+					m_ProbeManager.init(m_Skybox);
+				}
+			}
+
+
+		}
+		catch (const json::exception& e)
+		{
+			spdlog::error("JSON parsing error: {}", e.what());
+		}
+		catch (const std::exception& e)
+		{
+			spdlog::error("Error: {}", e.what());
+		}
+#endif
+		
+#ifndef NEW_LOAD
 		Model* pbrGun = new engine::Model("res/3D_Models/Cerberus_Gun/Cerberus_LP.FBX");
 		auto& gunMat = pbrGun->getMeshes()[0].getMaterial();
 		gunMat.setNormalMap(TextureLoader::load2DTexture("res/3D_Models/Cerberus_Gun/Textures/Cerberus_N.tga"));
@@ -66,13 +100,17 @@ namespace engine {
 
 		m_RenderableModels.push_back(new RenderableModel(glm::vec3(120.0f, 130.0f, 100.0f), glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(-90.0f), pbrGun, nullptr, false));
 
-		/*m_RenderableModels.push_back(new RenderableModel(glm::vec3(100.0f, 60.0f, 120.0f), glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(-90.0f), McCree, nullptr, false));*/
-		/*pbrGun->getMeshes()[0].getMaterial().setAlbedoMap(TextureLoader::load2DTexture(std::string("res/3D_Models/Cerberus_Gun/Textures/Cerberus_A.tga"), true));
-		pbrGun->getMeshes()[0].getMaterial().setNormalMap(TextureLoader::load2DTexture(std::string("res/3D_Models/Cerberus_Gun/Textures/Cerberus_N.tga"), false));
-		pbrGun->getMeshes()[0].getMaterial().setMetallicMap(TextureLoader::load2DTexture(std::string("res/3D_Models/Cerberus_Gun/Textures/Cerberus_M.tga"), false));
-		pbrGun->getMeshes()[0].getMaterial().setRoughnessMap(TextureLoader::load2DTexture(std::string("res/3D_Models/Cerberus_Gun/Textures/Cerberus_R.tga"), false));
-		pbrGun->getMeshes()[0].getMaterial().setAmbientOcclusionMap(TextureLoader::load2DTexture(std::string("res/3D_Models/Cerberus_Gun/Textures/Cerberus_AO.tga"), false));*/
-
+		// Skybox
+		std::vector<std::string> skyboxFilePaths;
+		skyboxFilePaths.push_back("res/skybox/right.png");
+		skyboxFilePaths.push_back("res/skybox/left.png");
+		skyboxFilePaths.push_back("res/skybox/top.png");
+		skyboxFilePaths.push_back("res/skybox/bottom.png");
+		skyboxFilePaths.push_back("res/skybox/back.png");
+		skyboxFilePaths.push_back("res/skybox/front.png");
+		m_Skybox = new Skybox(skyboxFilePaths);
+		m_ProbeManager.init(m_Skybox);
+#endif // !NEW_LOAD
 		// Temp testing code
 		/*int nrRows = 1;
 		int nrColumns = 1;
@@ -94,19 +132,6 @@ namespace engine {
 						glm::vec3(20.0f, 20.0f, 20.0f), glm::vec3(1.0f, 0.0f, 0.0f), 0.0f, sphere, nullptr, false, false));
 			}
 		}*/
-
-
-		// Skybox
-		std::vector<std::string> skyboxFilePaths;
-		skyboxFilePaths.push_back("res/skybox/right.png");
-		skyboxFilePaths.push_back("res/skybox/left.png");
-		skyboxFilePaths.push_back("res/skybox/top.png");
-		skyboxFilePaths.push_back("res/skybox/bottom.png");
-		skyboxFilePaths.push_back("res/skybox/back.png");
-		skyboxFilePaths.push_back("res/skybox/front.png");
-		m_Skybox = new Skybox(skyboxFilePaths);
-		m_ProbeManager.init(m_Skybox);
-
 		thread_pool.wait();
 		TextureLoader::processMainThreadTasks();
 	}

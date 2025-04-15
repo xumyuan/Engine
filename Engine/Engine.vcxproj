@@ -159,6 +159,8 @@ xcopy /Y /S "$(ProjectDir)src\shaders\*.*" "$(OutDir)src\shaders\"</Command>
     <ClInclude Include="src\platform\OpenGL\Framebuffers\GBuffer.h" />
     <ClInclude Include="src\thread\spin_lock.h" />
     <ClInclude Include="src\thread\thread_pool.h" />
+    <ClInclude Include="src\utils\json\json_type.h" />
+    <ClInclude Include="src\utils\json\typeProcess.h" />
     <ClInclude Include="src\utils\loaders\ShaderLoader.h" />
     <ClInclude Include="src\graphics\camera\ICamera.h" />
     <ClInclude Include="src\graphics\renderer\renderpass\forward\ForwardLightingPass.h" />
@@ -219,6 +221,7 @@ xcopy /Y /S "$(ProjectDir)src\shaders\*.*" "$(OutDir)src\shaders\"</Command>
     <ClCompile Include="src\graphics\ibl\ProbeManager.cpp" />
     <ClCompile Include="src\platform\OpenGL\Framebuffers\GBuffer.cpp" />
     <ClCompile Include="src\thread\thread_pool.cpp" />
+    <ClCompile Include="src\utils\json\typeProcess.cpp" />
     <ClCompile Include="src\utils\loaders\ShaderLoader.cpp" />
     <ClCompile Include="src\graphics\renderer\renderpass\forward\ForwardLightingPass.cpp" />
     <ClCompile Include="src\graphics\renderer\renderpass\PostProcessPass.cpp" />

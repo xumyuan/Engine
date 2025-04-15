@@ -16,6 +16,8 @@
 #include <thread>
 #include <atomic>
 #include <queue>
+#include <optional>
+#include <variant>
 
 #include <gl/glew.h>
 
