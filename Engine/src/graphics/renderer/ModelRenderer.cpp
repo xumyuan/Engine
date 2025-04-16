@@ -18,17 +18,17 @@ namespace engine {
 		NDC_Plane = new Quad();
 	}
 
-	//²»Í¸Ã÷äÖÈ¾¶ÓÁÐ
+	//ä¸é€æ˜Žæ¸²æŸ“é˜Ÿåˆ—
 	void ModelRenderer::submitOpaque(RenderableModel* renderable) {
 		m_OpaqueRenderQueue.push_back(renderable);
 	}
 
-	//Í¸Ã÷ÎïÌåäÖÈ¾¶ÓÁÐ
+	//é€æ˜Žç‰©ä½“æ¸²æŸ“é˜Ÿåˆ—
 	void ModelRenderer::submitTransparent(RenderableModel* renderable) {
 		m_TransparentRenderQueue.push_back(renderable);
 	}
 
-	// ²»Í¸Ã÷ÎïäÖÈ¾
+	// ä¸é€æ˜Žç‰©æ¸²æŸ“
 	void ModelRenderer::flushOpaque(Shader* shader, RenderPassType pass) {
 		m_GLCache->switchShader(shader);
 
@@ -39,7 +39,7 @@ namespace engine {
 		m_GLCache->setFaceCull(true);
 		m_GLCache->setCullFace(GL_BACK);
 
-		//²»Í¸Ã÷ÎïÌåäÖÈ¾¶ÓÁÐ
+		//ä¸é€æ˜Žç‰©ä½“æ¸²æŸ“é˜Ÿåˆ—
 		while (!m_OpaqueRenderQueue.empty()) {
 			RenderableModel* current = m_OpaqueRenderQueue.front();
 
@@ -50,7 +50,7 @@ namespace engine {
 		}
 	}
 
-	// Í¸Ã÷ÎïÌåäÖÈ¾
+	// é€æ˜Žç‰©ä½“æ¸²æŸ“
 	void ModelRenderer::flushTransparent(Shader* shader, RenderPassType pass) {
 
 		m_GLCache->switchShader(shader);
@@ -61,17 +61,17 @@ namespace engine {
 		m_GLCache->setFaceCull(false);
 
 
-		//ÅÅÐòºó´ÓºóÍùÇ°äÖÈ¾£¬Ã»ÓÐ¿¼ÂÇËõ·ÅºÍÐý×ª
+		//æŽ’åºåŽä»ŽåŽå¾€å‰æ¸²æŸ“ï¼Œæ²¡æœ‰è€ƒè™‘ç¼©æ”¾å’Œæ—‹è½¬
 		std::sort(m_TransparentRenderQueue.begin(), m_TransparentRenderQueue.end(),
 			[this](RenderableModel* a, RenderableModel* b)->bool {
 				return glm::length2(m_Camera->getPosition() - a->getPosition()) > glm::length2(m_Camera->getPosition() - b->getPosition());
 			});
 
-		//Í¸Ã÷ÎïÌåäÖÈ¾
+		//é€æ˜Žç‰©ä½“æ¸²æŸ“
 		while (!m_TransparentRenderQueue.empty()) {
 			RenderableModel* current = m_TransparentRenderQueue.front();
 
-			//¿ªÆô»ìºÏ
+			//å¼€å¯æ··åˆ
 			m_GLCache->setBlend(true);
 			m_GLCache->setBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 

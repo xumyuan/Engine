@@ -5,14 +5,15 @@
 namespace engine {
 
 	Material::Material(Texture* albedoMap, Texture* normalMap, Texture* metallicMap, Texture* roughnessMap, Texture* ambientOcclusionMap, Texture* emissionMap)
-		: m_AlbedoMap(albedoMap), m_NormalMap(normalMap), m_MetallicMap(metallicMap), m_RoughnessMap(roughnessMap), m_AmbientOcclusionMap(ambientOcclusionMap), m_EmissionMap(emissionMap) {}
+		: m_AlbedoMap(albedoMap), m_NormalMap(normalMap), m_MetallicMap(metallicMap), m_RoughnessMap(roughnessMap), m_AmbientOcclusionMap(ambientOcclusionMap), m_EmissionMap(emissionMap) {
+	}
 
 
 	void Material::BindMaterialInformation(Shader* shader) const {
-		// ÎÆÀíµ¥Ôª0Áô¸øshadowmap
-		// ÎÆÀíµ¥Ôª 1 ±£ÁôÓÃÓÚÓÃÓÚ¼ä½ÓÂþ·´Éä IBL µÄ irradianceMap
-		// ÎÆÀíµ¥Ôª 2 ±£Áô¸ø prefilterMap
-		// ÎÆÀíµ¥Ôª 3 ±£Áô¸ø brdfLUT
+		// çº¹ç†å•å…ƒ0ç•™ç»™shadowmap
+		// çº¹ç†å•å…ƒ 1 ä¿ç•™ç”¨äºŽç”¨äºŽé—´æŽ¥æ¼«åå°„ IBL çš„ irradianceMap
+		// çº¹ç†å•å…ƒ 2 ä¿ç•™ç»™ prefilterMap
+		// çº¹ç†å•å…ƒ 3 ä¿ç•™ç»™ brdfLUT
 		int currentTextureUnit = 4;
 
 		shader->setUniform("material.albedoColour", m_AlbedoColour);
@@ -134,7 +135,7 @@ namespace engine {
 				}
 			}},
 		};
-	
+
 		for (const auto& [key, value] : modelinfo.customMatTexList) {
 			if (auto handler = matHandlers.find(key); handler != matHandlers.end()) {
 				handler->second(value);

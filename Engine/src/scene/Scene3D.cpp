@@ -63,7 +63,7 @@ namespace engine {
 
 				m_RenderableModels.push_back(new RenderableModel(position, scale, rotationAxis, glm::radians(radianRotation), modelPtr, nullptr, isStatic, isTransparent));
 			}
-			 // progress skybox info
+			// progress skybox info
 			{
 				auto& skyboxInfo = sceneInfo.skyboxInfo;
 				auto& skyboxFilePaths = skyboxInfo.skyboxFilePaths;
@@ -87,7 +87,7 @@ namespace engine {
 			spdlog::error("Error: {}", e.what());
 		}
 #endif
-		
+
 #ifndef NEW_LOAD
 		Model* pbrGun = new engine::Model("res/3D_Models/Cerberus_Gun/Cerberus_LP.FBX");
 		auto& gunMat = pbrGun->getMeshes()[0].getMaterial();
@@ -144,7 +144,7 @@ namespace engine {
 		m_DynamicLightManager.setSpotLightPosition(m_SceneCamera.getPosition());
 	}
 
-	// ³¡¾°äÖÈ¾
+	// åœºæ™¯æ¸²æŸ“
 	void Scene3D::onRender() {
 	}
 

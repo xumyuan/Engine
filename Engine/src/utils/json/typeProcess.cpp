@@ -3,7 +3,7 @@
 
 namespace glm {
 	using json = nlohmann::json;
-	// Îªglm::vec3Ìí¼ÓJSONĞòÁĞ»¯Ö§³Ö
+	// ä¸ºglm::vec3æ·»åŠ JSONåºåˆ—åŒ–æ”¯æŒ
 	void from_json(const json& j, vec3& v) {
 		v.x = j[0].get<float>();
 		v.y = j[1].get<float>();
@@ -29,7 +29,7 @@ namespace engine {
 		j.at("isStatic").get_to(m.isStatic);
 		j.at("isTransparent").get_to(m.isTransparent);
 
-		// ½âÎö×Ô¶¨Òå²ÄÖÊÎÆÀíÁĞ±í
+		// è§£æè‡ªå®šä¹‰æè´¨çº¹ç†åˆ—è¡¨
 		for (auto& [key, value] : j.at("customMatTexList").items()) {
 			if (value.is_string()) {
 				m.customMatTexList[key] = value.get<std::string>();
@@ -44,7 +44,7 @@ namespace engine {
 				m.customMatTexList[key] = value.get<float>();
 			}
 			else {
-				// ´¦Àí²»Ö§³ÖµÄÀàĞÍ
+				// å¤„ç†ä¸æ”¯æŒçš„ç±»å‹
 				spdlog::error("Unsupported type in customMatTexList for key:{}", key);
 				//throw json::type_error::create(302,"Unsupported type in customMatTexList for key: " + key);
 			}
@@ -52,7 +52,7 @@ namespace engine {
 	}
 
 	void from_json(const json& j, SceneInfo::SkyboxInfo& s) {
-		// È·±£Ìì¿ÕºĞÍ¼Æ¬Ë³ĞòÓëäÖÈ¾Æ÷ÒªÇóÒ»ÖÂ
+		// ç¡®ä¿å¤©ç©ºç›’å›¾ç‰‡é¡ºåºä¸æ¸²æŸ“å™¨è¦æ±‚ä¸€è‡´
 		s.skyboxFilePaths = {
 			j.at("right").get<std::string>(),
 			j.at("left").get<std::string>(),

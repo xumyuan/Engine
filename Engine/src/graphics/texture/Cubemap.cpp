@@ -34,7 +34,7 @@ namespace engine {
 
 	void Cubemap::generateCubemapFace(GLenum face, unsigned int faceWidth, unsigned int faceHeight, GLenum dataFormat, const unsigned char* data)
 	{
-		// Èç¹ûÕâÊÇÉú³ÉµÄµÚÒ»¸öÃæ£¬ÔòÉú³ÉÁ¢·½ÌåÌùÍ¼
+		// å¦‚æœè¿™æ˜¯ç”Ÿæˆçš„ç¬¬ä¸€ä¸ªé¢ï¼Œåˆ™ç”Ÿæˆç«‹æ–¹ä½“è´´å›¾
 		if (m_CubemapID == 0) {
 			glGenTextures(1, &m_CubemapID);
 

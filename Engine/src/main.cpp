@@ -17,16 +17,16 @@
 #include "utils/Timer.h"
 
 int main() {
-	
+
 	spdlog::info("window create...");
 	engine::Window window("Engine", WINDOW_X_RESOLUTION, WINDOW_Y_RESOLUTION);
-	spdlog::info("window create succeed£¡");
+	spdlog::info("window create succeedï¼");
 
 	spdlog::info("load textures...");
 	engine::TextureLoader::initializeDefaultTextures();
 	spdlog::info("load textures over.");
 
-	//´´½¨³¡¾°
+	//åˆ›å»ºåœºæ™¯
 	spdlog::info("create scene...");
 	engine::Scene3D scene(&window);
 	spdlog::info("create scene over.");
@@ -34,7 +34,7 @@ int main() {
 
 	engine::MasterRenderer renderer(&scene);
 
-	// ×¼±¸ui
+	// å‡†å¤‡ui
 	engine::RuntimePane runtimePane(glm::vec2(256.0f, 90.0f));
 	engine::DebugPane debugPane(glm::vec2(256.0f, 115.0f));
 	renderer.init();
@@ -46,12 +46,12 @@ int main() {
 
 	engine::Time deltaTime;
 
-	
+
 	while (!window.closed()) {
 		deltaTime.update();
 
 #if DEBUG_ENABLED
-		//Ïß¿òÄ£Ê½
+		//çº¿æ¡†æ¨¡å¼
 		if (debugPane.getWireframeMode())
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		else
@@ -76,7 +76,7 @@ int main() {
 		renderer.render();
 
 
-		// Õ¹Ê¾uiÃæ°å
+		// å±•ç¤ºuié¢æ¿
 		runtimePane.render();
 		debugPane.render();
 

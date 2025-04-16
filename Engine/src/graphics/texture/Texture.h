@@ -2,29 +2,29 @@
 
 namespace engine {
 	struct TextureSettings {
-		// ÎÆÀíÊı¾İ¸ñÊ½
+		// çº¹ç†æ•°æ®æ ¼å¼
 		GLenum TextureFormat = GL_NONE;
 
-		/*±êÖ¾ÎÆÀíÊÇ·ñÎªsRGBÎÆÀí£¬Èç¹ûÊÇ£¬ÔòÔÚ²ÉÑùÇ°ÒªÏßĞÔ»¯
-		* ÓÃÓÚÑÕÉ«µÄ¶¼Ó¦¸ÃÊÇÏßĞÔ»¯µÄ£¬µ«ÊÇ°üº¬Êı¾İµÄ ±ÈÈç¸ß¶ÈÍ¼ºÍ·¨ÏßÍ¼²»Ó¦¸ÃÊÇÏßĞÔ»¯µÄ
-		* ×Ô¼ºÉú³ÉµÄÄ¬ÈÏ¾ÍÊÇÔÚÏßĞÔ¿Õ¼äµÄ
+		/*æ ‡å¿—çº¹ç†æ˜¯å¦ä¸ºsRGBçº¹ç†ï¼Œå¦‚æœæ˜¯ï¼Œåˆ™åœ¨é‡‡æ ·å‰è¦çº¿æ€§åŒ–
+		* ç”¨äºé¢œè‰²çš„éƒ½åº”è¯¥æ˜¯çº¿æ€§åŒ–çš„ï¼Œä½†æ˜¯åŒ…å«æ•°æ®çš„ æ¯”å¦‚é«˜åº¦å›¾å’Œæ³•çº¿å›¾ä¸åº”è¯¥æ˜¯çº¿æ€§åŒ–çš„
+		* è‡ªå·±ç”Ÿæˆçš„é»˜è®¤å°±æ˜¯åœ¨çº¿æ€§ç©ºé—´çš„
 		*/
 		bool IsSRGB = false;
 
-		// ÎÆÀí»·ÈÆÑ¡Ïî
+		// çº¹ç†ç¯ç»•é€‰é¡¹
 		GLenum TextureWrapSMode = GL_REPEAT;
 		GLenum TextureWrapTMode = GL_REPEAT;
 		bool HasBorder = false;
 		glm::vec4 BorderColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 
-		// ÎÆÀí¹ıÂËÑ¡Ïî
-		GLenum TextureMinificationFilterMode = GL_LINEAR_MIPMAP_LINEAR;//¶à¸öÎÆËØÓ³Éäµ½Ò»¸öÏñËØÊ±µÄ¹ıÂË·½Ê½
-		GLenum TextureMagnificationFilterMode = GL_LINEAR;// ¶à¸öÏñËØÓ³Éäµ½Ò»¸öÎÆËØÊ±µÄ¹ıÂË·½Ê½
-		float TextureAnisotropyLevel = ANISOTROPIC_FILTERING_LEVEL; // Ö¸¶¨¶ÀÁ¢ÓÚÎÆÀí min ºÍ mag ¹ıÂË£¬Ó¦Îª 2 µÄÃİ£¨1.0 ±íÊ¾Ê¹ÓÃÍ¨³£µÄ¸÷ÏòÍ¬ĞÔÎÆÀí¹ıÂË£¬ÕâÒâÎ¶×Å²»Ê¹ÓÃ¸÷ÏòÒìĞÔ¹ıÂË£©
+		// çº¹ç†è¿‡æ»¤é€‰é¡¹
+		GLenum TextureMinificationFilterMode = GL_LINEAR_MIPMAP_LINEAR;//å¤šä¸ªçº¹ç´ æ˜ å°„åˆ°ä¸€ä¸ªåƒç´ æ—¶çš„è¿‡æ»¤æ–¹å¼
+		GLenum TextureMagnificationFilterMode = GL_LINEAR;// å¤šä¸ªåƒç´ æ˜ å°„åˆ°ä¸€ä¸ªçº¹ç´ æ—¶çš„è¿‡æ»¤æ–¹å¼
+		float TextureAnisotropyLevel = ANISOTROPIC_FILTERING_LEVEL; // æŒ‡å®šç‹¬ç«‹äºçº¹ç† min å’Œ mag è¿‡æ»¤ï¼Œåº”ä¸º 2 çš„å¹‚ï¼ˆ1.0 è¡¨ç¤ºä½¿ç”¨é€šå¸¸çš„å„å‘åŒæ€§çº¹ç†è¿‡æ»¤ï¼Œè¿™æ„å‘³ç€ä¸ä½¿ç”¨å„å‘å¼‚æ€§è¿‡æ»¤ï¼‰
 
 		// Mip options
 		bool HasMips = true;
-		int MipBias = 0; // ÕıÖµ±íÊ¾Ñ¡Ôñ½ÏÄ£ºıµÄÎÆÀí£¬¸ºÖµ±íÊ¾½ÏÇåÎúµÄÎÆÀí£¬¿ÉÒÔÏÔÊ¾ÎÆÀí¾â³İ
+		int MipBias = 0; // æ­£å€¼è¡¨ç¤ºé€‰æ‹©è¾ƒæ¨¡ç³Šçš„çº¹ç†ï¼Œè´Ÿå€¼è¡¨ç¤ºè¾ƒæ¸…æ™°çš„çº¹ç†ï¼Œå¯ä»¥æ˜¾ç¤ºçº¹ç†é”¯é½¿
 	};
 
 	class Texture {
@@ -34,7 +34,7 @@ namespace engine {
 		Texture(const Texture& teture);
 		~Texture();
 
-		// ´´½¨ÎÆÀí
+		// åˆ›å»ºçº¹ç†
 		void generate2DTexture(unsigned int width, unsigned int height, GLenum dataFormat, GLenum pixelDataType = GL_UNSIGNED_BYTE, const void* data = nullptr);
 
 		void generate2DMultisampleTexture(unsigned int width, unsigned int height);
@@ -57,7 +57,7 @@ namespace engine {
 		// Pre-generation controls only
 		inline void setTextureSettings(TextureSettings settings) { m_TextureSettings = settings; }
 		inline void setTextureFormat(GLenum format) { m_TextureSettings.TextureFormat = format; }
-		// ²»ÒªÓÃËüÀ´°ó¶¨ÎÆÀí²¢Ê¹ÓÃËü¡£ ¶øÊÇµ÷ÓÃ Bind() º¯Êı
+		// ä¸è¦ç”¨å®ƒæ¥ç»‘å®šçº¹ç†å¹¶ä½¿ç”¨å®ƒã€‚ è€Œæ˜¯è°ƒç”¨ Bind() å‡½æ•°
 		inline unsigned int getTextureId()const { return m_TextureId; }
 		inline bool isGenerated() const { return m_TextureId != 0; }
 		inline unsigned int getTextureTarget() const { return m_TextureTarget; }

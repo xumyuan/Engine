@@ -3,7 +3,7 @@
 #include "utils/Singleton.h"
 
 namespace engine {
-	// 用于opengl状态管理，单例实现
+	// 鐢ㄤ簬opengl鐘舵�佺鐞嗭紝鍗曚緥瀹炵幇
 	class GLCache : Singleton {
 	public:
 		GLCache();
@@ -34,10 +34,10 @@ namespace engine {
 		bool m_Cull;
 		bool m_Multisample;
 
-		// 深度 State
+		// 娣卞害 State
 		GLenum m_DepthFunc;
 
-		// 模板 State
+		// 妯℃澘 State
 		GLenum m_StencilTestFunc;
 		GLint m_StencilFragValue;
 		GLuint m_StencilFuncBitmask;
@@ -45,13 +45,13 @@ namespace engine {
 		GLenum m_StencilFailOperation, m_DepthFailOperation, m_DepthPassOperation;
 		GLuint m_StencilWriteBitmask;
 
-		// 混合 State
+		// 娣峰悎 State
 		GLenum m_BlendSrc, m_BlendDst;
 
-		// 背面剔除 State
+		// 鑳岄潰鍓旈櫎 State
 		GLenum m_FaceToCull;
 
-		// 当前绑定shader
+		// 褰撳墠缁戝畾shader
 		GLuint m_ActiveShaderID;
 	};
 

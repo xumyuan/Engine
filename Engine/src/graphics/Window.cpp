@@ -65,7 +65,7 @@ namespace engine {
 		glfwWindowHint(GLFW_DOUBLEBUFFER, true);
 
 		glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-		// ´´½¨´°¿Ú
+		// åˆ›å»ºçª—å£
 		if (FULLSCREEN_MODE) {
 			setFullScreenResolution();
 			m_Window = glfwCreateWindow(s_Width, s_Height, m_Title, glfwGetPrimaryMonitor(), NULL);

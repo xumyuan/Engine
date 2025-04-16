@@ -7,14 +7,15 @@ namespace engine {
 
 	ReflectionProbe::ReflectionProbe(glm::vec3& probePosition, glm::vec2& probeResolution, bool isStatic)
 		:m_Position(probePosition), m_ProbeResolution(probeResolution), m_IsStatic(isStatic), m_Generated(false), m_PrefilterMap(nullptr)
-	{}
+	{
+	}
 
 	ReflectionProbe::~ReflectionProbe() {
 		delete m_PrefilterMap;
 	}
 
 	void ReflectionProbe::generate() {
-		// Éú³É HDR »·¾³Ì½Õë²¢ÉèÖÃÉú³É±êÖ¾
+		// ç”Ÿæˆ HDR ç¯å¢ƒæ¢é’ˆå¹¶è®¾ç½®ç”Ÿæˆæ ‡å¿—
 		CubemapSettings settings;
 		settings.TextureMinificationFilterMode = GL_LINEAR_MIPMAP_LINEAR;
 		settings.HasMips = true;

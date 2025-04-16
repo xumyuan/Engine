@@ -9,13 +9,13 @@ namespace engine {
 	public:
 		static void initializeDefaultTextures();
 
-		// isSRGBÊÇ·ñÒªÏßĞÔ»¯µÄ±êÖ¾
-		// ËùÓĞÑÕÉ«ÎÆÀí¶¼Ó¦ÏßĞÔ»¯£¬¶ø·¨Ïß¡¢¸ß¶È¡¢½ğÊôÌùÍ¼²»ÓÃ
+		// isSRGBæ˜¯å¦è¦çº¿æ€§åŒ–çš„æ ‡å¿—
+		// æ‰€æœ‰é¢œè‰²çº¹ç†éƒ½åº”çº¿æ€§åŒ–ï¼Œè€Œæ³•çº¿ã€é«˜åº¦ã€é‡‘å±è´´å›¾ä¸ç”¨
 		static Texture* load2DTexture(const std::string& path, TextureSettings* settings = nullptr);
 
 		static Cubemap* loadCubemapTexture(const std::string& right, const std::string& left, const std::string& top, const std::string& bottom, const std::string& back, const std::string& front, CubemapSettings* settings = nullptr);
 
-		static void processMainThreadTasks(); 
+		static void processMainThreadTasks();
 
 		inline static Texture* getDefaultAlbedo() { return s_DefaultAlbedo; }
 		inline static Texture* getDefaultNormal() { return s_DefaultNormal; }

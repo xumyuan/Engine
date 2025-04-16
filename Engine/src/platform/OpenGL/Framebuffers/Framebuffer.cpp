@@ -19,16 +19,16 @@ namespace engine {
 	void Framebuffer::createFramebuffer() {
 		bind();
 		if (!m_ColorTexture.isGenerated()) {
-			// ¸ÃÖ¡»º³åÇøÃ»ÓĞÑÕÉ«¸½¼ş
+			// è¯¥å¸§ç¼“å†²åŒºæ²¡æœ‰é¢œè‰²é™„ä»¶
 			glDrawBuffer(GL_NONE);
 			glReadBuffer(GL_NONE);
 		}
 
-		// ¼ì²éÖ¡»º³åÇøÊÇ·ñÍêÕû
+		// æ£€æŸ¥å¸§ç¼“å†²åŒºæ˜¯å¦å®Œæ•´
 		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-			//»ñÈ¡µ±Ç°µÄÊ±¼ä
+			//è·å–å½“å‰çš„æ—¶é—´
 			time_t now = time(0);
-			//×ª»»ÎªÊ±·ÖÃë£¬stringÀàĞÍ
+			//è½¬æ¢ä¸ºæ—¶åˆ†ç§’ï¼Œstringç±»å‹
 			std::string dt = ctime(&now);
 
 			spdlog::error("[{0}]:Could not initialize the frameBuffer", dt);
@@ -58,7 +58,7 @@ namespace engine {
 		m_ColorTexture.setTextureSettings(colorTextureSettings);
 
 
-		// Éú³ÉÑÕÉ«ÎÆÀí¸½¼ş
+		// ç”Ÿæˆé¢œè‰²çº¹ç†é™„ä»¶
 		if (m_IsMultisampled) {
 			m_ColorTexture.generate2DMultisampleTexture(m_Width, m_Height);
 			setColorAttachment(m_ColorTexture.getTextureId(), GL_TEXTURE_2D_MULTISAMPLE);
@@ -100,7 +100,7 @@ namespace engine {
 		depthStencilSettings.HasMips = false;
 		m_DepthStencilTexture.setTextureSettings(depthStencilSettings);
 
-		// Éú³ÉÉî¶È¸½¼ş
+		// ç”Ÿæˆæ·±åº¦é™„ä»¶
 		if (m_IsMultisampled) {
 			m_DepthStencilTexture.generate2DMultisampleTexture(m_Width, m_Height);
 			glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentType, GL_TEXTURE_2D_MULTISAMPLE, m_DepthStencilTexture.getTextureId(), 0);
@@ -130,7 +130,7 @@ namespace engine {
 			attachmentType = GL_DEPTH_ATTACHMENT;
 		}
 
-		// Éú³ÉÉî¶È+Ä£°å RBO ¸½¼ş
+		// ç”Ÿæˆæ·±åº¦+æ¨¡æ¿ RBO é™„ä»¶
 		glGenRenderbuffers(1, &m_DepthStencilRBO);
 		glBindRenderbuffer(GL_RENDERBUFFER, m_DepthStencilRBO);
 
@@ -141,7 +141,7 @@ namespace engine {
 			glRenderbufferStorage(GL_RENDERBUFFER, textureFormat, m_Width, m_Height);
 		}
 
-		// ¸½¼ÓÉî¶È+Ä£°å¸½¼ş
+		// é™„åŠ æ·±åº¦+æ¨¡æ¿é™„ä»¶
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachmentType, GL_RENDERBUFFER, m_DepthStencilRBO);
 
 		unbind();

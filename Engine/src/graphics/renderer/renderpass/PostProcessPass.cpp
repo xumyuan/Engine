@@ -31,7 +31,7 @@ namespace engine
 	void PostProcessPass::executeRenderPass(Framebuffer* framebufferToProcess) {
 		glViewport(0, 0, Window::getWidth(), Window::getHeight());
 
-		// Èç¹ûÊäÈë RenderTarget ÊÇ¶àÖØ²ÉÑùµÄ¡£Í¨¹ý½«ÆäÎ»¿é´«ËÍµ½·Ç¶àÖØ²ÉÑùµÄ RenderTarget À´½â¾öËü£¬ÒÔ±ãÎÒÃÇ¿ÉÒÔ¶ÔÆä½øÐÐºóÆÚ´¦Àí
+		// å¦‚æžœè¾“å…¥ RenderTarget æ˜¯å¤šé‡é‡‡æ ·çš„ã€‚é€šè¿‡å°†å…¶ä½å—ä¼ é€åˆ°éžå¤šé‡é‡‡æ ·çš„ RenderTarget æ¥è§£å†³å®ƒï¼Œä»¥ä¾¿æˆ‘ä»¬å¯ä»¥å¯¹å…¶è¿›è¡ŒåŽæœŸå¤„ç†
 		Framebuffer* supersampledTarget = framebufferToProcess;
 		if (framebufferToProcess->isMultisampled()) {
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, framebufferToProcess->getFramebuffer());
@@ -51,11 +51,11 @@ namespace engine
 
 
 		Framebuffer* framebufferToRenderTo = nullptr;
-		// todo: ÕâÀï½»»»fxaaºÍÙ¤Âí½ÃÕýµÄË³Ðò»áµ¼ÖÂÍ¼ÏñÓÒÉÏ½Ç³öÏÖ»¨ÆÁ
-		// ÔÝÎ´ÕÒµ½Ô­Òò
-		// 3.26 ½â¾öµÄ·½·¨ÊÇfullrendertargetµÄÎÆÀí¸ñÊ½ÎªFloatingPoint16
+		// todo: è¿™é‡Œäº¤æ¢fxaaå’Œä¼½é©¬çŸ«æ­£çš„é¡ºåºä¼šå¯¼è‡´å›¾åƒå³ä¸Šè§’å‡ºçŽ°èŠ±å±
+		// æš‚æœªæ‰¾åˆ°åŽŸå› 
+		// 3.26 è§£å†³çš„æ–¹æ³•æ˜¯fullrendertargetçš„çº¹ç†æ ¼å¼ä¸ºFloatingPoint16
 
-		// Ù¤Âí½ÃÕý
+		// ä¼½é©¬çŸ«æ­£
 		gammaCorrect(&m_GammaCorrectTarget, target->getColorBufferTexture());
 		target = &m_GammaCorrectTarget;
 

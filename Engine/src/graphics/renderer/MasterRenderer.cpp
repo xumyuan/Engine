@@ -20,7 +20,7 @@ namespace engine
 	void MasterRenderer::init() {
 		// State that should never change
 		glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-		// »·¾³ÌùÍ¼Ô¤¼ÆËã
+		// çŽ¯å¢ƒè´´å›¾é¢„è®¡ç®—
 		m_EnvironmentProbePass.pregenerateProbes();
 	}
 
@@ -39,7 +39,7 @@ namespace engine
 #endif
 		// Lighting Pass
 		LightingPassOutput lightingOutput = m_LightingPass.executeRenderPass(shadowmapOutput, m_ActiveScene->getCamera(), true);
-		// ºó´¦Àí Pass
+		// åŽå¤„ç† Pass
 #if DEBUG_ENABLED
 		glFinish();
 		m_Timer.reset();
@@ -54,12 +54,12 @@ namespace engine
 
 		GeometryPassOutput geometryOutput = m_DeferredGeometryPass.ExecuteGeometryPass(m_ActiveScene->getCamera(), false);
 
-		LightingPassOutput deferredLightingOutput = m_DeferredLightingPass.ExecuteLightingPass(shadowmapOutput, geometryOutput.outputGBuffer,m_ActiveScene->getCamera(),true);
+		LightingPassOutput deferredLightingOutput = m_DeferredLightingPass.ExecuteLightingPass(shadowmapOutput, geometryOutput.outputGBuffer, m_ActiveScene->getCamera(), true);
 
 		m_PostProcessPass.executeRenderPass(deferredLightingOutput.outputFramebuffer);
 
 #endif // FORWARD_RENDER
-		
+
 
 	}
 

@@ -6,16 +6,20 @@ namespace engine {
 	Mesh::Mesh() {}
 
 	Mesh::Mesh(std::vector<glm::vec3>& positions, std::vector<unsigned int>& indices)
-		: m_Positions(positions), m_Indices(indices) {}
+		: m_Positions(positions), m_Indices(indices) {
+	}
 
 	Mesh::Mesh(std::vector<glm::vec3>& positions, std::vector<glm::vec2>& uvs, std::vector<unsigned int>& indices)
-		: m_Positions(positions), m_UVs(uvs), m_Indices(indices) {}
+		: m_Positions(positions), m_UVs(uvs), m_Indices(indices) {
+	}
 
 	Mesh::Mesh(std::vector<glm::vec3>& positions, std::vector<glm::vec2>& uvs, std::vector<glm::vec3>& normals, std::vector<unsigned int>& indices)
-		: m_Positions(positions), m_UVs(uvs), m_Normals(normals), m_Indices(indices) {}
+		: m_Positions(positions), m_UVs(uvs), m_Normals(normals), m_Indices(indices) {
+	}
 
 	Mesh::Mesh(std::vector<glm::vec3>& positions, std::vector<glm::vec2>& uvs, std::vector<glm::vec3>& normals, std::vector<glm::vec3>& tangents, std::vector<glm::vec3>& bitangents, std::vector<unsigned int>& indices)
-		: m_Positions(positions), m_UVs(uvs), m_Normals(normals), m_Tangents(tangents), m_Bitangents(bitangents), m_Indices(indices) {}
+		: m_Positions(positions), m_UVs(uvs), m_Normals(normals), m_Tangents(tangents), m_Bitangents(bitangents), m_Indices(indices) {
+	}
 
 
 	void Mesh::Draw() const {
@@ -32,7 +36,7 @@ namespace engine {
 	}
 
 	void Mesh::LoadData(bool interleaved) {
-		// 检查网格初始化错误
+		// 妫�鏌ョ綉鏍煎垵濮嬪寲閿欒
 		{
 			unsigned int vertexCount = m_Positions.size();
 
@@ -127,7 +131,7 @@ namespace engine {
 		glGenBuffers(1, &m_VBO);
 		glGenBuffers(1, &m_IBO);
 
-		// 加载数据到index buffer 和vertex buffer
+		// 鍔犺浇鏁版嵁鍒癷ndex buffer 鍜寁ertex buffer
 		glBindVertexArray(m_VAO);
 		glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
 		glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(float), &data[0], GL_STATIC_DRAW);

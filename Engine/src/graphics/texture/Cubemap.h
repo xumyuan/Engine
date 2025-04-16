@@ -12,8 +12,8 @@ namespace engine {
 		GLenum TextureWrapRMode = GL_CLAMP_TO_EDGE;
 
 		// Texture filtering options
-		GLenum TextureMinificationFilterMode = GL_LINEAR; // �������Ƶø�Զ���Ҷ������ӳ�䵽һ������ʱ�Ĺ���ģʽ���������Ի�����������
-		GLenum TextureMagnificationFilterMode = GL_LINEAR; // ��������ø��ӽ����Ҷ������ӳ�䵽��������ʱ�Ĺ���ģʽ����Զ����Ҫ����˫���ԣ���Ϊ���������������һ��׼ȷ��
+		GLenum TextureMinificationFilterMode = GL_LINEAR; // 当纹理移得更远并且多个纹素映射到一个像素时的过滤模式（三线性以获得最佳质量）
+		GLenum TextureMagnificationFilterMode = GL_LINEAR; // 当纹理变得更接近并且多个像素映射到单个纹素时的过滤模式（永远不需要超过双线性，因为这与在这种情况下一样准确）
 		float TextureAnisotropyLevel = ANISOTROPIC_FILTERING_LEVEL;
 
 		// Mip Settings

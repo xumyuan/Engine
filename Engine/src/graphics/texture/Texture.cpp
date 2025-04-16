@@ -73,7 +73,7 @@ namespace engine {
 	}
 
 	void Texture::generate2DMultisampleTexture(unsigned int width, unsigned int height) {
-		// ¶àÖØ²ÉÑùÎÆÀí²»Ö§³Ö mips »ò¹ıÂË/°ü×°Ñ¡Ïî
+		// å¤šé‡é‡‡æ ·çº¹ç†ä¸æ”¯æŒ mips æˆ–è¿‡æ»¤/åŒ…è£…é€‰é¡¹
 		m_TextureTarget = GL_TEXTURE_2D_MULTISAMPLE;
 		m_Width = width;
 		m_Height = height;

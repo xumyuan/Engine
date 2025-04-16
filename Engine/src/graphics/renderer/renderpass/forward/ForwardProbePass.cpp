@@ -52,7 +52,7 @@ namespace engine {
 		Shader* brdfIntegrationShader = ShaderLoader::loadShader("src/shaders/prebrdf.glsl");
 		ModelRenderer* modelRenderer = m_ActiveScene->getModelRenderer();
 
-		// brdfµÄÎÆÀíÉèÖÃ
+		// brdfçš„çº¹ç†è®¾ç½®
 		TextureSettings textureSettings;
 		textureSettings.TextureWrapSMode = GL_CLAMP_TO_EDGE;
 		textureSettings.TextureWrapTMode = GL_CLAMP_TO_EDGE;
@@ -64,7 +64,7 @@ namespace engine {
 		Texture* brdfLUT = new Texture(textureSettings);
 		brdfLUT->generate2DTexture(BRDF_LUT_RESOLUTION, BRDF_LUT_RESOLUTION, GL_RG);
 
-		// ÉèÖÃlutµÄÖ¡»º³åÇø
+		// è®¾ç½®lutçš„å¸§ç¼“å†²åŒº
 		Framebuffer brdfBuffer(BRDF_LUT_RESOLUTION, BRDF_LUT_RESOLUTION, false);
 
 		brdfBuffer.addColorTexture(Normalized8).createFramebuffer();
@@ -94,7 +94,7 @@ namespace engine {
 		ForwardLightingPass lightingPass(m_ActiveScene, &m_SceneCaptureLightingFramebuffer);
 
 		// Render the scene to the probe's cubemap
-	for (int i = 0; i < 6; i++) {
+		for (int i = 0; i < 6; i++) {
 			// Setup the camera's view
 			m_CubemapCamera.switchCameraToFace(i);
 
@@ -108,7 +108,7 @@ namespace engine {
 			m_SceneCaptureLightingFramebuffer.setColorAttachment(0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
 		}
 
-		// ²¶»ñ²¢Ó¦ÓÃ·øÕÕ¶ÈÍ¼µÄ¾í»ı£¨¼ä½ÓÂş·´Éä£©
+		// æ•è·å¹¶åº”ç”¨è¾ç…§åº¦å›¾çš„å·ç§¯ï¼ˆé—´æ¥æ¼«åå°„ï¼‰
 		m_GLCache->switchShader(m_ConvolutionShader);
 		m_GLCache->setFaceCull(false);
 		m_GLCache->setDepthTest(false); // Important cause the depth buffer isn't cleared so it zero depth
@@ -119,7 +119,7 @@ namespace engine {
 
 		m_LightProbeConvolutionFramebuffer.bind();
 
-		auto * skybox = m_ActiveScene->getSkybox()->getSkyboxCubemap();
+		auto* skybox = m_ActiveScene->getSkybox()->getSkyboxCubemap();
 		skybox->bind(0);
 		glViewport(0, 0, m_LightProbeConvolutionFramebuffer.getWidth(), m_LightProbeConvolutionFramebuffer.getHeight());
 		for (int i = 0; i < 6; i++) {
@@ -127,9 +127,9 @@ namespace engine {
 			m_CubemapCamera.switchCameraToFace(i);
 			m_ConvolutionShader->setUniform("view", m_CubemapCamera.getViewMatrix());
 
-			// ¶Ô³¡¾°µÄ²¶×½½øĞĞ¾í»ı²¢½«Æä´æ´¢ÔÚ¹âÌ½ÕëµÄÁ¢·½ÌåÌùÍ¼ÖĞ
+			// å¯¹åœºæ™¯çš„æ•æ‰è¿›è¡Œå·ç§¯å¹¶å°†å…¶å­˜å‚¨åœ¨å…‰æ¢é’ˆçš„ç«‹æ–¹ä½“è´´å›¾ä¸­
 			m_LightProbeConvolutionFramebuffer.setColorAttachment(lightProbe->getIrradianceMap()->getCubemapID(), GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
-			// ÓÉÓÚÎÒÃÇÕıÔÚ¶ÔÁ¢·½ÌåÌùÍ¼½øĞĞ²ÉÑù£¬Òò´ËÖ»ĞèÊ¹ÓÃ NDC ¿Õ¼äÖĞµÄÁ¢·½Ìå
+			// ç”±äºæˆ‘ä»¬æ­£åœ¨å¯¹ç«‹æ–¹ä½“è´´å›¾è¿›è¡Œé‡‡æ ·ï¼Œå› æ­¤åªéœ€ä½¿ç”¨ NDC ç©ºé—´ä¸­çš„ç«‹æ–¹ä½“
 			ModelRenderer::drawNdcCube();
 			m_LightProbeConvolutionFramebuffer.setColorAttachment(0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
 		}
@@ -145,12 +145,12 @@ namespace engine {
 		ReflectionProbe* reflectionProbe = new ReflectionProbe(probePosition, probeResolution, true);
 		reflectionProbe->generate();
 
-		// ³õÊ¼»¯ ÓÃÓÚäÖÈ¾µ½Ì½ÕëÁ¢·½ÌåÌùÍ¼
+		// åˆå§‹åŒ– ç”¨äºæ¸²æŸ“åˆ°æ¢é’ˆç«‹æ–¹ä½“è´´å›¾
 		m_CubemapCamera.setCenterPosition(probePosition);
 		ShadowmapPass shadowPass(m_ActiveScene, &m_SceneCaptureShadowFramebuffer);
 		ForwardLightingPass lightingPass(m_ActiveScene, &m_SceneCaptureLightingFramebuffer);
 
-		// ½«³¡¾°äÖÈ¾µ½Ì½ÕëµÄÁ¢·½ÌåÌùÍ¼
+		// å°†åœºæ™¯æ¸²æŸ“åˆ°æ¢é’ˆçš„ç«‹æ–¹ä½“è´´å›¾
 		for (int i = 0; i < 6; ++i) {
 			m_CubemapCamera.switchCameraToFace(i);
 
@@ -162,7 +162,7 @@ namespace engine {
 			m_SceneCaptureLightingFramebuffer.setColorAttachment(0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
 		}
 
-		// ¶Ô´ú±íÔö¼ÓµÄ´Ö²Ú¶È¼¶±ğµÄÁ¢·½ÌåÌùÍ¼ mip ½øĞĞ²¶»ñ²¢Ö´ĞĞÖØÒªĞÔ²ÉÑù
+		// å¯¹ä»£è¡¨å¢åŠ çš„ç²—ç³™åº¦çº§åˆ«çš„ç«‹æ–¹ä½“è´´å›¾ mip è¿›è¡Œæ•è·å¹¶æ‰§è¡Œé‡è¦æ€§é‡‡æ ·
 		m_GLCache->switchShader(m_ImportanceSamplingShader);
 		m_GLCache->setFaceCull(false);
 		m_GLCache->setDepthTest(false); // Important cause the depth buffer isn't cleared so it zero depth
@@ -187,7 +187,7 @@ namespace engine {
 				// Setup the camera's view
 				m_CubemapCamera.switchCameraToFace(i);
 				m_ImportanceSamplingShader->setUniform("view", m_CubemapCamera.getViewMatrix());
-				// ¶Ô³¡¾°²¶»ñµÄÖØÒªĞÔ½øĞĞ²ÉÑù²¢½«Æä´æ´¢ÔÚ·´ÉäÌ½ÕëµÄÁ¢·½ÌåÌùÍ¼ÖĞ
+				// å¯¹åœºæ™¯æ•è·çš„é‡è¦æ€§è¿›è¡Œé‡‡æ ·å¹¶å°†å…¶å­˜å‚¨åœ¨åå°„æ¢é’ˆçš„ç«‹æ–¹ä½“è´´å›¾ä¸­
 				m_ReflectionProbeSamplingFramebuffer.setColorAttachment(reflectionProbe->getPrefilterMap()->getCubemapID(), GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, mip);
 				// Since we are sampling a cubemap, just use a cube
 				ModelRenderer::drawNdcCube();

@@ -12,7 +12,7 @@ namespace engine {
 		std::vector<glm::vec3> positions;
 		std::vector<glm::vec2> uvs;
 		std::vector<glm::vec3> normals;
-		
+
 		std::vector<unsigned int> indices;
 
 
@@ -63,11 +63,11 @@ namespace engine {
 		m_TerrainSize = 4;
 		m_HeightMapScale = 220;
 
-		
-		std::vector<glm::vec3> tangents(m_VertexSideCount*m_VertexSideCount,glm::vec3(0.0f));
+
+		std::vector<glm::vec3> tangents(m_VertexSideCount * m_VertexSideCount, glm::vec3(0.0f));
 		std::vector<glm::vec3> bitangents(m_VertexSideCount * m_VertexSideCount, glm::vec3(0.0f));
 
-		// 顶点生成
+		// 椤剁偣鐢熸垚
 		for (GLuint z = 0; z < m_VertexSideCount; z++) {
 			for (GLuint x = 0; x < m_VertexSideCount; x++) {
 				positions.push_back(glm::vec3(x * m_TerrainSize, getVertexHeight(x, z, heightMapImage), z * m_TerrainSize));
@@ -79,8 +79,8 @@ namespace engine {
 		stbi_image_free(heightMapImage);
 
 
-		// 生成索引
-		// 统一三角形顶点顺序，允许使用背面剔除
+		// 鐢熸垚绱㈠紩
+		// 缁熶竴涓夎褰㈤《鐐归『搴忥紝鍏佽浣跨敤鑳岄潰鍓旈櫎
 		for (GLuint height = 0; height < m_VertexSideCount - 1; ++height) {
 			for (GLuint width = 0; width < m_VertexSideCount - 1; ++width) {
 				//  T: top  B: bottom
@@ -151,7 +151,7 @@ namespace engine {
 		}
 
 
-		m_Mesh = new Mesh(positions, uvs, normals,tangents,bitangents,indices);
+		m_Mesh = new Mesh(positions, uvs, normals, tangents, bitangents, indices);
 		m_Mesh->LoadData(true);
 	}
 

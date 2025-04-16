@@ -4,7 +4,7 @@
 namespace engine {
 
 	GLCache::GLCache() : m_ActiveShaderID(0) {
-		// ³õÊ¼»¯»º´æÖµÒÔÈ·±£´íÎóÊı¾İ²»»áÈÅÂÒ GL ×´Ì¬
+		// åˆå§‹åŒ–ç¼“å­˜å€¼ä»¥ç¡®ä¿é”™è¯¯æ•°æ®ä¸ä¼šæ‰°ä¹± GL çŠ¶æ€
 		m_StencilTest = false;
 		m_Blend = false;
 		m_Cull = false;

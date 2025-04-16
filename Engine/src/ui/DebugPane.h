@@ -18,13 +18,13 @@ namespace engine {
 		static inline void setWireframeMode(bool choice) { s_WireframeMode = choice; }
 	private:
 		static glm::vec3* s_CameraPosition;
-		// gamma ½ÃÕý
+		// gamma çŸ«æ­£
 		static float* s_GammaCorrectionValue;
 		static float* s_ExposureValue;
 
 		static bool s_WireframeMode;
 
-		// fxaa ¿ª¹Ø
+		// fxaa å¼€å…³
 		static bool* s_FxaaEnabled;
 	};
 

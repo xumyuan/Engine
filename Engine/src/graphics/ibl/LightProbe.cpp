@@ -16,7 +16,7 @@ namespace engine {
 	}
 
 	void LightProbe::generate() {
-		// Éú³É»·¾³Ì½Õë²¢ÉèÖÃÉú³É±êÖ¾
+		// ç”Ÿæˆç¯å¢ƒæ¢é’ˆå¹¶è®¾ç½®ç”Ÿæˆæ ‡å¿—
 		CubemapSettings settings;
 		m_IrradianceMap = new Cubemap(settings);
 		for (int i = 0; i < 6; i++) {

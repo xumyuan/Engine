@@ -3,8 +3,9 @@
 
 namespace engine {
 	DirectionalLight::DirectionalLight(const glm::vec3& lightColor, const glm::vec3& dir)
-		: DynamicLight(lightColor), direction(dir) {}
-	// TODO: 添加多方向光支持
+		: DynamicLight(lightColor), direction(dir) {
+	}
+	// TODO: 娣诲姞澶氭柟鍚戝厜鏀寔
 	void DirectionalLight::setupUniforms(Shader* shader, int currentLightIndex) {
 		if (isActive) {
 			shader->setUniform(("dirLights[" + std::to_string(currentLightIndex) + "].direction").c_str(), direction);

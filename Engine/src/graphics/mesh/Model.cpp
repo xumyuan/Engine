@@ -18,7 +18,7 @@ namespace engine {
 	}
 
 	void Model::Draw(Shader* shader, RenderPassType pass) const {
-		// ½öÔÚ¹âÕÕÍ¨µÀÆÚ¼ä°ó¶¨Íø¸ñÎïÌå²ÄÖÊĞÅÏ¢
+		// ä»…åœ¨å…‰ç…§é€šé“æœŸé—´ç»‘å®šç½‘æ ¼ç‰©ä½“æè´¨ä¿¡æ¯
 		for (unsigned int i = 0; i < m_Meshes.size(); ++i) {
 			if (pass != RenderPassType::ShadowmapPassType) {
 				m_Meshes[i].m_Material.BindMaterialInformation(shader);
@@ -29,7 +29,7 @@ namespace engine {
 
 	void Model::loadModel(const std::string& path) {
 		Assimp::Importer import;
-		const aiScene * scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+		const aiScene* scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
 
 		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
 			spdlog::error("{0} model initialization {1}", path, import.GetErrorString());
@@ -67,9 +67,9 @@ namespace engine {
 		normals.reserve(mesh->mNumVertices);
 		tangents.reserve(mesh->mNumVertices);
 		bitangents.reserve(mesh->mNumVertices);
-		indices.reserve(mesh->mNumFaces * 3); // ¼ÙÉèÎªÈı½ÇĞÎ£¬²»ÊÇÈı½ÇĞÎÒ²ÄÜ±»¼ÓÔØ£¬²»¹ı²»»á±»ÓÅ»¯
+		indices.reserve(mesh->mNumFaces * 3); // å‡è®¾ä¸ºä¸‰è§’å½¢ï¼Œä¸æ˜¯ä¸‰è§’å½¢ä¹Ÿèƒ½è¢«åŠ è½½ï¼Œä¸è¿‡ä¸ä¼šè¢«ä¼˜åŒ–
 
-		// ´¦Àí¶¥µãÊı¾İ
+		// å¤„ç†é¡¶ç‚¹æ•°æ®
 		for (unsigned int i = 0; i < mesh->mNumVertices; ++i) {
 			glm::vec2 uvCoord;
 
@@ -107,7 +107,7 @@ namespace engine {
 		if (mesh->mMaterialIndex >= 0) {
 			aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
-			// ÑÕÉ«ÀàĞÍµÄÌùÍ¼ĞèÒªÙ¤Âí½ÃÕı
+			// é¢œè‰²ç±»å‹çš„è´´å›¾éœ€è¦ä¼½é©¬çŸ«æ­£
 			//newMesh.m_Material.setAlbedoMap(loadMaterialTexture(material, aiTextureType_BASE_COLOR, true));
 			//newMesh.m_Material.setNormalMap(loadMaterialTexture(material, aiTextureType_NORMAL_CAMERA, false));
 			////newMesh.m_Material.setSpecularMap(loadMaterialTexture(material, aiTextureType_SPECULAR, false));
@@ -134,10 +134,10 @@ namespace engine {
 		if (mat->GetTextureCount(type) > 1)
 			spdlog::error("Mesh's default material contains more than 1 texture for the same type, which currently isn't supported by the standard shader");
 
-		// ¼ÓÔØÄ³ÖÖÀàĞÍµÄÎÆÀí£¬¼Ù¶¨Ö»ÓĞÒ»¸ö
+		// åŠ è½½æŸç§ç±»å‹çš„çº¹ç†ï¼Œå‡å®šåªæœ‰ä¸€ä¸ª
 		if (mat->GetTextureCount(type) > 0) {
 			aiString str;
-			mat->GetTexture(type, 0, &str); // Ö»»ñÈ¡Ò»¸öÎÆÀí£¬±ê×¼×ÅÉ«Æ÷Ö»Ö§³ÖÃ¿ÖÖÀàĞÍÒ»¸öÎÆÀí
+			mat->GetTexture(type, 0, &str); // åªè·å–ä¸€ä¸ªçº¹ç†ï¼Œæ ‡å‡†ç€è‰²å™¨åªæ”¯æŒæ¯ç§ç±»å‹ä¸€ä¸ªçº¹ç†
 
 			std::string fileToSearch = (m_Directory + "/" + std::string(str.C_Str())).c_str();
 

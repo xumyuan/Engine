@@ -3,19 +3,19 @@
 // Developer Options
 #define DEBUG_ENABLED 1
 
-// ¿¹¾â³Ý
+// æŠ—é”¯é½¿
 #define MSAA_SAMPLE_AMOUNT 4
 
-// ´°¿ÚÉèÖÃ
+// çª—å£è®¾ç½®
 #define WINDOW_X_RESOLUTION 1600
 #define WINDOW_Y_RESOLUTION 900
 #define V_SYNC 0
 #define FULLSCREEN_MODE 0 
 
-// ÎÆÀí¹ýÂË·½Ê½ÉèÖÃ
+// çº¹ç†è¿‡æ»¤æ–¹å¼è®¾ç½®
 #define ANISOTROPIC_FILTERING_LEVEL 8.0f
 
-//IBL ÉèÖÃ
+//IBL è®¾ç½®
 #define LIGHT_PROBE_RESOLUTION 32
 #define REFLECTION_PROBE_MIP_COUNT 5
 #define REFLECTION_PROBE_RESOLUTION 128
@@ -25,11 +25,11 @@
 #define NEAR_PLANE 0.1f
 #define FAR_PLANE 1000.0f
 
-// ÒõÓ°ÉèÖÃ
+// é˜´å½±è®¾ç½®
 #define SHADOWMAP_RESOLUTION_X 2048
 #define SHADOWMAP_RESOLUTION_Y 2048
 #define SHADOWMAP_NEAR_PLANE 1.0f
 #define SHADOWMAP_FAR_PLANE 400.0f
 
-// ÊÇ·ñÇ°ÏòäÖÈ¾
+// æ˜¯å¦å‰å‘æ¸²æŸ“
 #define FORWARD_RENDER 0
