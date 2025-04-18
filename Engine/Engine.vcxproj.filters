@@ -198,6 +198,9 @@
     <ClInclude Include="src\utils\json\json_type.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="src\utils\global_config\GlobalConfig.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\graphics\shader.cpp">
@@ -363,6 +366,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\utils\json\typeProcess.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\global_config\GlobalConfig.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

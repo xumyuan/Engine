@@ -13,6 +13,8 @@
 
 namespace engine {
 
+	class GlobalConfig;
+
 	class Scene3D {
 
 	public:
@@ -37,6 +39,9 @@ namespace engine {
 	private:
 		// Global Data
 		GLCache* m_GLCache;
+
+		// Global Config
+		GlobalConfig* m_config;
 
 		// Scene parameters
 		ProbeBlendSetting m_SceneProbeBlendSetting = PROBES_SIMPLE;

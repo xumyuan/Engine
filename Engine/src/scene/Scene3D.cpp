@@ -10,6 +10,7 @@
 
 #include "utils/json/typeProcess.h"
 #include "utils/json/json_type.h"
+#include "utils/global_config/GlobalConfig.h"
 
 #define NEW_LOAD 1
 
@@ -22,6 +23,8 @@ namespace engine {
 		m_ProbeManager(m_SceneProbeBlendSetting)
 	{
 		m_GLCache = GLCache::getInstance();
+
+		m_config = GlobalConfig::getInstance();
 
 		init();
 	}
@@ -37,7 +40,7 @@ namespace engine {
 #ifdef NEW_LOAD
 		try
 		{
-			std::ifstream file("res/scene/test1.json");
+			std::ifstream file(m_config->getScenePath());
 			json j;
 			file >> j;
 
