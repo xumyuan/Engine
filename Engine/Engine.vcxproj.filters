@@ -201,6 +201,9 @@
     <ClInclude Include="src\utils\global_config\GlobalConfig.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="src\physics\fluid\FluidSim.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\graphics\shader.cpp">
@@ -369,6 +372,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\utils\global_config\GlobalConfig.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\physics\fluid\FluidSim.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
