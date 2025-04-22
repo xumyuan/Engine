@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "ForwardLightingPass.h"
 
+#include "physics/fluid/FluidSim.h"
+
 #include <utils/loaders/ShaderLoader.h>
 
 namespace engine
@@ -39,6 +41,7 @@ namespace engine
 		// Setup
 		ModelRenderer* modelRenderer = m_ActiveScene->getModelRenderer();
 		Terrain* terrain = m_ActiveScene->getTerrain();
+		FluidSim* fluid = m_ActiveScene->getFluid();
 		DynamicLightManager* lightManager = m_ActiveScene->getDynamicLightManager();
 		Skybox* skybox = m_ActiveScene->getSkybox();
 		ProbeManager* probeManager = m_ActiveScene->getProbeManager();
@@ -76,6 +79,10 @@ namespace engine
 		bindShadowmap(m_TerrainShader, shadowmapData);
 		terrain->Draw(m_TerrainShader, m_RenderPassType);
 
+		FPSCamera* fpscamera = dynamic_cast<FPSCamera*>(camera);
+		if (fpscamera) {
+			fluid->drawParticle(dynamic_cast<FPSCamera*>(camera));
+		}
 		skybox->Draw(camera);
 
 		m_GLCache->switchShader(m_ModelShader);

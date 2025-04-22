@@ -14,6 +14,7 @@
 namespace engine {
 
 	class GlobalConfig;
+	class FluidSim;
 
 	class Scene3D {
 
@@ -29,6 +30,7 @@ namespace engine {
 
 		inline ModelRenderer* getModelRenderer() { return &m_ModelRenderer; }
 		inline Terrain* getTerrain() { return &m_Terrain; }
+		inline FluidSim* getFluid() { return m_fluid; }
 		inline DynamicLightManager* getDynamicLightManager() { return &m_DynamicLightManager; }
 		inline ProbeManager* getProbeManager() { return &m_ProbeManager; }
 		inline FPSCamera* getCamera() { return &m_SceneCamera; }
@@ -51,6 +53,7 @@ namespace engine {
 		Skybox* m_Skybox;
 		ModelRenderer m_ModelRenderer;
 		Terrain m_Terrain;
+		FluidSim* m_fluid;
 		DynamicLightManager m_DynamicLightManager;
 		ProbeManager m_ProbeManager;
 		std::vector<RenderableModel*> m_RenderableModels;

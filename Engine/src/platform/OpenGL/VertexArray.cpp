@@ -15,12 +15,12 @@ namespace engine {
 		glDeleteVertexArrays(1, &m_VertexArrayID);
 	}
 
-	void VertexArray::addBuffer(Buffer* buffer, int index) {
+	void VertexArray::addBuffer(Buffer* buffer, int index,GLuint stride) {
 		bind();
 
 		buffer->bind();
 		glEnableVertexAttribArray(index);
-		glVertexAttribPointer(index, buffer->getComponentCount(), GL_FLOAT, GL_FALSE, 0, 0);
+		glVertexAttribPointer(index, buffer->getComponentCount(), GL_FLOAT, GL_FALSE, stride, 0);
 		buffer->unbind();
 
 		unbind();

@@ -291,6 +291,7 @@ xcopy /Y /S "$(ProjectDir)src\shaders\*.*" "$(OutDir)src\shaders\"</Command>
     <None Include="src\shaders\deferred\PBR_LightingPass.glsl" />
     <None Include="src\shaders\deferred\PBR_Model_GeometryPass.glsl" />
     <None Include="src\shaders\deferred\PBR_Terrain_GeometryPass.glsl" />
+    <None Include="src\shaders\fluid\particle_draw.glsl" />
     <None Include="src\shaders\lightprobe_convolution.glsl" />
     <None Include="src\shaders\post_process\copy.glsl" />
     <None Include="src\shaders\post_process\fxaa.glsl" />

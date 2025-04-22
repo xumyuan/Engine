@@ -12,7 +12,7 @@ namespace engine {
 		VertexArray();
 		~VertexArray();
 
-		void addBuffer(Buffer* buffer, int index);
+		void addBuffer(Buffer* buffer, int index,GLuint stride = 0);
 		void bind() const;
 		void unbind() const;
 	};

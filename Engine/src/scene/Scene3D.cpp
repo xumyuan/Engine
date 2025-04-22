@@ -5,6 +5,7 @@
 #include "graphics/mesh/common/Cube.h"
 #include "graphics/mesh/common/Sphere.h"
 #include "graphics/mesh/common/Quad.h"
+#include "physics/fluid/FluidSim.h"
 
 #include "thread/thread_pool.h"
 
@@ -25,6 +26,8 @@ namespace engine {
 		m_GLCache = GLCache::getInstance();
 
 		m_config = GlobalConfig::getInstance();
+
+		m_fluid = new FluidSim(50000, { 120,120,120 }, { 170,170,170});
 
 		init();
 	}
@@ -89,6 +92,8 @@ namespace engine {
 		{
 			spdlog::error("Error: {}", e.what());
 		}
+
+
 #endif
 
 #ifndef NEW_LOAD

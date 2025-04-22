@@ -17,11 +17,24 @@ namespace engine {
 		glDeleteBuffers(1, &m_BufferID);
 	}
 
-	void Buffer::load(GLfloat* data, GLsizei amount, GLuint componentCount) {
+	void Buffer::load(GLfloat* data, GLsizei amount, GLuint componentCount, DrawType type) {
 		m_ComponentCount = componentCount;
+		m_ElementNum = amount;
 
 		bind();
-		glBufferData(GL_ARRAY_BUFFER, amount * sizeof(float), data, GL_STATIC_DRAW);
+		if (type == DrawType::Dynamic)
+		{
+			glBufferData(GL_ARRAY_BUFFER, amount * sizeof(float), 0, GL_DYNAMIC_DRAW);
+		}
+		else if (type == DrawType::Static) {
+			glBufferData(GL_ARRAY_BUFFER, amount * sizeof(float), data, GL_STATIC_DRAW);
+		}
+	}
+
+	void Buffer::subData(GLfloat* data) {
+		bind();
+		glBufferSubData(GL_ARRAY_BUFFER, 0, m_ElementNum * sizeof(float), (void*)data);
+		unbind();
 	}
 
 	void Buffer::bind() const {
