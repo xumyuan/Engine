@@ -204,6 +204,9 @@
     <ClInclude Include="src\physics\fluid\FluidSim.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="src\physics\fluid\solvers\pbf.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\graphics\shader.cpp">
@@ -377,6 +380,9 @@
     <ClCompile Include="src\physics\fluid\FluidSim.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\physics\fluid\solvers\pbf.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\shaders\forward\pbr_terrain.glsl" />
@@ -392,6 +398,7 @@
     <None Include="src\shaders\deferred\PBR_Model_GeometryPass.glsl" />
     <None Include="src\shaders\deferred\PBR_Terrain_GeometryPass.glsl" />
     <None Include="src\shaders\deferred\PBR_LightingPass.glsl" />
+    <None Include="src\shaders\fluid\particle_draw.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\awesomeface.png">

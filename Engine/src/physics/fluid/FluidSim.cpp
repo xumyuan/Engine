@@ -1,12 +1,13 @@
 #include "pch.h"
 #include "FluidSim.h"
+#include "solvers/pbf.h"
 
 #include <utils/loaders/ShaderLoader.h>
 #include <graphics/camera/FPSCamera.h>
 
 namespace engine {
 
-	FluidSim::FluidSim(size_t pnum, glm::vec3 min, glm::vec3 max):m_maxParticleNum(pnum),m_min(min),m_max(max)
+	FluidSim::FluidSim(size_t pnum, glm::vec3 min, glm::vec3 max) :m_maxParticleNum(pnum), m_min(min), m_max(max)
 	{
 		m_particleShader = ShaderLoader::loadShader("src/shaders/fluid/particle_draw.glsl");
 		m_GLCache = GLCache::getInstance();
@@ -17,18 +18,22 @@ namespace engine {
 		m_particleNum = 0;
 
 		m_spacing = 1.0f;
+		m_sphKernelRadius = 3 * m_spacing;
 
 		m_positions = std::vector<glm::vec3>(pnum);
 
+		m_mass = m_restDensity * glm::pow(m_spacing, 3.0f);
 
 		init();
+		m_velocities.resize(m_particleNum, glm::vec3(0.0f));
+		m_pbf = new PBF(this);
 	}
 
 	FluidSim::~FluidSim()
 	{
 	}
 
-	void FluidSim::init() 
+	void FluidSim::init()
 	{
 		glm::vec3& max = m_max;
 		glm::vec3& min = m_min;
@@ -61,7 +66,20 @@ namespace engine {
 		m_fluidVBO.subData((float*)m_positions.data());
 	}
 
+	void FluidSim::subPosData() {
+		m_fluidVBO.subData((float*)m_positions.data());
+	}
+
 	void FluidSim::drawParticle(FPSCamera* camera) {
+		{
+			std::unique_lock<std::mutex> lock(m_pbf->getPosMutex());
+			if (m_condVar.wait_for(lock, std::chrono::milliseconds(1), [this] { return dataReady; })) {
+				subPosData();
+				dataReady = false;
+			}
+		}
+
+
 		float aspect = static_cast<float>(WINDOW_X_RESOLUTION) / WINDOW_Y_RESOLUTION;
 		float fov = camera->getFOV();
 		glm::vec3 cameraPos = camera->getPosition();
@@ -92,7 +110,7 @@ namespace engine {
 		m_particleShader->setUniform("viewPos", cameraPos);
 
 		m_GLCache->setDepthTest(true);
-		
+
 		glEnable(GL_PROGRAM_POINT_SIZE);
 		glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
 		//glEnable(GL_POINT_SPRITE);
@@ -105,5 +123,18 @@ namespace engine {
 		glDisable(GL_VERTEX_PROGRAM_POINT_SIZE);
 		//glDisable(GL_POINT_SPRITE);
 	}
+
+	void FluidSim::startSim() {
+		while (true) {
+			m_pbf->solve();
+			{
+				std::lock_guard<std::mutex> lock(m_pbf->getPosMutex());
+				dataReady = true;
+			}
+			m_condVar.notify_all();
+		}
+
+	}
+
 
 }

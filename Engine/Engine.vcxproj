@@ -113,11 +113,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)Engine\src;$(SolutionDir)Engine\dependencies;$(SolutionDir)vcpkg_installed\x64-windows\include</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -141,6 +142,7 @@ xcopy /Y /S "$(ProjectDir)src\shaders\*.*" "$(OutDir)src\shaders\"</Command>
       <AdditionalIncludeDirectories>$(SolutionDir)Engine\src;$(SolutionDir)Engine\dependencies;$(SolutionDir)vcpkg_installed\x64-windows\include</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -152,6 +154,7 @@ xcopy /Y /S "$(ProjectDir)src\shaders\*.*" "$(OutDir)src\shaders\"</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\physics\fluid\FluidSim.h" />
+    <ClInclude Include="src\physics\fluid\solvers\pbf.h" />
     <ClInclude Include="src\utils\global_config\GlobalConfig.h" />
     <ClInclude Include="src\graphics\renderer\renderpass\defferred\DeferredGeometryPass.h" />
     <ClInclude Include="src\graphics\ibl\ReflectionProbe.h" />
@@ -217,6 +220,7 @@ xcopy /Y /S "$(ProjectDir)src\shaders\*.*" "$(OutDir)src\shaders\"</Command>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\physics\fluid\FluidSim.cpp" />
+    <ClCompile Include="src\physics\fluid\solvers\pbf.cpp" />
     <ClCompile Include="src\utils\global_config\GlobalConfig.cpp" />
     <ClCompile Include="src\graphics\renderer\renderpass\defferred\DeferredGeometryPass.cpp" />
     <ClCompile Include="src\graphics\ibl\ReflectionProbe.cpp" />
