@@ -26,6 +26,8 @@ namespace engine {
 
 		init();
 		m_velocities.resize(m_particleNum, glm::vec3(0.0f));
+		m_neighborList.resize(m_particleNum);
+
 		m_pbf = new PBF(this);
 	}
 

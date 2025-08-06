@@ -20,6 +20,7 @@ namespace engine {
 
 		std::vector<glm::vec3>& getPositions() { return m_positions; }
 		std::vector<glm::vec3>& getVelocities() { return m_velocities; }
+		std::vector<std::vector<size_t>>& getNeighborList() { return m_neighborList; }
 
 		glm::vec3& getMin() { return m_min; }
 		glm::vec3& getMax() { return m_max; }
@@ -53,6 +54,9 @@ namespace engine {
 		// particle attribute
 		std::vector<glm::vec3> m_positions;
 		std::vector<glm::vec3> m_velocities;
+
+		// neighborList
+		std::vector<std::vector<size_t>> m_neighborList;
 
 		// buffer
 		VertexArray m_fluidVAO;

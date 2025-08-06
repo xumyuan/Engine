@@ -2,6 +2,8 @@
 #include "omp.h"
 #include "pbf.h"
 
+#define UNIFORM_GRID 1
+
 namespace engine {
 
 	const float ploy6_kernel = 315.0f / (64.0f * glm::pi<float>() * glm::pow(3.0f, 9.0f));
@@ -46,6 +48,9 @@ namespace engine {
 		predictAdvect();
 		spdlog::info("predictAdvect over");
 		size_t iter = 0;
+#if UNIFORM_GRID
+		m_uniformGrid->neighborSearch();
+#endif // UNIFORM_GRID
 		while (iter++ < m_iterations) {
 			computeLambda();
 			computeDeltaP();
@@ -111,7 +116,24 @@ namespace engine {
 			float density = 0.0f;
 			float mass = m_fluidSim->getmass();
 			float restDensity = m_fluidSim->getRestDensity();
+#if UNIFORM_GRID
+			auto& curParticleNeighbors = m_neighborList[i];
 
+			for (auto j : curParticleNeighbors) {
+				if (i == j) continue;
+				auto& pos_j = m_tempPositions[j];
+				glm::vec3 diff = pos - pos_j;
+				float dist = glm::length(diff);
+				float sphRadius = m_fluidSim->getSphKernelRadius();
+
+				if (dist < sphRadius) {
+					density += Wpoly6(diff);
+					glm::vec3 grad_pj_C = Wspiky_grad(diff) * mass / restDensity;
+					grad_pi_C -= grad_pj_C;
+					grad_C_sum += glm::dot(grad_pj_C, grad_pj_C);
+				}
+			}
+#else
 			for (size_t j = 0; j < m_particleNum; ++j) {
 				if (i == j) continue;
 				auto& pos_j = m_tempPositions[j];
@@ -126,6 +148,7 @@ namespace engine {
 					grad_C_sum += glm::dot(grad_pj_C, grad_pj_C);
 				}
 			}
+#endif //UNIFORM_GRID
 			density *= mass;
 			float constraint = density / restDensity - 1;
 			float grad_i_sum = glm::dot(grad_pi_C, grad_pi_C);
@@ -138,7 +161,26 @@ namespace engine {
 		for (int i = 0; i < m_particleNum; ++i) {
 			auto& pos = m_tempPositions[i];
 			auto& deltaP = m_deltaP[i];
+#if UNIFORM_GRID
+			auto& curParticleNeighbors = m_neighborList[i];
+			for (auto& j : curParticleNeighbors) {
+				if (i == j) continue;
+				auto& pos_j = m_tempPositions[j];
+				glm::vec3 diff = pos - pos_j;
+				float dsq = glm::dot(diff, diff);
+				float sphRadius = m_fluidSim->getSphKernelRadius();
+				if (dsq < sphRadius * sphRadius) {
+					float corr = Wpoly6(diff) / wpoly_con_deltaP;
 
+					float s_corr = -pressure_k * glm::pow(corr, pressure_n);
+
+					float coff = (m_lambda[i] + m_lambda[j] + s_corr);
+
+					glm::vec3 grad = Wspiky_grad(diff);
+					deltaP += coff * grad;
+				}
+			}
+#else
 			for (size_t j = 0; j < m_particleNum; ++j) {
 				if (i == j) continue;
 				auto& pos_j = m_tempPositions[j];
@@ -156,6 +198,7 @@ namespace engine {
 					deltaP += coff * grad;
 				}
 			}
+#endif
 			deltaP /= m_fluidSim->getRestDensity();
 			deltaP *= m_fluidSim->getmass();
 		}

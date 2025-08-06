@@ -153,6 +153,7 @@ xcopy /Y /S "$(ProjectDir)src\shaders\*.*" "$(OutDir)src\shaders\"</Command>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\physics\fluid\accelerate\UniformGrid.h" />
     <ClInclude Include="src\physics\fluid\FluidSim.h" />
     <ClInclude Include="src\physics\fluid\solvers\pbf.h" />
     <ClInclude Include="src\utils\global_config\GlobalConfig.h" />
@@ -219,6 +220,7 @@ xcopy /Y /S "$(ProjectDir)src\shaders\*.*" "$(OutDir)src\shaders\"</Command>
     <ClInclude Include="src\graphics\texture\Texture.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\physics\fluid\accelerate\UniformGrid.cpp" />
     <ClCompile Include="src\physics\fluid\FluidSim.cpp" />
     <ClCompile Include="src\physics\fluid\solvers\pbf.cpp" />
     <ClCompile Include="src\utils\global_config\GlobalConfig.cpp" />
