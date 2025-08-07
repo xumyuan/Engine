@@ -39,7 +39,7 @@ void Profile::initLogger() {
 			<< std::put_time(&tm, "%Y-%m-%d_%H-%M-%S")
 			<< ".log";
 		std::string filename = oss.str();
-		// 只初始化一次，log文件名为 profile.log
+		// 只初始化一次
 		logger = spdlog::basic_logger_mt("profile_logger", filename);
 		logger->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%l] %v");
 		logger->set_level(spdlog::level::info);

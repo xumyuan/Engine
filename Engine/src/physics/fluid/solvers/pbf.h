@@ -30,7 +30,6 @@ namespace engine
 		void predictAdvect();
 		void computeLambda();
 		void computeDeltaP();
-		void neighborSearch();
 		void updatePosAndVel();
 	private:
 		FluidSim* m_fluidSim;

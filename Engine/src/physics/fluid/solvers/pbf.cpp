@@ -20,9 +20,9 @@ namespace engine {
 		predictAdvect();
 		spdlog::info("predictAdvect over");
 		size_t iter = 0;
-#if UNIFORM_GRID
+
 		m_uniformGrid->neighborSearch();
-#endif // UNIFORM_GRID
+
 		while (iter++ < m_iterations) {
 			computeLambda();
 			computeDeltaP();
@@ -96,7 +96,7 @@ namespace engine {
 			float density = Poly6Kernel::m_W_zero;
 			float mass = m_simParams.mass;
 			float restDensity = m_simParams.restDensity;
-#if UNIFORM_GRID
+
 			auto& curParticleNeighbors = m_neighborList[i];
 
 			for (auto j : curParticleNeighbors) {
@@ -114,22 +114,6 @@ namespace engine {
 					grad_C_sum += glm::length2(grad_pj_C);
 				}
 			}
-#else
-			for (size_t j = 0; j < m_particleNum; ++j) {
-				if (i == j) continue;
-				auto& pos_j = m_tempPositions[j];
-				glm::vec3 diff = pos - pos_j;
-				float dist = glm::length(diff);
-				float sphRadius = m_fluidSim->getSphKernelRadius();
-
-				if (dist < sphRadius) {
-					density += Wpoly6(diff);
-					glm::vec3 grad_pj_C = Wspiky_grad(diff) * mass / restDensity;
-					grad_pi_C -= grad_pj_C;
-					grad_C_sum += glm::dot(grad_pj_C, grad_pj_C);
-				}
-			}
-#endif //UNIFORM_GRID
 			density *= mass;
 			float constraint = density / restDensity - 1;
 			float grad_i_sum = glm::length2(grad_pi_C);
@@ -145,7 +129,7 @@ namespace engine {
 			auto& pos = m_tempPositions[i];
 			auto& deltaP = m_deltaP[i];
 			deltaP = glm::vec3(0.0f);
-#if UNIFORM_GRID
+
 			auto& curParticleNeighbors = m_neighborList[i];
 			for (auto& j : curParticleNeighbors) {
 				if (i == j) continue;
@@ -167,31 +151,11 @@ namespace engine {
 					deltaP += coff * grad;
 				}
 			}
-#else
-			for (size_t j = 0; j < m_particleNum; ++j) {
-				if (i == j) continue;
-				auto& pos_j = m_tempPositions[j];
-				glm::vec3 diff = pos - pos_j;
-				float dsq = glm::dot(diff, diff);
-				float sphRadius = m_fluidSim->getSphKernelRadius();
-				if (dsq < sphRadius * sphRadius) {
-					float corr = Wpoly6(diff) / wpoly_con_deltaP;
 
-					float s_corr = -pressure_k * glm::pow(corr, pressure_n);
-
-					float coff = (m_lambda[i] + m_lambda[j] + s_corr);
-
-					glm::vec3 grad = Wspiky_grad(diff);
-					deltaP += coff * grad;
-				}
-			}
-#endif
 			deltaP /= m_simParams.restDensity;
 			deltaP *= m_simParams.mass;
 		}
 	}
-
-	void PBF::neighborSearch() {}
 
 	void PBF::updatePosAndVel() {
 		PROFILE("pbf updatePosAndVel");
