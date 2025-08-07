@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "SPHKernel.h"
 #include "FluidSim.h"
 #include "solvers/pbf.h"
 
@@ -7,7 +8,7 @@
 
 namespace engine {
 
-	FluidSim::FluidSim(size_t pnum, glm::vec3 min, glm::vec3 max) :m_maxParticleNum(pnum), m_min(min), m_max(max)
+	FluidSim::FluidSim(size_t pnum, Boundary boundary) :m_maxParticleNum(pnum)
 	{
 		m_particleShader = ShaderLoader::loadShader("src/shaders/fluid/particle_draw.glsl");
 		m_GLCache = GLCache::getInstance();
@@ -15,15 +16,20 @@ namespace engine {
 		m_fluidVBO.load(nullptr, m_maxParticleNum * 3, 3, DrawType::Dynamic);
 		m_fluidVAO.addBuffer(&m_fluidVBO, 0, sizeof(glm::vec3));
 
-		m_particleNum = 0;
+		m_simParams.spacing = 1.0f; // 粒子间距
+		m_simParams.sphRadius = 3.0f * m_simParams.spacing; // SPH核半径
+		m_simParams.restDensity = 1000.0f; // 静止密度
+		m_simParams.boundary = boundary; // 模拟边界
+		m_simParams.mass = m_simParams.restDensity * glm::pow(m_simParams.spacing, 3.0f); // 粒子质量
+		m_simParams.gravity = glm::vec3(0.0f, -9.81f, 0.0f); // 重力加速度
 
-		m_spacing = 1.0f;
-		m_sphKernelRadius = 3 * m_spacing;
+
+		Poly6Kernel::setRadius(m_simParams.sphRadius);
+		SpikyKernel::setRadius(m_simParams.sphRadius);
 
 		m_positions = std::vector<glm::vec3>(pnum);
 
-		m_mass = m_restDensity * glm::pow(m_spacing, 3.0f);
-
+		m_particleNum = 0;
 		init();
 		m_velocities.resize(m_particleNum, glm::vec3(0.0f));
 		m_neighborList.resize(m_particleNum);
@@ -37,25 +43,26 @@ namespace engine {
 
 	void FluidSim::init()
 	{
-		glm::vec3& max = m_max;
-		glm::vec3& min = m_min;
-		float& spacing = m_spacing;
+		auto& boundary = m_simParams.boundary;
+		glm::vec3& max = boundary.max;
+		glm::vec3& min = boundary.min;
+		float& spacing = m_simParams.spacing;
 
 		glm::vec3 delta = max - min;
 		int cntx, cntz;
 
 		cntx = (int)std::ceil(delta.x / spacing);
-		cntz = (int)std::ceil(delta.z / spacing);
+		cntz = (int)std::ceil(delta.z / spacing) / 2;
 
 		int cnt = cntx * cntz;
 
 		glm::vec3 pos;
 
 		bool shouldBreak = false;
-		for (pos.y = min.y; pos.y < max.y; pos.y += spacing) {
+		for (pos.y = min.y + 5.0f; pos.y < max.y; pos.y += spacing) {
 			for (int xz = 0; xz < cnt; xz++) {
-				pos.x = min.x + (xz % int(cntx)) * spacing;
-				pos.z = min.z + (xz / int(cntx)) * spacing;
+				pos.x = min.x + 1.0f + (xz % int(cntx)) * spacing;
+				pos.z = min.z + 1.0f + (xz / int(cntx)) * spacing;
 
 				m_positions[m_particleNum++] = pos;
 				if (m_particleNum >= m_maxParticleNum) {

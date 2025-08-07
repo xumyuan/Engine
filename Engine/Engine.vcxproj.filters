@@ -207,6 +207,12 @@
     <ClInclude Include="src\physics\fluid\solvers\pbf.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="src\physics\fluid\accelerate\UniformGrid.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\physics\fluid\SPHKernel.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\graphics\shader.cpp">
@@ -381,6 +387,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\physics\fluid\solvers\pbf.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\physics\fluid\accelerate\UniformGrid.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\physics\fluid\SPHKernel.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

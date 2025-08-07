@@ -3,12 +3,6 @@
 
 namespace engine {
 
-	struct Boundary
-	{
-		glm::vec3 min;
-		glm::vec3 max;
-	};
-
 	struct GridResolution {
 		int x;
 		int y;
@@ -29,17 +23,6 @@ namespace engine {
 			m_gridRes.z = static_cast<int>(std::ceil((m_boundary.max.z - m_boundary.min.z) / m_sphKernelRadius));
 
 			m_gridCellCount = m_gridRes.x * m_gridRes.y * m_gridRes.z;
-
-			m_gridAdj.resize(27, 0);
-
-			for (int x = -1; x <= 1; ++x) {
-				for (int y = -1; y <= 1; ++y) {
-					for (int z = -1; z <= 1; ++z) {
-						int index = (x + 1) * 9 + (y + 1) * 3 + (z + 1);
-						m_gridAdj[index] = x + y * m_gridRes.x + z * m_gridRes.x * m_gridRes.y;
-					}
-				}
-			}
 
 			m_fluidSim = fluidSim;
 
@@ -76,8 +59,6 @@ namespace engine {
 		std::vector<glm::vec3> m_tempPositions;
 
 		FluidSim* m_fluidSim;
-
-		std::vector<int> m_gridAdj;
 
 		// 从fluidsim获取的粒子数据
 		std::vector<glm::vec3>& m_positions;

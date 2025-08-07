@@ -12,23 +12,41 @@ namespace engine {
 	class FPSCamera;
 	class PBF;
 
+	struct Boundary
+	{
+		glm::vec3 min;
+		glm::vec3 max;
+	};
+
+	struct SimParams {
+		float spacing;		//粒子的间距
+		float sphRadius;	//SPH核半径,一般取值是粒子间距的3倍
+		float restDensity;	//静止密度，一般设置为1000.0f
+		float mass;			//粒子质量 m = restDensity * spacing^3
+		float dt;			//时间步长
+		glm::vec3 gravity;	//重力加速度，一般取为(0.0f, -9.81f, 0.0f)
+		Boundary boundary;	//模拟边界，目前是规则的立方体
+	};
+
 	class FluidSim
 	{
 	public:
-		FluidSim(size_t pnum, glm::vec3 min, glm::vec3 max);
+		FluidSim(size_t pnum, Boundary boundary);
 		~FluidSim();
 
 		std::vector<glm::vec3>& getPositions() { return m_positions; }
 		std::vector<glm::vec3>& getVelocities() { return m_velocities; }
 		std::vector<std::vector<size_t>>& getNeighborList() { return m_neighborList; }
 
-		glm::vec3& getMin() { return m_min; }
-		glm::vec3& getMax() { return m_max; }
+		glm::vec3& getMin() { return m_simParams.boundary.min; }
+		glm::vec3& getMax() { return m_simParams.boundary.max; }
+		SimParams& getSimParams() { return m_simParams; }
 
-		float getSpacing() const { return m_spacing; }
-		float getSphKernelRadius() const { return m_sphKernelRadius; }
-		float getmass() const { return m_mass; }
-		float getRestDensity() const { return m_restDensity; }
+		float getSpacing() const { return m_simParams.spacing; }
+		float getSphKernelRadius() const { return m_simParams.sphRadius; }
+		float getmass() const { return m_simParams.mass; }
+		float getRestDensity() const { return m_simParams.restDensity; }
+
 
 		void init();
 
@@ -42,14 +60,6 @@ namespace engine {
 
 		size_t m_maxParticleNum;
 		size_t m_particleNum;
-		// simulation parameters
-		float m_spacing;
-		float m_sphKernelRadius;
-		float m_restDensity = 1000.0f;
-		float m_mass;
-
-		// boundary
-		glm::vec3 m_min, m_max;
 
 		// particle attribute
 		std::vector<glm::vec3> m_positions;
@@ -71,9 +81,7 @@ namespace engine {
 		std::condition_variable m_condVar;
 		bool dataReady = false;
 
-	public:
-		// constants
-		const glm::vec3 m_gravity = glm::vec3(0.0f, -9.81f, 0.0f);
+		SimParams m_simParams;
 	};
 
 
