@@ -143,6 +143,7 @@ xcopy /Y /S "$(ProjectDir)src\shaders\*.*" "$(OutDir)src\shaders\"</Command>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -212,6 +213,7 @@ xcopy /Y /S "$(ProjectDir)src\shaders\*.*" "$(OutDir)src\shaders\"</Command>
     <ClInclude Include="src\graphics\shader.h" />
     <ClInclude Include="src\graphics\Window.h" />
     <ClInclude Include="src\utils\FileUtils.h" />
+    <ClInclude Include="src\utils\profile\profile.h" />
     <ClInclude Include="src\utils\Singleton.h" />
     <ClInclude Include="src\utils\Timer.h" />
     <ClInclude Include="src\utils\Time.h" />
@@ -288,6 +290,7 @@ xcopy /Y /S "$(ProjectDir)src\shaders\*.*" "$(OutDir)src\shaders\"</Command>
     <ClCompile Include="src\graphics\Window.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\utils\FileUtils.cpp" />
+    <ClCompile Include="src\utils\profile\profile.cpp" />
     <ClCompile Include="src\utils\Time.cpp" />
     <ClCompile Include="src\utils\Timer.cpp" />
     <ClCompile Include="src\terrain\Terrain.cpp" />

@@ -1,5 +1,5 @@
 #include "pch.h"
-
+#include "utils/profile/profile.h"
 #include "physics/fluid/SPHKernel.h"
 #include "omp.h"
 #include "pbf.h"
@@ -16,6 +16,7 @@ namespace engine {
 	const float pressure_n = 4.0f;
 
 	void PBF::solve() {
+		PROFILE("pbf solve");
 		predictAdvect();
 		spdlog::info("predictAdvect over");
 		size_t iter = 0;
@@ -32,6 +33,7 @@ namespace engine {
 	}
 
 	void PBF::predictAdvect() {
+		PROFILE("pbf predictAdvect");
 #pragma omp parallel for
 		for (int i = 0; i < m_particleNum; ++i) {
 			auto& position = m_fluidSim->getPositions()[i];
@@ -83,7 +85,8 @@ namespace engine {
 	}
 
 	void PBF::computeLambda() {
-#pragma omp parallel for
+		PROFILE("pbf computeLambda");
+#pragma omp parallel for schedule(dynamic)
 		for (int i = 0; i < m_particleNum; ++i) {
 			auto& pos = m_tempPositions[i];
 			float& lambda = m_lambda[i];
@@ -135,7 +138,9 @@ namespace engine {
 	}
 
 	void PBF::computeDeltaP() {
-#pragma omp parallel for
+		PROFILE("pbf computeDeltaP");
+
+#pragma omp parallel for schedule(static) default(shared)
 		for (int i = 0; i < m_particleNum; ++i) {
 			auto& pos = m_tempPositions[i];
 			auto& deltaP = m_deltaP[i];
@@ -148,7 +153,7 @@ namespace engine {
 				auto& pos_j = m_tempPositions[j];
 				glm::vec3 diff = pos - pos_j;
 				float dsq = glm::length2(diff);
-				float sphRadius = m_fluidSim->getSphKernelRadius();
+				float sphRadius = m_simParams.sphRadius;
 
 				if (dsq < sphRadius * sphRadius) {
 					float corr = Poly6Kernel::W(diff) / wpoly_con_deltaP;
@@ -189,6 +194,7 @@ namespace engine {
 	void PBF::neighborSearch() {}
 
 	void PBF::updatePosAndVel() {
+		PROFILE("pbf updatePosAndVel");
 		std::lock_guard<std::mutex> lock(m_posMutex);
 		auto& positions = m_fluidSim->getPositions();
 		auto& velocities = m_fluidSim->getVelocities();

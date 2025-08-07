@@ -1,10 +1,12 @@
 #include "pch.h"
 #include "UniformGrid.h"
-
+#include "utils/profile/profile.h"
 #include "omp.h"
 
 namespace engine {
 	void UniformGrid::insertParticles() {
+		PROFILE("pbf insertParticles");
+
 		for (auto& v : m_gridParticleIndices) {
 			v.clear();
 		}
@@ -29,6 +31,8 @@ namespace engine {
 	}
 
 	void UniformGrid::neighborSearch() {
+		PROFILE("pbf neighborSearch");
+
 		insertParticles();
 
 		for (auto& nlist : m_neighborList) nlist.clear();
