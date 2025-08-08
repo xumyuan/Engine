@@ -216,6 +216,9 @@
     <ClInclude Include="src\utils\profile\profile.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="src\utils\debug_macro.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\graphics\shader.cpp">

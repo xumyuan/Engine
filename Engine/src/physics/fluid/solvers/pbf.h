@@ -16,6 +16,7 @@ namespace engine
 			m_deltaP.resize(m_particleNum, glm::vec3(0.0f));
 			m_lambda.resize(m_particleNum, 0.0f);
 			m_tempPositions.resize(m_particleNum, glm::vec3(0.0f));
+			m_newVel.resize(m_particleNum, glm::vec3(0.0f));
 
 			m_uniformGrid = new UniformGrid(fluidSim->getSpacing(), fluidSim->getSphKernelRadius(),
 				{ fluidSim->getMin(), fluidSim->getMax() }, fluidSim);
@@ -30,6 +31,7 @@ namespace engine
 		void predictAdvect();
 		void computeLambda();
 		void computeDeltaP();
+		void applyXSPHViscosity();
 		void updatePosAndVel();
 	private:
 		FluidSim* m_fluidSim;
@@ -44,6 +46,7 @@ namespace engine
 		std::vector<glm::vec3> m_deltaP;
 		std::vector<float> m_lambda;
 		std::vector<glm::vec3> m_tempPositions;
+		std::vector<glm::vec3> m_newVel;
 
 		std::mutex m_posMutex;
 

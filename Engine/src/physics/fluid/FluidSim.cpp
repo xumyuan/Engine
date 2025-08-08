@@ -22,6 +22,7 @@ namespace engine {
 		m_simParams.boundary = boundary; // 模拟边界
 		m_simParams.mass = m_simParams.restDensity * glm::pow(m_simParams.spacing, 3.0f); // 粒子质量
 		m_simParams.gravity = glm::vec3(0.0f, -9.81f, 0.0f); // 重力加速度
+		m_simParams.viscosity = 0.01f; // 粘性系数
 
 
 		Poly6Kernel::setRadius(m_simParams.sphRadius);
@@ -52,21 +53,30 @@ namespace engine {
 		int cntx, cntz;
 
 		cntx = (int)std::ceil(delta.x / spacing);
-		cntz = (int)std::ceil(delta.z / spacing) / 2;
+		cntz = (int)std::ceil(delta.z / spacing) / 3;
 
 		int cnt = cntx * cntz;
 
 		glm::vec3 pos;
 
+		// 对粒子初始位置的随机扰动
+		static std::mt19937 rng(std::random_device{}());
+		std::uniform_real_distribution<float> dist(-0.2f, 0.2f);
+
 		bool shouldBreak = false;
-		for (pos.y = min.y + 5.0f; pos.y < max.y; pos.y += spacing) {
+		for (pos.y = min.y + 0.5f; pos.y < max.y; pos.y += spacing) {
 			for (int xz = 0; xz < cnt; xz++) {
-				pos.x = min.x + 1.0f + (xz % int(cntx)) * spacing;
-				pos.z = min.z + 1.0f + (xz / int(cntx)) * spacing;
+				float dx = dist(rng);
+				float dz = dist(rng);
+
+
+				pos.x = min.x + 1.0f + (xz % int(cntx)) * spacing + dx;
+				pos.z = min.z + 1.0f + (xz / int(cntx)) * spacing + dz;
 
 				m_positions[m_particleNum++] = pos;
 				if (m_particleNum >= m_maxParticleNum) {
 					shouldBreak = true;
+					break;
 				}
 			}
 			if (shouldBreak) break;

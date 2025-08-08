@@ -3,6 +3,7 @@
 #include "physics/fluid/SPHKernel.h"
 #include "omp.h"
 #include "pbf.h"
+#include "utils/debug_macro.h"
 
 #define UNIFORM_GRID 1
 
@@ -18,7 +19,7 @@ namespace engine {
 	void PBF::solve() {
 		PROFILE("pbf solve");
 		predictAdvect();
-		spdlog::info("predictAdvect over");
+		DEBUG_LINE(spdlog::info("predictAdvect over"));
 		size_t iter = 0;
 
 		m_uniformGrid->neighborSearch();
@@ -27,9 +28,12 @@ namespace engine {
 			computeLambda();
 			computeDeltaP();
 		}
-		spdlog::info("iterate over");
+		DEBUG_LINE(spdlog::info("iterate over"));
 		updatePosAndVel();
-		spdlog::info("updatePosAndVel over");
+
+		applyXSPHViscosity();
+
+		DEBUG_LINE(spdlog::info("updatePosAndVel over"));
 	}
 
 	void PBF::predictAdvect() {
@@ -124,7 +128,7 @@ namespace engine {
 	void PBF::computeDeltaP() {
 		PROFILE("pbf computeDeltaP");
 
-#pragma omp parallel for schedule(static) default(shared)
+#pragma omp parallel for
 		for (int i = 0; i < m_particleNum; ++i) {
 			auto& pos = m_tempPositions[i];
 			auto& deltaP = m_deltaP[i];
@@ -142,7 +146,7 @@ namespace engine {
 				if (dsq < sphRadius * sphRadius) {
 					float corr = Poly6Kernel::W(diff) / wpoly_con_deltaP;
 
-					float s_corr = -pressure_k * glm::pow(corr, pressure_n);
+					float s_corr = -pressure_k * corr * corr * corr * corr;
 
 					float coff = (m_lambda[i] + m_lambda[j] + s_corr);
 
@@ -154,6 +158,43 @@ namespace engine {
 
 			deltaP /= m_simParams.restDensity;
 			deltaP *= m_simParams.mass;
+		}
+	}
+
+	void PBF::applyXSPHViscosity() {
+		PROFILE("pbf applyXSPHViscosity");
+
+#pragma omp parallel for
+		for (int i = 0; i < m_particleNum; ++i) {
+			auto& pos = m_tempPositions[i];
+
+			glm::vec3& vel_i = m_fluidSim->getVelocities()[i];
+
+			glm::vec3& newVel = m_newVel[i];
+			newVel = glm::vec3(0.0f);
+
+			auto& curParticleNeighbors = m_neighborList[i];
+			for (auto& j : curParticleNeighbors) {
+				if (i == j) continue;
+
+				auto& pos_j = m_tempPositions[j];
+				auto& vel_j = m_fluidSim->getVelocities()[j];
+
+				glm::vec3 diff = pos - pos_j;
+
+				newVel += SpikyKernel::gradW(diff) * (vel_j - vel_i);
+
+			}
+			newVel = newVel * m_simParams.viscosity * m_simParams.mass / m_simParams.restDensity;
+			newVel += vel_i; // add the original velocity
+		}
+
+		// update the velocities with the new velocities
+#pragma omp parallel for
+		for (int i = 0; i < m_particleNum; ++i) {
+			auto& newVel = m_newVel[i];
+			auto& vel_i = m_fluidSim->getVelocities()[i];
+			vel_i = newVel;
 		}
 	}
 

@@ -26,6 +26,7 @@ namespace engine {
 		float dt;			//时间步长
 		glm::vec3 gravity;	//重力加速度，一般取为(0.0f, -9.81f, 0.0f)
 		Boundary boundary;	//模拟边界，目前是规则的立方体
+		float viscosity;	// 粘性系数
 	};
 
 	class FluidSim

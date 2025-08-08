@@ -158,6 +158,7 @@ xcopy /Y /S "$(ProjectDir)src\shaders\*.*" "$(OutDir)src\shaders\"</Command>
     <ClInclude Include="src\physics\fluid\FluidSim.h" />
     <ClInclude Include="src\physics\fluid\solvers\pbf.h" />
     <ClInclude Include="src\physics\fluid\SPHKernel.h" />
+    <ClInclude Include="src\utils\debug_macro.h" />
     <ClInclude Include="src\utils\global_config\GlobalConfig.h" />
     <ClInclude Include="src\graphics\renderer\renderpass\defferred\DeferredGeometryPass.h" />
     <ClInclude Include="src\graphics\ibl\ReflectionProbe.h" />
