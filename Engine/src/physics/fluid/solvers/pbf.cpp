@@ -182,8 +182,7 @@ namespace engine {
 
 				glm::vec3 diff = pos - pos_j;
 
-				newVel += SpikyKernel::gradW(diff) * (vel_j - vel_i);
-
+				newVel += Poly6Kernel::W(diff) * (vel_j - vel_i);
 			}
 			newVel = newVel * m_simParams.viscosity * m_simParams.mass / m_simParams.restDensity;
 			newVel += vel_i; // add the original velocity

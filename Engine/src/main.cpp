@@ -72,6 +72,12 @@ int main() {
 		if (engine::InputManager::isKeyPressed(GLFW_KEY_ESCAPE))
 			window.close();
 
+		if (engine::InputManager::isKeyPressed(GLFW_KEY_C)) {
+			auto* camera = scene.getCamera();
+			glm::vec3 pos = camera->getPosition();
+			spdlog::info("Camera Position: ({}, {}, {})", pos.x, pos.y, pos.z);
+		}
+
 		scene.onUpdate(deltaTime.getDeltaTime());
 		renderer.render();
 

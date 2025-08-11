@@ -53,7 +53,7 @@ namespace engine {
 		int cntx, cntz;
 
 		cntx = (int)std::ceil(delta.x / spacing);
-		cntz = (int)std::ceil(delta.z / spacing) / 3;
+		cntz = (int)std::ceil(delta.z / spacing) / 5;
 
 		int cnt = cntx * cntz;
 

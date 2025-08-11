@@ -18,7 +18,7 @@
 namespace engine {
 
 	Scene3D::Scene3D(Window* window)
-		:m_SceneCamera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 0.0f, 0.0f),
+		:m_SceneCamera(glm::vec3(55.0f, 153.0f, 163.0f), glm::vec3(0.0f, 1.0f, 0.0f), 0.0f, 0.0f),
 		m_ModelRenderer(getCamera()),
 		m_Terrain(glm::vec3(-220.0f, 0.0f, 0.0f)),
 		m_ProbeManager(m_SceneProbeBlendSetting)
@@ -27,7 +27,7 @@ namespace engine {
 
 		m_config = GlobalConfig::getInstance();
 
-		m_fluid = new FluidSim(80'000, { { 120.0f,120.0f,120.0f }, { 200.0f,200.0f,200.0f} });
+		m_fluid = new FluidSim(80'000, { { 120.0f,120.0f,120.0f }, { 170.0f,200.0f,220.0f} });
 		std::thread simThread(&FluidSim::startSim, m_fluid);
 		simThread.detach();
 		init();
