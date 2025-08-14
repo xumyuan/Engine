@@ -31,14 +31,14 @@ namespace engine {
 
 			numThread = std::thread::hardware_concurrency();
 		}
+		void neighborSearch();
+
+		~UniformGrid() = default;
+	private:
 
 		void insertParticles();
 
 		void particleReorder();
-
-		void neighborSearch();
-
-		~UniformGrid() = default;
 	public:
 		int numThread = 0;
 	private:

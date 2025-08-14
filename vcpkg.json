@@ -1,21 +1,22 @@
 {
-    "name": "engine",
-    "version": "1.0.0",
-    "dependencies": [
-        "glew",
-        "glfw3",
-        "glm",
-        "assimp",
-        "soil",
-        "imgui",
-        {
-            "name": "imgui",
-            "features": [
-                "glfw-binding",
-                "opengl3-binding"
-            ]
-        },
-        "spdlog",
-        "nlohmann-json"
-    ]
+  "name": "engine",
+  "version": "1.0.0",
+  "dependencies": [
+    "assimp",
+    "glew",
+    "glfw3",
+    "glm",
+    "imgui",
+    {
+      "name": "imgui",
+      "features": [
+        "glfw-binding",
+        "opengl3-binding"
+      ]
+    },
+    "nlohmann-json",
+    "soil",
+    "spdlog",
+    "compactnsearch"
+  ]
 }

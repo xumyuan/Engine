@@ -31,8 +31,6 @@ namespace engine {
 	}
 
 	void UniformGrid::neighborSearch() {
-		PROFILE("pbf neighborSearch");
-
 		insertParticles();
 
 		for (auto& nlist : m_neighborList) nlist.clear();

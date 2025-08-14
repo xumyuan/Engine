@@ -1,11 +1,11 @@
 #include "pch.h"
+#include <CompactNSearch.h>
 #include "utils/profile/profile.h"
 #include "physics/fluid/SPHKernel.h"
 #include "omp.h"
+
 #include "pbf.h"
 #include "utils/debug_macro.h"
-
-#define UNIFORM_GRID 1
 
 namespace engine {
 
@@ -16,13 +16,44 @@ namespace engine {
 	const float pressure_k = 0.1f; // pressure constant, can be adjusted
 	const float pressure_n = 4.0f;
 
+
+	using namespace CompactNSearch;
+
+	PBF::PBF(FluidSim* fluidSim, size_t iterations, float dt) :
+		m_fluidSim(fluidSim), m_iterations(iterations), m_dt(dt),
+		m_neighborList(fluidSim->getNeighborList()),
+		m_simParams(fluidSim->getSimParams()),
+		m_positions(fluidSim->getPositions()),
+		m_velocities(fluidSim->getVelocities())
+	{
+		// sim parameters
+		m_particleNum = fluidSim->getParticleNum();
+
+		// pbf parameters
+		m_deltaP.resize(m_particleNum, glm::vec3(0.0f));
+		m_lambda.resize(m_particleNum, 0.0f);
+		m_tempPositions.resize(m_particleNum, glm::vec3(0.0f));
+		m_newVel.resize(m_particleNum, glm::vec3(0.0f));
+#if USE_UNIFORM_GRID
+		m_uniformGrid = new UniformGrid(m_simParams.spacing, m_simParams.sphRadius,
+			{ fluidSim->getMin(), fluidSim->getMax() }, fluidSim);
+#else
+		Real sphRadius = m_simParams.sphRadius;
+		// compatNSearch neighborhood search
+		m_nsearch = new	NeighborhoodSearch(sphRadius);
+		m_nsearch->add_point_set(reinterpret_cast<const Real*>(m_positions.data()), m_particleNum, true, true);
+		m_nsearch->update_point_sets();
+#endif //USE_UNIFORM_GRID
+
+	}
+
 	void PBF::solve() {
 		PROFILE("pbf solve");
 		predictAdvect();
 		DEBUG_LINE(spdlog::info("predictAdvect over"));
 		size_t iter = 0;
 
-		m_uniformGrid->neighborSearch();
+		neighborSearch();
 
 		while (iter++ < m_iterations) {
 			computeLambda();
@@ -34,6 +65,24 @@ namespace engine {
 		applyXSPHViscosity();
 
 		DEBUG_LINE(spdlog::info("updatePosAndVel over"));
+	}
+
+	void PBF::neighborSearch() {
+		PROFILE("neighborSearch");
+		static unsigned int nsearchCount = 0;
+#if USE_UNIFORM_GRID
+		m_uniformGrid->neighborSearch();
+#else
+		if (nsearchCount++ % 500 == 0) {
+			m_nsearch->z_sort();
+			auto& d = m_nsearch->point_set(0);
+			d.sort_field(m_positions.data());
+			d.sort_field(m_tempPositions.data());
+			d.sort_field(m_velocities.data());
+		}
+
+		m_nsearch->find_neighbors();
+#endif //USE_UNIFORM_GRID
 	}
 
 	void PBF::predictAdvect() {
@@ -101,7 +150,13 @@ namespace engine {
 			float mass = m_simParams.mass;
 			float restDensity = m_simParams.restDensity;
 
+#if USE_UNIFORM_GRID
 			auto& curParticleNeighbors = m_neighborList[i];
+#else
+			CompactNSearch::PointSet const& ps_1 = m_nsearch->point_set(0);
+			auto& curParticleNeighbors = ps_1.neighbor_list(0, i);
+#endif // USE_UNIFORM_GRID
+
 
 			for (auto j : curParticleNeighbors) {
 				if (i == j) continue;
@@ -134,7 +189,13 @@ namespace engine {
 			auto& deltaP = m_deltaP[i];
 			deltaP = glm::vec3(0.0f);
 
+#if USE_UNIFORM_GRID
 			auto& curParticleNeighbors = m_neighborList[i];
+#else
+			CompactNSearch::PointSet const& ps_1 = m_nsearch->point_set(0);
+			auto& curParticleNeighbors = ps_1.neighbor_list(0, i);
+#endif // USE_UNIFORM_GRID
+
 			for (auto& j : curParticleNeighbors) {
 				if (i == j) continue;
 
@@ -173,7 +234,12 @@ namespace engine {
 			glm::vec3& newVel = m_newVel[i];
 			newVel = glm::vec3(0.0f);
 
+#if USE_UNIFORM_GRID
 			auto& curParticleNeighbors = m_neighborList[i];
+#else
+			CompactNSearch::PointSet const& ps_1 = m_nsearch->point_set(0);
+			auto& curParticleNeighbors = ps_1.neighbor_list(0, i);
+#endif // USE_UNIFORM_GRID
 			for (auto& j : curParticleNeighbors) {
 				if (i == j) continue;
 
