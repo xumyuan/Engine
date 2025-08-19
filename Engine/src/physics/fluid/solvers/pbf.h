@@ -10,10 +10,8 @@ namespace engine
 {
 	class PBF {
 	public:
-		PBF(FluidSim* fluidSim, size_t iterations = 3, float dt = 0.016f);
-		~PBF() {
-
-		}
+		PBF(FluidSim* fluidSim, size_t iterations = 3);
+		~PBF() {}
 		void solve();
 
 		std::mutex& getPosMutex() { return m_posMutex; }
@@ -28,7 +26,6 @@ namespace engine
 		// fluid simulation parameters
 		FluidSim* m_fluidSim;
 		size_t m_particleNum;
-		float m_dt = 0.016f; // time step
 		SimParams& m_simParams;
 		std::vector<std::vector<size_t>>& m_neighborList;	// neighbor list from FluidSim
 		std::vector<glm::vec3>& m_positions;				// particle positions

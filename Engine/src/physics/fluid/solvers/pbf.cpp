@@ -13,14 +13,15 @@ namespace engine {
 	const float spiky_kernel = -45.0f / (glm::pi<float>() * glm::pow(3.0f, 6.0f));
 	const float delta_p = 0.1 * 3.0f;
 	const float wpoly_con_deltaP = pow(9.0 - delta_p * delta_p, 3) * ploy6_kernel;
+	const float inv_wpoly_con_deltaP = 1.0f / wpoly_con_deltaP;
 	const float pressure_k = 0.1f; // pressure constant, can be adjusted
 	const float pressure_n = 4.0f;
 
 
 	using namespace CompactNSearch;
 
-	PBF::PBF(FluidSim* fluidSim, size_t iterations, float dt) :
-		m_fluidSim(fluidSim), m_iterations(iterations), m_dt(dt),
+	PBF::PBF(FluidSim* fluidSim, size_t iterations) :
+		m_fluidSim(fluidSim), m_iterations(iterations),
 		m_neighborList(fluidSim->getNeighborList()),
 		m_simParams(fluidSim->getSimParams()),
 		m_positions(fluidSim->getPositions()),
@@ -56,6 +57,7 @@ namespace engine {
 		neighborSearch();
 
 		while (iter++ < m_iterations) {
+			PROFILE("iteration");
 			computeLambda();
 			computeDeltaP();
 		}
@@ -74,6 +76,7 @@ namespace engine {
 		m_uniformGrid->neighborSearch();
 #else
 		if (nsearchCount++ % 500 == 0) {
+			PROFILE("zsort");
 			m_nsearch->z_sort();
 			auto& d = m_nsearch->point_set(0);
 			d.sort_field(m_positions.data());
@@ -90,8 +93,8 @@ namespace engine {
 #pragma omp parallel for
 		for (int i = 0; i < m_particleNum; ++i) {
 			auto& position = m_fluidSim->getPositions()[i];
-			glm::vec3 vel = m_fluidSim->getVelocities()[i] + m_dt * m_simParams.gravity;
-			m_tempPositions[i] = position + vel * m_dt;
+			glm::vec3 vel = m_fluidSim->getVelocities()[i] + m_simParams.dt * m_simParams.gravity;
+			m_tempPositions[i] = position + vel * m_simParams.dt;
 
 			//confine the particle to the boundary
 			float spacing = m_fluidSim->getSpacing();
@@ -139,7 +142,7 @@ namespace engine {
 
 	void PBF::computeLambda() {
 		PROFILE("pbf computeLambda");
-#pragma omp parallel for schedule(dynamic)
+#pragma omp parallel for
 		for (int i = 0; i < m_particleNum; ++i) {
 			auto& pos = m_tempPositions[i];
 			float& lambda = m_lambda[i];
@@ -148,7 +151,6 @@ namespace engine {
 			float grad_C_sum = 0.0f;
 			float density = Poly6Kernel::m_W_zero;
 			float mass = m_simParams.mass;
-			float restDensity = m_simParams.restDensity;
 
 #if USE_UNIFORM_GRID
 			auto& curParticleNeighbors = m_neighborList[i];
@@ -168,13 +170,13 @@ namespace engine {
 				if (dist < sphRadius) {
 
 					density += Poly6Kernel::W(dist);
-					glm::vec3 grad_pj_C = SpikyKernel::gradW(diff) * mass / restDensity;
+					glm::vec3 grad_pj_C = SpikyKernel::gradW(diff) * m_simParams.volume;
 					grad_pi_C -= grad_pj_C;
 					grad_C_sum += glm::length2(grad_pj_C);
 				}
 			}
 			density *= mass;
-			float constraint = density / restDensity - 1;
+			float constraint = density * m_simParams.invRestDensity - 1;
 			float grad_i_sum = glm::length2(grad_pi_C);
 			lambda = -constraint / (grad_i_sum + grad_C_sum + 1000.0f);
 		}
@@ -205,7 +207,7 @@ namespace engine {
 				float sphRadius = m_simParams.sphRadius;
 
 				if (dsq < sphRadius * sphRadius) {
-					float corr = Poly6Kernel::W(diff) / wpoly_con_deltaP;
+					float corr = Poly6Kernel::W(diff) * inv_wpoly_con_deltaP;
 
 					float s_corr = -pressure_k * corr * corr * corr * corr;
 
@@ -217,7 +219,7 @@ namespace engine {
 				}
 			}
 
-			deltaP /= m_simParams.restDensity;
+			deltaP *= m_simParams.invRestDensity;
 			deltaP *= m_simParams.mass;
 		}
 	}
@@ -250,7 +252,7 @@ namespace engine {
 
 				newVel += Poly6Kernel::W(diff) * (vel_j - vel_i);
 			}
-			newVel = newVel * m_simParams.viscosity * m_simParams.mass / m_simParams.restDensity;
+			newVel = newVel * m_simParams.viscosity * m_simParams.mass * m_simParams.invRestDensity;
 			newVel += vel_i; // add the original velocity
 		}
 
@@ -275,7 +277,7 @@ namespace engine {
 			// update position
 			pos += deltaP;
 			// update velocity
-			glm::vec3 vel = (pos - positions[i]) / m_dt;
+			glm::vec3 vel = (pos - positions[i]) * m_simParams.invDt;
 			velocities[i] = vel;
 			// update position in the original positions vector
 			positions[i] = pos;

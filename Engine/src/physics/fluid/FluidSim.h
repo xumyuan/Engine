@@ -22,8 +22,11 @@ namespace engine {
 		float spacing;		//粒子的间距
 		float sphRadius;	//SPH核半径,一般取值是粒子间距的3倍
 		float restDensity;	//静止密度，一般设置为1000.0f
+		float invRestDensity; // 静止密度的倒数
 		float mass;			//粒子质量 m = restDensity * spacing^3
 		float dt;			//时间步长
+		float invDt;		//时间步长的倒数
+		float volume;		//体积，通常为spacing^3
 		glm::vec3 gravity;	//重力加速度，一般取为(0.0f, -9.81f, 0.0f)
 		Boundary boundary;	//模拟边界，目前是规则的立方体
 		float viscosity;	// 粘性系数

@@ -19,11 +19,14 @@ namespace engine {
 		m_simParams.spacing = 1.0f; // 粒子间距
 		m_simParams.sphRadius = 3.0f * m_simParams.spacing; // SPH核半径
 		m_simParams.restDensity = 1000.0f; // 静止密度
+		m_simParams.invRestDensity = 1.0f / m_simParams.restDensity; // 静止密度的倒数
 		m_simParams.boundary = boundary; // 模拟边界
 		m_simParams.mass = m_simParams.restDensity * glm::pow(m_simParams.spacing, 3.0f); // 粒子质量
 		m_simParams.gravity = glm::vec3(0.0f, -9.81f, 0.0f); // 重力加速度
 		m_simParams.viscosity = 0.01f; // 粘性系数
-
+		m_simParams.dt = 0.01f; // 时间步长
+		m_simParams.invDt = 1.0f / m_simParams.dt; // 时间步长的倒数
+		m_simParams.volume = glm::pow(m_simParams.spacing, 3.0f); // 体积
 
 		Poly6Kernel::setRadius(m_simParams.sphRadius);
 		SpikyKernel::setRadius(m_simParams.sphRadius);
@@ -53,7 +56,7 @@ namespace engine {
 		int cntx, cntz;
 
 		cntx = (int)std::ceil(delta.x / spacing);
-		cntz = (int)std::ceil(delta.z / spacing) / 5;
+		cntz = (int)std::ceil(delta.z / spacing) / 3;
 
 		int cnt = cntx * cntz;
 
@@ -64,7 +67,7 @@ namespace engine {
 		std::uniform_real_distribution<float> dist(-0.2f, 0.2f);
 
 		bool shouldBreak = false;
-		for (pos.y = min.y + 0.5f; pos.y < max.y; pos.y += spacing) {
+		for (pos.y = min.y + 0.4f; pos.y < max.y; pos.y += spacing) {
 			for (int xz = 0; xz < cnt; xz++) {
 				float dx = dist(rng);
 				float dz = dist(rng);
