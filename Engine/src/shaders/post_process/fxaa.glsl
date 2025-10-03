@@ -29,7 +29,7 @@ uniform sampler2D input_texture;
 uniform vec2 texel_size;
 
 void main() {
-	// ²ÉÑùµ±Ç°¼°ÖÜÎ§ËÄ¸öµãµÄÏñËØÖµ£¬²¢¼ÆËãÁÁ¶ÈÖµ
+	// é‡‡æ ·å½“å‰åŠå‘¨å›´å››ä¸ªç‚¹çš„åƒç´ å€¼ï¼Œå¹¶è®¡ç®—äº®åº¦å€¼
 	vec3 calculateLuma = vec3(0.299, 0.587, 0.114);
 	vec3 rgbM  = texture2D(input_texture, TexCoords).xyz;
 	vec3 rgbNW = texture2D(input_texture, TexCoords + (vec2(-1.0,-1.0)) * texel_size).xyz;
@@ -45,15 +45,15 @@ void main() {
 	float lumaMin = min(lumaM, min(min(lumaNW, lumaNE), min(lumaSW, lumaSE)));
 	float lumaMax = max(lumaM, max(max(lumaNW, lumaNE), max(lumaSW, lumaSE))); 
 
-	// ¼ÆËãÁÁ¶È²î¾àµÄ×î´óµÄ·½Ïò
+	// è®¡ç®—äº®åº¦å·®è·çš„æœ€å¤§çš„æ–¹å‘
 	vec2 dir;
 	dir.x = -((lumaNW + lumaNE) - (lumaSW + lumaSE));
 	dir.y =  ((lumaNW + lumaSW) - (lumaNE + lumaSE));
-	//Í¨¹ı¶Ô dir ½øĞĞËõ·Å£¬¿ÉÒÔÏŞÖÆ¿¹¾â³İ´¦ÀíµÄ·¶Î§£¬·ÀÖ¹ÔÚÒ»Ğ©Çé¿öÏÂ³öÏÖ¹ı¶ÈÄ£ºı»òÕß¹ı¶ÈÈñ»¯µÄÏÖÏó¡£ÕâÊÇÎªÁËÆ½ºâ¿¹¾â³İĞ§¹ûºÍÍ¼ÏñÏ¸½ÚµÄ±£Áô¡£
+	//é€šè¿‡å¯¹ dir è¿›è¡Œç¼©æ”¾ï¼Œå¯ä»¥é™åˆ¶æŠ—é”¯é½¿å¤„ç†çš„èŒƒå›´ï¼Œé˜²æ­¢åœ¨ä¸€äº›æƒ…å†µä¸‹å‡ºç°è¿‡åº¦æ¨¡ç³Šæˆ–è€…è¿‡åº¦é”åŒ–çš„ç°è±¡ã€‚è¿™æ˜¯ä¸ºäº†å¹³è¡¡æŠ—é”¯é½¿æ•ˆæœå’Œå›¾åƒç»†èŠ‚çš„ä¿ç•™ã€‚
 	float dirReduce = max((lumaNW + lumaNE + lumaSW + lumaSE) * (0.25 * FXAA_REDUCE_MUL), FXAA_REDUCE_MIN);
 
 	float rcpDirMin = 1.0 / (min(abs(dir.x), abs(dir.y)) + dirReduce);
-	//½« dir ÏòÁ¿ÏŞÖÆÔÚÒ»¸ö·¶Î§ÄÚ£¬²¢³ËÒÔ texel_size£¬ÒÔ½«Æä×ª»»ÎªÎÆÀí×ø±ê¡£
+	//å°† dir å‘é‡é™åˆ¶åœ¨ä¸€ä¸ªèŒƒå›´å†…ï¼Œå¹¶ä¹˜ä»¥ texel_sizeï¼Œä»¥å°†å…¶è½¬æ¢ä¸ºçº¹ç†åæ ‡ã€‚
 	dir = min(vec2(FXAA_SPAN_MAX, FXAA_SPAN_MAX), max(vec2(-FXAA_SPAN_MAX, -FXAA_SPAN_MAX), dir * rcpDirMin)) * texel_size;
 
 	// Perform the samples and calculate the new texel colour

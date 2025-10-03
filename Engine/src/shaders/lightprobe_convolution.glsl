@@ -12,7 +12,7 @@ uniform mat4 projection;
 void main() {
 	SampleDirection = position;
 
-	// ÇĞ¶ÏÊÓÍ¼¾ØÕóµÄÆ½ÒÆ²¿·Ö£¨Òò´ËÁ¢·½Ìå²»»áÆ½ÒÆ£¬ÒòÎªÎÒÃÇÏ£ÍûÁ¢·½ÌåÎ§ÈÆÌ½ÕëµÄÔ­µã£©
+	// åˆ‡æ–­è§†å›¾çŸ©é˜µçš„å¹³ç§»éƒ¨åˆ†ï¼ˆå› æ­¤ç«‹æ–¹ä½“ä¸ä¼šå¹³ç§»ï¼Œå› ä¸ºæˆ‘ä»¬å¸Œæœ›ç«‹æ–¹ä½“å›´ç»•æ¢é’ˆçš„åŸç‚¹ï¼‰
 	gl_Position = projection * mat4(mat3(view)) * vec4(position, 1.0f); 
 }
 
@@ -28,9 +28,9 @@ uniform samplerCube sceneCaptureCubemap;
 const  float PI = 3.14159265359;
 
 void main() {
-	// SampleDirectionÊÇ¾í»ı°ëÇò·½Ïò
+	// SampleDirectionæ˜¯å·ç§¯åŠçƒæ–¹å‘
 	vec3 normal = normalize(SampleDirection);
-	// ½«ÏòÁ¿´ÓÇĞÏß×ª»»µ½ÊÀ½ç¿Õ¼ä£¬ÒòÎªÁ¢·½ÌåÌùÍ¼Î»ÓÚÊÀ½ç¿Õ¼äÖĞ
+	// å°†å‘é‡ä»åˆ‡çº¿è½¬æ¢åˆ°ä¸–ç•Œç©ºé—´ï¼Œå› ä¸ºç«‹æ–¹ä½“è´´å›¾ä½äºä¸–ç•Œç©ºé—´ä¸­
 	//vec3 up = vec3(0.0, 1.0, 0.0);
 	vec3 up = abs(normal.y) < 0.999 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
 	vec3 right = normalize(cross(up, normal));
@@ -44,10 +44,10 @@ void main() {
 	{
 		for(float theta = 0.0;theta < 0.5 * PI; theta += sampleDelta)
 		{
-			// ÇĞÏß¿Õ¼ä×ø±ê
+			// åˆ‡çº¿ç©ºé—´åæ ‡
 			vec3 tangentSample = vec3(sin(theta) * cos(phi),  sin(theta) * sin(phi), cos(theta));
 
-			// ×ªÎªÊÀ½ç¿Õ¼ä×ø±ê
+			// è½¬ä¸ºä¸–ç•Œç©ºé—´åæ ‡
 			vec3 worldSample = tangentSample.x * right + tangentSample.y * up + tangentSample.z * normal;
 
 			irradiance += texture(sceneCaptureCubemap, worldSample).rgb * cos(theta) * sin(theta);

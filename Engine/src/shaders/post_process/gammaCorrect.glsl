@@ -30,7 +30,7 @@ void main() {
 
 	hdrColor = texture(screen_texture, TexCoords).rgb;
 
-	// 应用简单的曝光色调图（HDR -> SDR）（黑暗场景应具有较高的曝光度，而明亮的场景应具有较低的曝光度）
+	// 搴旂敤绠�鍗曠殑鏇濆厜鑹茶皟鍥撅紙HDR -> SDR锛夛紙榛戞殫鍦烘櫙搴斿叿鏈夎緝楂樼殑鏇濆厜搴︼紝鑰屾槑浜殑鍦烘櫙搴斿叿鏈夎緝浣庣殑鏇濆厜搴︼級
 	vec3 tonemappedColor = vec3(1.0) - exp(exposure * -hdrColor);
 
 	// Apply gamma correction
