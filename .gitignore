@@ -352,3 +352,6 @@ MigrationBackup/
 .ionide/
 
 vcpkg_installed/
+
+!Engine/res/**/*.obj
+!Engine/res/**/*.OBJ
