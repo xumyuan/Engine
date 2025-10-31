@@ -27,9 +27,9 @@ namespace engine {
 
 		m_config = GlobalConfig::getInstance();
 
-		m_fluid = new FluidSim(8'000, { { 120.0f,120.0f,120.0f }, { 140.0f,200.0f,180.0f} });
+		/*m_fluid = new FluidSim(8'000, { { 120.0f,120.0f,120.0f }, { 140.0f,200.0f,180.0f} });
 		std::thread simThread(&FluidSim::startSim, m_fluid);
-		simThread.detach();
+		simThread.detach();*/
 		init();
 	}
 

@@ -80,7 +80,7 @@ namespace engine
 		terrain->Draw(m_TerrainShader, m_RenderPassType);
 
 		FPSCamera* fpscamera = dynamic_cast<FPSCamera*>(camera);
-		if (fpscamera) {
+		if (fpscamera && fluid) {
 			fluid->drawParticle(dynamic_cast<FPSCamera*>(camera));
 		}
 		skybox->Draw(camera);

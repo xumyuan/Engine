@@ -4,7 +4,7 @@
             "modelPath":"res/3D_Models/Sponza/sponza.obj",
             "position":[120.0, 130.0, 100.0],
             "scale":[0.5, 0.5, 0.5],
-            "rotationAxis":[1.0, 0.0, 0.0],
+            "rotationAxis":[0.0, 0.0, 0.0],
             "radianRotation":-90.0,
             "isStatic":false,
             "isTransparent":false,
