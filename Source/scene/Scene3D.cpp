@@ -28,7 +28,9 @@ namespace engine {
 		/*m_fluid = new FluidSim(8'000, { { 120.0f,120.0f,120.0f }, { 140.0f,200.0f,180.0f} });
 		std::thread simThread(&FluidSim::startSim, m_fluid);
 		simThread.detach();*/
+		BEGIN_EVENT("Scene Init");
 		init();
+		END_EVENT();
 	}
 
 	Scene3D::~Scene3D() {

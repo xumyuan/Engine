@@ -170,6 +170,7 @@
     <ClInclude Include="Source\physics\fluid\FluidSim.h" />
     <ClInclude Include="Source\physics\fluid\solvers\pbf.h" />
     <ClInclude Include="Source\physics\fluid\SPHKernel.h" />
+    <ClInclude Include="Source\utils\DebugEvent.h" />
     <ClInclude Include="Source\utils\debug_macro.h" />
     <ClInclude Include="Source\utils\global_config\GlobalConfig.h" />
     <ClInclude Include="Source\graphics\renderer\renderpass\defferred\DeferredGeometryPass.h" />
@@ -240,6 +241,7 @@
     <ClCompile Include="Source\physics\fluid\FluidSim.cpp" />
     <ClCompile Include="Source\physics\fluid\solvers\pbf.cpp" />
     <ClCompile Include="Source\physics\fluid\SPHKernel.cpp" />
+    <ClCompile Include="Source\utils\DebugEvent.cpp" />
     <ClCompile Include="Source\utils\global_config\GlobalConfig.cpp" />
     <ClCompile Include="Source\graphics\renderer\renderpass\defferred\DeferredGeometryPass.cpp" />
     <ClCompile Include="Source\graphics\ibl\ReflectionProbe.cpp" />

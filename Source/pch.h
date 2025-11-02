@@ -35,5 +35,7 @@
 #include <spdlog/spdlog.h>
 #include <nlohmann/json.hpp>
 
+#include "utils/DebugEvent.h"
+
 #include "Defs.h"
 //#include "utils/Logger.h"

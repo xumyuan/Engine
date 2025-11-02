@@ -219,6 +219,9 @@
     <ClInclude Include="Source\utils\debug_macro.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Source\utils\DebugEvent.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\graphics\shader.cpp">
@@ -402,6 +405,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Source\utils\profile\profile.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\utils\DebugEvent.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

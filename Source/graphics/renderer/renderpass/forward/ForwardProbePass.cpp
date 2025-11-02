@@ -12,7 +12,8 @@ namespace engine {
 	ForwardProbePass::ForwardProbePass(Scene3D* scene) : RenderPass(scene, RenderPassType::ProbePassType),
 		m_SceneCaptureShadowFramebuffer(IBL_CAPTURE_RESOLUTION, IBL_CAPTURE_RESOLUTION, false),
 		m_SceneCaptureLightingFramebuffer(IBL_CAPTURE_RESOLUTION, IBL_CAPTURE_RESOLUTION, false),
-		m_LightProbeConvolutionFramebuffer(LIGHT_PROBE_RESOLUTION, LIGHT_PROBE_RESOLUTION, false), m_ReflectionProbeSamplingFramebuffer(REFLECTION_PROBE_RESOLUTION, REFLECTION_PROBE_RESOLUTION, false),
+		m_LightProbeConvolutionFramebuffer(LIGHT_PROBE_RESOLUTION, LIGHT_PROBE_RESOLUTION, false),
+		m_ReflectionProbeSamplingFramebuffer(REFLECTION_PROBE_RESOLUTION, REFLECTION_PROBE_RESOLUTION, false),
 		m_SceneCaptureCubemap(m_SceneCaptureSettings)
 	{
 		m_SceneCaptureSettings.TextureFormat = GL_RGBA16F;
@@ -27,10 +28,15 @@ namespace engine {
 		m_ReflectionProbeSamplingFramebuffer.addColorTexture(FloatingPoint16).
 			createFramebuffer();
 
-
+		BEGIN_EVENT("Generate Cubemap Face");
 		for (int i = 0; i < 6; i++) {
-			m_SceneCaptureCubemap.generateCubemapFace(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, IBL_CAPTURE_RESOLUTION, IBL_CAPTURE_RESOLUTION, GL_RGB, nullptr);
+			m_SceneCaptureCubemap.generateCubemapFace(
+				GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 
+				IBL_CAPTURE_RESOLUTION, 
+				IBL_CAPTURE_RESOLUTION, 
+				GL_RGB, nullptr);
 		}
+		END_EVENT();
 
 		m_ConvolutionShader = ShaderLoader::loadShader("Shaders/lightprobe_convolution.glsl");
 
@@ -40,12 +46,16 @@ namespace engine {
 	ForwardProbePass::~ForwardProbePass() {}
 
 	void ForwardProbePass::pregenerateProbes() {
-
+		BEGIN_EVENT("GenerateBRDFLUT")
 		generateBRDFLUT();
-
-		glm::vec3 probePosition = glm::vec3(67.0f, 92.0f, 133.0f);
+		END_EVENT();
+		glm::vec3 probePosition = glm::vec3(55.0f, 153.0f, 163.0f);
+		BEGIN_EVENT("GenerateLightProbe");
 		generateLightProbe(probePosition);
+		END_EVENT();
+		BEGIN_EVENT("GenerateReflectionProbe");
 		generateReflectionProbe(probePosition);
+		END_EVENT();
 	}
 
 	void ForwardProbePass::generateBRDFLUT() {
@@ -95,17 +105,22 @@ namespace engine {
 
 		// Render the scene to the probe's cubemap
 		for (int i = 0; i < 6; i++) {
+			BEGIN_EVENT("Lighting Probe Cubemap[" + std::to_string(i) + "]");
 			// Setup the camera's view
 			m_CubemapCamera.switchCameraToFace(i);
 
 			// Shadow pass
+			BEGIN_EVENT("ShadowmapPass")
 			ShadowmapPassOutput shadowpassOutput = shadowPass.generateShadowmaps(&m_CubemapCamera);
-
+			END_EVENT();
 			// Light pass
 			m_SceneCaptureLightingFramebuffer.bind();
 			m_SceneCaptureLightingFramebuffer.setColorAttachment(m_SceneCaptureCubemap.getCubemapID(), GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
+			BEGIN_EVENT("LightingPass");
 			lightingPass.executeRenderPass(shadowpassOutput, &m_CubemapCamera, false);
+			END_EVENT();
 			m_SceneCaptureLightingFramebuffer.setColorAttachment(0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
+			END_EVENT();
 		}
 
 		// 捕获并应用辐照度图的卷积（间接漫反射）
@@ -119,9 +134,10 @@ namespace engine {
 
 		m_LightProbeConvolutionFramebuffer.bind();
 
-		auto* skybox = m_ActiveScene->getSkybox()->getSkyboxCubemap();
-		skybox->bind(0);
+		// auto* skybox = m_ActiveScene->getSkybox()->getSkyboxCubemap();
+		// skybox->bind(0);
 		glViewport(0, 0, m_LightProbeConvolutionFramebuffer.getWidth(), m_LightProbeConvolutionFramebuffer.getHeight());
+		BEGIN_EVENT("Convolution");
 		for (int i = 0; i < 6; i++) {
 			// Setup the camera's view
 			m_CubemapCamera.switchCameraToFace(i);
@@ -133,6 +149,7 @@ namespace engine {
 			ModelRenderer::drawNdcCube();
 			m_LightProbeConvolutionFramebuffer.setColorAttachment(0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
 		}
+		END_EVENT();
 		m_GLCache->setFaceCull(true);
 		m_GLCache->setDepthTest(true);
 
@@ -152,14 +169,18 @@ namespace engine {
 
 		// 将场景渲染到探针的立方体贴图
 		for (int i = 0; i < 6; ++i) {
+			BEGIN_EVENT("Reflection Probe[" +std::to_string(i) + "]");
 			m_CubemapCamera.switchCameraToFace(i);
-
+			BEGIN_EVENT("ShadowmapPass")
 			ShadowmapPassOutput shadowpassOutput = shadowPass.generateShadowmaps(&m_CubemapCamera);
-
+			END_EVENT();
 			m_SceneCaptureLightingFramebuffer.bind();
 			m_SceneCaptureLightingFramebuffer.setColorAttachment(m_SceneCaptureCubemap.getCubemapID(), GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
+			BEGIN_EVENT("LightingPass")
 			lightingPass.executeRenderPass(shadowpassOutput, &m_CubemapCamera, false);
+			END_EVENT();
 			m_SceneCaptureLightingFramebuffer.setColorAttachment(0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
+			END_EVENT();
 		}
 
 		// 对代表增加的粗糙度级别的立方体贴图 mip 进行捕获并执行重要性采样
@@ -172,6 +193,7 @@ namespace engine {
 		m_ImportanceSamplingShader->setUniform("sceneCaptureCubemap", 0);
 
 		m_ReflectionProbeSamplingFramebuffer.bind();
+		BEGIN_EVENT("Generate mip");
 		for (int mip = 0; mip < REFLECTION_PROBE_MIP_COUNT; mip++) {
 			// Calculate the size of this mip and resize
 			unsigned int mipWidth = m_ReflectionProbeSamplingFramebuffer.getWidth() >> mip;
@@ -194,6 +216,7 @@ namespace engine {
 				m_ReflectionProbeSamplingFramebuffer.setColorAttachment(0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
 			}
 		}
+		END_EVENT();
 
 
 		ProbeManager* probeManager = m_ActiveScene->getProbeManager();
