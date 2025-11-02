@@ -1,0 +1,21 @@
+{
+    "modelList":[
+        {
+            "modelPath":"Assets/3D_Models/Sponza/sponza.obj",
+            "position":[120.0, 130.0, 100.0],
+            "scale":[0.5, 0.5, 0.5],
+            "rotationAxis":[0.0, 0.0, 0.0],
+            "radianRotation":-90.0,
+            "isStatic":false,
+            "isTransparent":false
+        }
+    ],
+    "skybox":{
+        "right":"Assets/skybox/right.png",
+        "left":"Assets/skybox/left.png",
+        "top":"Assets/skybox/top.png",
+        "bottom":"Assets/skybox/bottom.png",
+        "back":"Assets/skybox/back.png",
+        "front":"Assets/skybox/front.png"
+    }
+}

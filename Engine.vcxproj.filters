@@ -1,0 +1,459 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Source\utils\FileUtils.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\utils\Timer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\graphics\shader.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\graphics\Window.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\graphics\camera\FPSCamera.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\utils\Time.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\utils\Logger.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\graphics\mesh\Mesh.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\graphics\mesh\Model.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ThridParty\stb_image.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\terrain\Terrain.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\platform\OpenGL\Buffer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\platform\OpenGL\IndexBuffer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\platform\OpenGL\VertexArray.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\utils\Singleton.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\scene\Scene3D.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\graphics\renderer\ModelRenderer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\graphics\Skybox.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Defs.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\graphics\dynamic lights\DirectionalLight.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\graphics\dynamic lights\DynamicLight.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\graphics\dynamic lights\PointLight.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\graphics\dynamic lights\SpotLight.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\graphics\dynamic lights\DynamicLightManager.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\graphics\mesh\Material.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\graphics\renderer\GLCache.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\graphics\mesh\common\Cube.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\graphics\mesh\common\Quad.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\graphics\mesh\common\Sphere.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\utils\loaders\MeshLoader.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\utils\loaders\TextureLoader.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\graphics\texture\Texture.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\graphics\texture\Cubemap.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\graphics\renderer\renderpass\RenderPassType.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\platform\OpenGL\Framebuffers\Framebuffer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\ui\Pane.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\ui\RuntimePane.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\ui\DebugPane.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\graphics\ibl\LightProbe.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\pch.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\graphics\camera\CubemapCamera.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\scene\RenderableModel.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\input\InputManager.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\input\JoystickManager.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\graphics\renderer\MasterRenderer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\graphics\renderer\renderpass\forward\ForwardLightingPass.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\graphics\renderer\renderpass\PostProcessPass.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\graphics\renderer\renderpass\RenderPass.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\graphics\renderer\renderpass\ShadowmapPass.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\graphics\camera\ICamera.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\utils\loaders\ShaderLoader.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\graphics\ibl\ProbeManager.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\graphics\renderer\renderpass\forward\ForwardProbePass.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\graphics\ibl\ReflectionProbe.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\graphics\renderer\renderpass\defferred\DeferredGeometryPass.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\platform\OpenGL\Framebuffers\GBuffer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\graphics\renderer\renderpass\defferred\DeferredLightingPass.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\thread\thread_pool.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\thread\spin_lock.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\utils\json\typeProcess.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\utils\json\json_type.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\utils\global_config\GlobalConfig.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\physics\fluid\FluidSim.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\physics\fluid\solvers\pbf.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\physics\fluid\accelerate\UniformGrid.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\physics\fluid\SPHKernel.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\utils\profile\profile.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\utils\debug_macro.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Source\graphics\shader.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\graphics\Window.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\graphics\camera\FPSCamera.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\main.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\utils\Time.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\utils\FileUtils.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\utils\Timer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\utils\Logger.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\graphics\mesh\Mesh.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\graphics\mesh\Model.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\terrain\Terrain.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\platform\OpenGL\Buffer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\platform\OpenGL\IndexBuffer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\platform\OpenGL\VertexArray.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\scene\Scene3D.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\graphics\renderer\ModelRenderer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\platform\OpenGL\Framebuffers\Framebuffer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\graphics\Skybox.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\graphics\dynamic lights\DirectionalLight.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\graphics\dynamic lights\DynamicLight.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\graphics\dynamic lights\PointLight.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\graphics\dynamic lights\SpotLight.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\graphics\dynamic lights\DynamicLightManager.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\graphics\mesh\Material.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\graphics\renderer\GLCache.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\graphics\mesh\common\Cube.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\graphics\mesh\common\Quad.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\graphics\mesh\common\Sphere.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\utils\loaders\MeshLoader.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\utils\loaders\TextureLoader.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\graphics\texture\Texture.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\graphics\texture\Cubemap.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ui\Pane.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ui\RuntimePane.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ui\DebugPane.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\graphics\ibl\LightProbe.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\pch.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\graphics\camera\CubemapCamera.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\scene\RenderableModel.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\input\InputManager.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\input\JoystickManager.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\graphics\renderer\MasterRenderer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\graphics\renderer\renderpass\forward\ForwardLightingPass.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\graphics\renderer\renderpass\PostProcessPass.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\graphics\renderer\renderpass\RenderPass.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\graphics\renderer\renderpass\ShadowmapPass.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\utils\loaders\ShaderLoader.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\graphics\ibl\ProbeManager.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\graphics\renderer\renderpass\forward\ForwardProbePass.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\graphics\ibl\ReflectionProbe.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\graphics\renderer\renderpass\defferred\DeferredGeometryPass.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\platform\OpenGL\Framebuffers\GBuffer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\graphics\renderer\renderpass\defferred\DeferredLightingPass.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\thread\thread_pool.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\utils\json\typeProcess.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\utils\global_config\GlobalConfig.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\physics\fluid\FluidSim.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\physics\fluid\solvers\pbf.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\physics\fluid\accelerate\UniformGrid.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\physics\fluid\SPHKernel.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\utils\profile\profile.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Source\shaders\forward\pbr_terrain.glsl" />
+    <None Include="Source\shaders\post_process\gammaCorrect.glsl" />
+    <None Include="Source\shaders\skybox.glsl" />
+    <None Include="Source\shaders\shadowmap.glsl" />
+    <None Include="Source\shaders\forward\pbr_model.glsl" />
+    <None Include="Source\shaders\lightprobe_convolution.glsl" />
+    <None Include="Source\shaders\reflectionprobe_importance_sampling.glsl" />
+    <None Include="Source\shaders\prebrdf.glsl" />
+    <None Include="Source\shaders\post_process\copy.glsl" />
+    <None Include="Source\shaders\post_process\fxaa.glsl" />
+    <None Include="Source\shaders\deferred\PBR_Model_GeometryPass.glsl" />
+    <None Include="Source\shaders\deferred\PBR_Terrain_GeometryPass.glsl" />
+    <None Include="Source\shaders\deferred\PBR_LightingPass.glsl" />
+    <None Include="Source\shaders\fluid\particle_draw.glsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\awesomeface.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\container.jpg">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\container2.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\container2_specular.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\container2_emission.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\terrain\stone.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\terrain\sand.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Assets\terrain\heightMap.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\terrain\grass.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\terrain\dirt.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\terrain\blendMap.png">
+      <Filter>资源文件</Filter>
+    </Image>
+  </ItemGroup>
+</Project>
