@@ -353,5 +353,9 @@ MigrationBackup/
 
 vcpkg_installed/
 
+# Ensure all assets folder contents are committed
+!Assets/**
+
+# Keep existing rules for res folder
 !Engine/res/**/*.obj
 !Engine/res/**/*.OBJ
