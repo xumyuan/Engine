@@ -3,7 +3,7 @@
         {
             "modelPath":"Assets/3D_Models/Sponza/sponza.obj",
             "position":[120.0, 130.0, 100.0],
-            "scale":[0.5, 0.5, 0.5],
+            "scale":[0.2, 0.2, 0.2],
             "rotationAxis":[0.0, 0.0, 0.0],
             "radianRotation":-90.0,
             "isStatic":false,
@@ -17,5 +17,32 @@
         "bottom":"Assets/skybox/bottom.png",
         "back":"Assets/skybox/back.png",
         "front":"Assets/skybox/front.png"
+    },
+    "lights":{
+        "directionalLight":{
+            "isActive":true,
+            "direction":[-1.0, -1.0, -1.0],
+            "lightColor":[3.25, 3.25, 3.25]
+        },
+        "spotLight":{
+            "isActive": true,
+            "lightColor": [100.0, 100.0, 100.0],
+            "position": [0.0, 0.0, 0.0],
+            "direction": [1.0, 0.0, 0.0],
+            "cutOff": 12.5,
+            "outerCutOff": 15.0
+        },
+        "pointLight": [
+            {
+                "isActive": true,
+                "position": [300.0, 300.0, 300.0],
+                "lightColor": [120.0, 95.0, 120.0]
+            },
+            {
+                "isActive": true,
+                "position": [800.0, 200.0, 0.0],
+                "lightColor": [120.0, 77.0, 100.0]
+            }
+        ]
     }
 }

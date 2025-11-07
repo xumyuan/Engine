@@ -181,6 +181,7 @@
     <ClInclude Include="Source\platform\OpenGL\Framebuffers\GBuffer.h" />
     <ClInclude Include="Source\thread\spin_lock.h" />
     <ClInclude Include="Source\thread\thread_pool.h" />
+    <ClInclude Include="Source\utils\json\JsonUtils.h" />
     <ClInclude Include="Source\utils\json\json_type.h" />
     <ClInclude Include="Source\utils\json\typeProcess.h" />
     <ClInclude Include="Source\utils\loaders\ShaderLoader.h" />
@@ -250,6 +251,7 @@
     <ClCompile Include="Source\graphics\ibl\ProbeManager.cpp" />
     <ClCompile Include="Source\platform\OpenGL\Framebuffers\GBuffer.cpp" />
     <ClCompile Include="Source\thread\thread_pool.cpp" />
+    <ClCompile Include="Source\utils\json\JsonUtils.cpp" />
     <ClCompile Include="Source\utils\json\typeProcess.cpp" />
     <ClCompile Include="Source\utils\loaders\ShaderLoader.cpp" />
     <ClCompile Include="Source\graphics\renderer\renderpass\forward\ForwardLightingPass.cpp" />

@@ -66,8 +66,53 @@ namespace engine {
 		};
 	}
 
+	void from_json(const json& j, SceneInfo::LightsInfo::DirectionalLight& d) {
+		j.at("isActive").get_to(d.isActive);
+		j.at("direction").get_to(d.direction);
+		j.at("lightColor").get_to(d.lightColor);
+	}
+
+	void from_json(const json& j, SceneInfo::LightsInfo::SpotLight& s) {
+		j.at("isActive").get_to(s.isActive);
+		j.at("lightColor").get_to(s.lightColor);
+		j.at("position").get_to(s.position);
+		j.at("direction").get_to(s.direction);
+		j.at("cutOff").get_to(s.cutOff);
+		j.at("outerCutOff").get_to(s.outerCutOff);
+	}
+
+	void from_json(const json& j, SceneInfo::LightsInfo::PointLight& p) {
+		j.at("isActive").get_to(p.isActive);
+		j.at("position").get_to(p.position);
+		j.at("lightColor").get_to(p.lightColor);
+	}
+
+	void from_json(const json& j, SceneInfo::LightsInfo& l) {
+		if (j.contains("directionalLight")) {
+			j.at("directionalLight").get_to(l.directionalLight);
+		}
+		if (j.contains("spotLight")) {
+			j.at("spotLight").get_to(l.spotLight);
+		}
+		if (j.contains("pointLight")) {
+			j.at("pointLight").get_to(l.pointLightList);
+		}
+	}
+
 	void from_json(const json& j, SceneInfo& s) {
-		j.at("modelList").get_to(s.modelInfoList);
-		j.at("skybox").get_to(s.skyboxInfo);
+		// 解析模型列表，可选字段
+		if (j.contains("modelList")) {
+			j.at("modelList").get_to(s.modelInfoList);
+		}
+		
+		// 解析天空盒信息，可选字段
+		if (j.contains("skybox")) {
+			j.at("skybox").get_to(s.skyboxInfo);
+		}
+		
+		// 解析灯光信息，可选字段
+		if (j.contains("lights")) {
+			j.at("lights").get_to(s.lightsInfo);
+		}
 	}
 }

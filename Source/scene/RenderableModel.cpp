@@ -3,8 +3,22 @@
 
 namespace engine {
 
-	RenderableModel::RenderableModel(const glm::vec3& position, const glm::vec3& scale, const glm::vec3& rotationAxis, float radianRotation, Model* model, RenderableModel* parent, bool m_IsStatic, bool transparent)
-		: m_Position(position), m_Scale(scale), m_Orientation(glm::angleAxis(radianRotation, rotationAxis)), m_Model(model), m_Parent(parent), m_IsStatic(m_IsStatic), m_IsTransparent(transparent)
+	RenderableModel::RenderableModel(
+		const glm::vec3& position, 
+		const glm::vec3& scale, 
+		const glm::vec3& rotationAxis, 
+		float radianRotation, 
+		Model* model, 
+		RenderableModel* parent, 
+		bool m_IsStatic, 
+		bool transparent)
+		: m_Position(position), 
+		m_Scale(scale), 
+		m_Orientation(glm::angleAxis(radianRotation, rotationAxis)), 
+		m_Model(model), 
+		m_Parent(parent), 
+		m_IsStatic(m_IsStatic), 
+		m_IsTransparent(transparent)
 	{
 	}
 

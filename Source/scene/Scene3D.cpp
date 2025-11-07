@@ -11,12 +11,13 @@
 
 #include "utils/json/typeProcess.h"
 #include "utils/json/json_type.h"
+#include "utils/json/JsonUtils.h"
 #include "utils/global_config/GlobalConfig.h"
 
 namespace engine {
 
 	Scene3D::Scene3D(Window* window)
-		:m_SceneCamera(glm::vec3(55.0f, 153.0f, 163.0f), glm::vec3(0.0f, 1.0f, 0.0f), 0.0f, 0.0f),
+		:m_SceneCamera(glm::vec3(51.0f, 168.5f, 98.0f), glm::vec3(0.0f, 1.0f, 0.0f), 0.0f, 0.0f),
 		m_ModelRenderer(getCamera()),
 		m_Terrain(glm::vec3(-220.0f, 0.0f, 0.0f)),
 		m_ProbeManager(m_SceneProbeBlendSetting)
@@ -41,17 +42,20 @@ namespace engine {
 		using json = nlohmann::json;
 
 		m_GLCache->setMultisample(true);
+
+		// parse scene json
 		try
 		{
-			std::ifstream file(m_config->getScenePath());
-			json j;
-			file >> j;
-
+			// 使用增强的JSON解析工具
+			json j = JsonUtils::loadJsonFromFile(m_config->getScenePath());
+			
+			// 由于所有字段都是可选的，我们只需要验证JSON是否有效
 			SceneInfo sceneInfo = j.get<SceneInfo>();
 
+			// 处理模型列表
 			auto& modelList = sceneInfo.modelInfoList;
-
-			for (auto& model : modelList) {
+			if (!modelList.empty()) {
+				for (auto& model : modelList) {
 				std::string& modelPath = model.modelPath;
 				glm::vec3& position = model.position;
 				glm::vec3& scale = model.scale;
@@ -67,21 +71,79 @@ namespace engine {
 					modelMat.processMaterial(model);
 				}
 
-				m_RenderableModels.push_back(new RenderableModel(position, scale, rotationAxis, glm::radians(radianRotation), modelPtr, nullptr, isStatic, isTransparent));
+					m_RenderableModels.push_back(new RenderableModel(position, scale, rotationAxis, glm::radians(radianRotation), modelPtr, nullptr, isStatic, isTransparent));
+				}
 			}
 			// progress skybox info
 			{
 				auto& skyboxInfo = sceneInfo.skyboxInfo;
 				auto& skyboxFilePaths = skyboxInfo.skyboxFilePaths;
-				if (skyboxFilePaths.size() != 6) {
-					spdlog::error("Skybox file paths are not valid");
-				}
-				else {
-					m_Skybox = new Skybox(skyboxFilePaths);
-					m_ProbeManager.init(m_Skybox);
+				if (!skyboxFilePaths.empty()) {
+					if (skyboxFilePaths.size() != 6) {
+						spdlog::error("Skybox file paths are not valid");
+					}
+					else {
+						m_Skybox = new Skybox(skyboxFilePaths);
+						m_ProbeManager.init(m_Skybox);
+					}
 				}
 			}
 
+			// progress lights
+			{
+				auto& lightsInfo = sceneInfo.lightsInfo;
+				
+				// 设置方向光
+				if (lightsInfo.directionalLight.isActive) {
+					m_DynamicLightManager.setDirectionalLight(
+						lightsInfo.directionalLight.direction,
+						lightsInfo.directionalLight.lightColor
+					);
+				}
+				
+				// 设置聚光灯
+				if (lightsInfo.spotLight.isActive) {
+					m_DynamicLightManager.setSpotLight(
+						lightsInfo.spotLight.position,
+						lightsInfo.spotLight.direction,
+						lightsInfo.spotLight.lightColor,
+						lightsInfo.spotLight.cutOff,
+						lightsInfo.spotLight.outerCutOff
+					);
+				}
+				
+				// 设置点光源并添加光球模型
+				if(0)
+				for (auto& pointLight : lightsInfo.pointLightList) {
+					if (pointLight.isActive) {
+						m_DynamicLightManager.addPointLight(
+							pointLight.position,
+							pointLight.lightColor
+						);
+						
+						// 创建光球模型
+						Sphere* lightSphere = new Sphere(10, 10);
+						Model* lightSphereModel = new Model(*lightSphere);
+						
+						// 设置材质为光源颜色
+						auto& material = lightSphereModel->getMeshes()[0].getMaterial();
+						material.SetAlbedoColour(glm::vec4(pointLight.lightColor,1.0f));
+						material.SetEmissionColour(glm::vec4(pointLight.lightColor,1.0f));
+						
+						// 添加到渲染列表
+						m_RenderableModels.push_back(new RenderableModel(
+							pointLight.position, 
+							glm::vec3(5.0f, 5.0f, 5.0f), // 光球大小
+							glm::vec3(0.0f, 1.0f, 0.0f), 
+							0.0f, 
+							lightSphereModel, 
+							nullptr, 
+							true, 
+							false
+						));
+					}
+				}
+			}
 
 		}
 		catch (const json::exception& e)

@@ -24,6 +24,7 @@ namespace engine {
 
 
 		inline void SetAlbedoColour(glm::vec4 value) { m_AlbedoColour = value; }
+		inline void SetEmissionColour(glm::vec3 value) { m_EmissionColour = value; }
 
 	private:
 		Texture* m_AlbedoMap, * m_NormalMap, * m_MetallicMap, * m_RoughnessMap, * m_AmbientOcclusionMap, * m_EmissionMap;

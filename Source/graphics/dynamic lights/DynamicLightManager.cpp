@@ -27,11 +27,11 @@ namespace engine {
 
 		PointLight pointLight1(glm::vec3(300.0f, 300.0f, 300.0f), glm::vec3(120.0f, 95.0f, 120.0f));
 		pointLight1.isActive = true;
-		addPointLight(pointLight1);
+		//addPointLight(pointLight1);
 
 		PointLight pointLight2(glm::vec3(800.0f, 200.0f, 0.0f), glm::vec3(120.0f, 77.0f, 100.0f));
 		pointLight2.isActive = true;
-		addPointLight(pointLight2);
+		//addPointLight(pointLight2);
 	}
 
 	// TODO: Dynamically change the size of the lights (LIMIT OF 5 CURRENTLY FOR POINTLIGHTS)
@@ -48,6 +48,12 @@ namespace engine {
 	}
 
 	void DynamicLightManager::addPointLight(PointLight& pointLight) {
+		m_PointLights.push_back(pointLight);
+	}
+	
+	void DynamicLightManager::addPointLight(const glm::vec3& position, const glm::vec3& lightColor) {
+		PointLight pointLight(position, lightColor);
+		pointLight.isActive = true;
 		m_PointLights.push_back(pointLight);
 	}
 }
