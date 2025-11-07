@@ -112,41 +112,41 @@ void main() {
 	float albedoAlpha = texture(material.texture_albedo, TexCoords).w;
 	vec3 normal = texture(material.texture_normal, TexCoords).rgb;
 	float metallic = texture(material.texture_metallic, TexCoords).r;
-	float unclampedRoughness = texture(material.texture_roughness, TexCoords).r; // ÓÃÓÚ¼ä½Ó¾µÃæ·´Éä
+	float unclampedRoughness = texture(material.texture_roughness, TexCoords).r; // ç”¨äºé—´æ¥é•œé¢åå°„
 	float roughness = max(unclampedRoughness, 0.04);
 	float ao = texture(material.texture_ao, TexCoords).r;
 
-	// ·¨ÏßÌùÍ¼´úÂë¡£ Ñ¡ÔñÍË³öÇĞÏß¿Õ¼ä·¨ÏßÌùÍ¼£¬ÒòÎªÎÒ±ØĞë½«ËùÓĞµÆ¹â×ª»»ÎªÇĞÏß¿Õ¼ä
+	// æ³•çº¿è´´å›¾ä»£ç ã€‚ é€‰æ‹©é€€å‡ºåˆ‡çº¿ç©ºé—´æ³•çº¿è´´å›¾ï¼Œå› ä¸ºæˆ‘å¿…é¡»å°†æ‰€æœ‰ç¯å…‰è½¬æ¢ä¸ºåˆ‡çº¿ç©ºé—´
 	normal = normalize(normal * 2.0f - 1.0f);
 	normal = normalize(TBN * normal);
 
 	vec3 fragToView = normalize(viewPos - FragPos);
 	vec3 reflectionVec = reflect(-fragToView, normal);
 
-	// µç½éÖÊµÄÆ½¾ù»ù´¡¾µÃæ·´ÉäÂÊÔ¼Îª 0.04£¬½ğÊôÎüÊÕÆäËùÓĞÂş·´Éä£¨ÕÛÉä£©ÕÕÃ÷£¬Òò´ËÆä·´ÕÕÂÊÓÃÓÚ´úÌæ¾µÃæÕÕÃ÷£¨·´Éä£©
+	// ç”µä»‹è´¨çš„å¹³å‡åŸºç¡€é•œé¢åå°„ç‡çº¦ä¸º 0.04ï¼Œé‡‘å±å¸æ”¶å…¶æ‰€æœ‰æ¼«åå°„ï¼ˆæŠ˜å°„ï¼‰ç…§æ˜ï¼Œå› æ­¤å…¶åç…§ç‡ç”¨äºä»£æ›¿é•œé¢ç…§æ˜ï¼ˆåå°„ï¼‰
 	vec3 baseReflectivity = vec3(0.04);
 	baseReflectivity = mix(baseReflectivity, albedo, metallic);
 
 
-	// ¼ÆËãËùÓĞÖ±½ÓÕÕÃ÷µÄÃ¿¸ö¹â·øÉäÂÊ
+	// è®¡ç®—æ‰€æœ‰ç›´æ¥ç…§æ˜çš„æ¯ä¸ªå…‰è¾å°„ç‡
 	vec3 directLightIrradiance = vec3(0.0);
 	directLightIrradiance += CalculateDirectionalLightRadiance(albedo, normal, metallic, roughness, fragToView, baseReflectivity);
 	directLightIrradiance += CalculatePointLightRadiance(albedo, normal, metallic, roughness, fragToView, baseReflectivity);
 	directLightIrradiance += CalculateSpotLightRadiance(albedo, normal, metallic, roughness, fragToView, baseReflectivity);
 
-	// ¼ÆËãÂş·´ÉäºÍ¾µÃæ·´ÉäµÄ»·¾³ IBL
+	// è®¡ç®—æ¼«åå°„å’Œé•œé¢åå°„çš„ç¯å¢ƒ IBL
 	vec3 ambient = vec3(0.03) * albedo * ao;
 	if (computeIBL) {
-		// ¼ÆËã¾µÃæ·´ÉäºÍÂş·´Éä¹âµÄ±ÈÀı
+		// è®¡ç®—é•œé¢åå°„å’Œæ¼«åå°„å…‰çš„æ¯”ä¾‹
 		vec3 specularRatio = FresnelSchlick(max(dot(normal, fragToView), 0.0), baseReflectivity);
 
 		vec3 diffuseRatio = vec3(1.0) - specularRatio;
 		diffuseRatio *= 1.0 - metallic;
 
-		// »·¾³¹âÕÕµÄÂş·´ÉäÏî
+		// ç¯å¢ƒå…‰ç…§çš„æ¼«åå°„é¡¹
 		vec3 indirectDiffuse = texture(irradianceMap, normal).rgb * albedo;
 
-		// ¾µÃæ·´ÉäÏî
+		// é•œé¢åå°„é¡¹
 		vec3 prefilterColour = textureLod(prefilterMap, reflectionVec, unclampedRoughness * (reflectionProbeMipCount - 1)).rgb;
 		vec2 brdfIntegration = texture(brdfLUT, vec2(max(dot(normal, fragToView), 0.0), roughness)).rg;
 		vec3 indirectSpecular = prefilterColour * (specularRatio * brdfIntegration.x + brdfIntegration.y);
@@ -220,7 +220,7 @@ vec3 CalculatePointLightRadiance(vec3 albedo, vec3 normal, float metallic, float
 	return pointLightIrradiance;
 }
 
-// ½üËÆÓë°ë³ÌÊ¸Á¿ÕıÈ·¶ÔÆëµÄÎ¢ÃæÊıÁ¿£¬´Ó¶øÈ·¶¨¾µÃæ¹âµÄÇ¿¶ÈºÍÃæ»ı
+// è¿‘ä¼¼ä¸åŠç¨‹çŸ¢é‡æ­£ç¡®å¯¹é½çš„å¾®é¢æ•°é‡ï¼Œä»è€Œç¡®å®šé•œé¢å…‰çš„å¼ºåº¦å’Œé¢ç§¯
 float NormalDistributionGGX(vec3 normal, vec3 halfway, float roughness) {
 	float a = roughness * roughness;
 	float a2 = a * a;
@@ -252,24 +252,24 @@ vec3 CalculateSpotLightRadiance(vec3 albedo, vec3 normal, float metallic, float 
 	vec3 fresnel = FresnelSchlick(max(dot(halfway, fragToView), 0.0), baseReflectivity);
 	float geometry = GeometrySmith(normal, fragToView, fragToLight, roughness);
 
-	// ·Ö±ğ¼ÆËã·´Éä¹âºÍÕÛÉä¹â£¬ÓÉÓÚ½ğÊôÎüÊÕËùÓĞÕÛÉä¹â£¬Òò´ËÎÒÃÇ¸ù¾İ½ğÊô²ÎÊıÈ¡ÏûÂşÉä¹â
+	// åˆ†åˆ«è®¡ç®—åå°„å…‰å’ŒæŠ˜å°„å…‰ï¼Œç”±äºé‡‘å±å¸æ”¶æ‰€æœ‰æŠ˜å°„å…‰ï¼Œå› æ­¤æˆ‘ä»¬æ ¹æ®é‡‘å±å‚æ•°å–æ¶ˆæ¼«å°„å…‰
 	vec3 specularRatio = fresnel;
 	vec3 diffuseRatio = vec3(1.0) - specularRatio;
 	diffuseRatio *= 1.0 - metallic;
 
-	// ×îºó¼ÆËãCook-Torrance BRDFµÄ¾µÃæ²¿·Ö
+	// æœ€åè®¡ç®—Cook-Torrance BRDFçš„é•œé¢éƒ¨åˆ†
 	vec3 numerator = specularRatio * normalDistribution * geometry;
 	float denominator = 4 * max(dot(fragToView, normal), 0.1) * max(dot(fragToLight, normal), 0.0) + 0.001; // Prevents any division by zero
 	vec3 specular = numerator / denominator;
 
-	// »¹¼ÆËãÂş·´Éä£¬lambertian¼ÆËã½«Ìí¼Óµ½×îÖÕµÄ·øÉä¼ÆËãÖĞ
+	// è¿˜è®¡ç®—æ¼«åå°„ï¼Œlambertianè®¡ç®—å°†æ·»åŠ åˆ°æœ€ç»ˆçš„è¾å°„è®¡ç®—ä¸­
 	vec3 diffuse = diffuseRatio * albedo / PI;
 
 	// Add light radiance to the irradiance sum
 	return (diffuse + specular) * radiance * max(dot(normal, fragToLight), 0.0);
 }
 
-// ÔÚÎ¢Ãæ¼¶±ğÉÏ·Ö±ğ½üËÆ¼¸ºÎ×èµ²ºÍ¼¸ºÎÒõÓ°
+// åœ¨å¾®é¢çº§åˆ«ä¸Šåˆ†åˆ«è¿‘ä¼¼å‡ ä½•é˜»æŒ¡å’Œå‡ ä½•é˜´å½±
 float GeometrySmith(vec3 normal, vec3 viewDir, vec3 lightDir, float roughness) {
 	return GeometrySchlickGGX(max(dot(normal, viewDir), 0.0), roughness) * GeometrySchlickGGX(max(dot(normal, lightDir), 0.0), roughness);
 }
@@ -284,8 +284,8 @@ float GeometrySchlickGGX(float cosTheta, float roughness) {
 	return numerator / max(denominator, 0.001);
 }
 
-// ¼ÆËã¾µÃæ£¨·´Éä£©¹âµÄÁ¿¡£ ÓÉÓÚÂş·´Éä£¨ÕÛÉä£©ºÍ¾µÃæ·´Éä£¨·´Éä£©ÊÇ»¥³âµÄ£¬
-// ÎÒÃÇ»¹¿ÉÒÔÓÃËüÀ´È·¶¨ÂşÉä¹âµÄÁ¿
+// è®¡ç®—é•œé¢ï¼ˆåå°„ï¼‰å…‰çš„é‡ã€‚ ç”±äºæ¼«åå°„ï¼ˆæŠ˜å°„ï¼‰å’Œé•œé¢åå°„ï¼ˆåå°„ï¼‰æ˜¯äº’æ–¥çš„ï¼Œ
+// æˆ‘ä»¬è¿˜å¯ä»¥ç”¨å®ƒæ¥ç¡®å®šæ¼«å°„å…‰çš„é‡
 vec3 FresnelSchlick(float cosTheta, vec3 baseReflectivity) {
 	return max(baseReflectivity + (1.0 - baseReflectivity) * pow(2, (-5.55473 * cosTheta - 6.98316) * cosTheta), 0.0);
 }
@@ -297,11 +297,11 @@ float CalculateShadow(vec3 normal, vec3 fragToLight) {
 	float shadow = 0.0;
 	float currentDepth = depthmapCoords.z;
 
-	// Ìí¼ÓÒõÓ°Æ«ÖÃÒÔ±ÜÃâÒõÓ°Ê§Õæ£¬¸ù¾İ·¨Ïß·½ÏòºÍ¹âÏß·½ÏòÖ®¼äµÄ½Ç¶ÈĞèÒª¸ü¶àÒõÓ°Æ«ÖÃ
-	// Ì«¶àµÄÆ«ÒÆ»áµ¼ÖÂ peter panning
+	// æ·»åŠ é˜´å½±åç½®ä»¥é¿å…é˜´å½±å¤±çœŸï¼Œæ ¹æ®æ³•çº¿æ–¹å‘å’Œå…‰çº¿æ–¹å‘ä¹‹é—´çš„è§’åº¦éœ€è¦æ›´å¤šé˜´å½±åç½®
+	// å¤ªå¤šçš„åç§»ä¼šå¯¼è‡´ peter panning
 	float shadowBias = max(0.01, 0.1 * (1.0 - dot(normal, fragToLight)));
 
-	// Ö´ĞĞ°Ù·Ö±È½Ó½ü¹ıÂË (PCF) ÒÔ²úÉúÈáºÍµÄÒõÓ°
+	// æ‰§è¡Œç™¾åˆ†æ¯”æ¥è¿‘è¿‡æ»¤ (PCF) ä»¥äº§ç”ŸæŸ”å’Œçš„é˜´å½±
 	vec2 texelSize = 1.0 / textureSize(shadowmap, 0);
 	for (int y = -1; y <= 1; ++y) {
 		for (int x = -1; x <= 1; ++x) {
