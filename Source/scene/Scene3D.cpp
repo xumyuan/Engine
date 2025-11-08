@@ -17,7 +17,7 @@
 namespace engine {
 
 	Scene3D::Scene3D(Window* window)
-		:m_SceneCamera(glm::vec3(51.0f, 168.5f, 98.0f), glm::vec3(0.0f, 1.0f, 0.0f), 0.0f, 0.0f),
+		:m_SceneCamera(glm::vec3(105.716f, 136.20f, 98.0f), glm::vec3(0.0f, 1.0f, 0.0f), 0.0f, 0.0f),
 		m_ModelRenderer(getCamera()),
 		m_Terrain(glm::vec3(-220.0f, 0.0f, 0.0f)),
 		m_ProbeManager(m_SceneProbeBlendSetting)

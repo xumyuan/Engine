@@ -107,21 +107,66 @@ namespace engine {
 		if (mesh->mMaterialIndex >= 0) {
 			aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
-			// 颜色类型的贴图需要伽马矫正
-			//newMesh.m_Material.setAlbedoMap(loadMaterialTexture(material, aiTextureType_BASE_COLOR, true));
-			//newMesh.m_Material.setNormalMap(loadMaterialTexture(material, aiTextureType_NORMAL_CAMERA, false));
-			////newMesh.m_Material.setSpecularMap(loadMaterialTexture(material, aiTextureType_SPECULAR, false));
-			////newMesh.m_Material.setSpecularMap(loadMaterialTexture(material, aiTextureType_SPECULAR, false));
-			//newMesh.m_Material.setAmbientOcclusionMap(loadMaterialTexture(material, aiTextureType_AMBIENT_OCCLUSION, false));
-			//newMesh.m_Material.setEmissionMap(loadMaterialTexture(material, aiTextureType_EMISSION_COLOR, true));
-			//newMesh.m_Material.setRoughnessMap(loadMaterialTexture(material, aiTextureType_DIFFUSE_ROUGHNESS, false));
-			//newMesh.m_Material.setMetallicMap(loadMaterialTexture(material, aiTextureType_METALNESS, false));
+			// 优先尝试加载PBR材质纹理（更现代的材质模型）
+			// 基础颜色/反照率 (需要伽马矫正)
+			Texture* albedoTexture = loadMaterialTexture(material, aiTextureType_BASE_COLOR, true);
+			if (albedoTexture) {
+				newMesh.m_Material.setAlbedoMap(albedoTexture);
+			} else {
+				// 如果没有PBR格式，回退到传统格式
+				albedoTexture = loadMaterialTexture(material, aiTextureType_DIFFUSE, true);
+				if (albedoTexture) {
+					newMesh.m_Material.setAlbedoMap(albedoTexture);
+				}
+			}
 
-			newMesh.m_Material.setAlbedoMap(loadMaterialTexture(material, aiTextureType_DIFFUSE, true));
-			newMesh.m_Material.setNormalMap(loadMaterialTexture(material, aiTextureType_NORMALS, false));
-			newMesh.m_Material.setAmbientOcclusionMap(loadMaterialTexture(material, aiTextureType_AMBIENT, false));
-			newMesh.m_Material.setEmissionMap(loadMaterialTexture(material, aiTextureType_EMISSIVE, true));
+			// 法线贴图 (不需要伽马矫正)
+			Texture* normalTexture = loadMaterialTexture(material, aiTextureType_NORMAL_CAMERA, false);
+			if (normalTexture) {
+				newMesh.m_Material.setNormalMap(normalTexture);
+			} else {
+				// 回退到传统法线贴图
+				normalTexture = loadMaterialTexture(material, aiTextureType_NORMALS, false);
+				if (normalTexture) {
+					newMesh.m_Material.setNormalMap(normalTexture);
+				}
+			}
 
+			// 环境光遮蔽贴图 (不需要伽马矫正)
+			Texture* aoTexture = loadMaterialTexture(material, aiTextureType_AMBIENT_OCCLUSION, false);
+			if (aoTexture) {
+				newMesh.m_Material.setAmbientOcclusionMap(aoTexture);
+			} else {
+				// 回退到传统AO贴图
+				aoTexture = loadMaterialTexture(material, aiTextureType_AMBIENT, false);
+				if (aoTexture) {
+					newMesh.m_Material.setAmbientOcclusionMap(aoTexture);
+				}
+			}
+
+			// 自发光贴图 (需要伽马矫正)
+			Texture* emissiveTexture = loadMaterialTexture(material, aiTextureType_EMISSION_COLOR, true);
+			if (emissiveTexture) {
+				newMesh.m_Material.setEmissionMap(emissiveTexture);
+			} else {
+				// 回退到传统自发光贴图
+				emissiveTexture = loadMaterialTexture(material, aiTextureType_EMISSIVE, true);
+				if (emissiveTexture) {
+					newMesh.m_Material.setEmissionMap(emissiveTexture);
+				}
+			}
+
+			// 粗糙度贴图 (不需要伽马矫正)
+			Texture* roughnessTexture = loadMaterialTexture(material, aiTextureType_DIFFUSE_ROUGHNESS, false);
+			if (roughnessTexture) {
+				newMesh.m_Material.setRoughnessMap(roughnessTexture);
+			}
+
+			// 金属度贴图 (不需要伽马矫正)
+			Texture* metallicTexture = loadMaterialTexture(material, aiTextureType_METALNESS, false);
+			if (metallicTexture) {
+				newMesh.m_Material.setMetallicMap(metallicTexture);
+			}
 		}
 
 		return newMesh;

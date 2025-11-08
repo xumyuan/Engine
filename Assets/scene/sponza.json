@@ -3,7 +3,7 @@
         {
             "modelPath":"Assets/3D_Models/Sponza/sponza.obj",
             "position":[120.0, 130.0, 100.0],
-            "scale":[0.2, 0.2, 0.2],
+            "scale":[0.05, 0.05, 0.05],
             "rotationAxis":[0.0, 0.0, 0.0],
             "radianRotation":-90.0,
             "isStatic":false,
@@ -22,7 +22,7 @@
         "directionalLight":{
             "isActive":true,
             "direction":[-1.0, -1.0, -1.0],
-            "lightColor":[3.25, 3.25, 3.25]
+            "lightColor":[10.25, 10.25, 10.25]
         },
         "spotLight":{
             "isActive": true,
