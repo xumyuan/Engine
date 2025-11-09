@@ -99,7 +99,7 @@ namespace engine
 		shader->setUniform("dirLightShadowmap", 0);
 		/*shader->setUniform("shadowmap", 0);
 		shader->setUniform("lightSpaceViewProjectionMatrix", shadowmapData.directionalLightViewProjMatrix);*/
-
+		shader->setUniform("lightSpaceViewProjectionMatrix", shadowmapData.directionalLightViewProjMatrix);
 		shader->setUniform("dirLightShadowData.shadowBias", 0.01f);
 		shader->setUniform("dirLightShadowData.lightSpaceViewProjectionMatrix", shadowmapData.directionalLightViewProjMatrix);
 		shader->setUniform("dirLightShadowData.lightShadowIndex", 1);

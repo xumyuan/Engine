@@ -84,7 +84,7 @@ uniform samplerCube irradianceMap;
 uniform samplerCube prefilterMap;
 uniform sampler2D brdfLUT;
 
-uniform sampler2D shadowmap;
+uniform sampler2D dirLightShadowmap;
 uniform int numPointLights;
 uniform DirLight dirLights[MAX_POINT_LIGHTS];
 uniform PointLight pointLights[MAX_POINT_LIGHTS];
@@ -154,7 +154,6 @@ void main() {
 		ambient = (diffuseRatio * indirectDiffuse + indirectSpecular) * ao;
 		//ambient = vec3(brdfIntegration,0.0)*ao;
 	}
-
 	color = vec4(ambient + directLightIrradiance, albedoAlpha);
 }
 
@@ -302,10 +301,10 @@ float CalculateShadow(vec3 normal, vec3 fragToLight) {
 	float shadowBias = max(0.01, 0.1 * (1.0 - dot(normal, fragToLight)));
 
 	// 执行百分比接近过滤 (PCF) 以产生柔和的阴影
-	vec2 texelSize = 1.0 / textureSize(shadowmap, 0);
+	vec2 texelSize = 1.0 / textureSize(dirLightShadowmap, 0);
 	for (int y = -1; y <= 1; ++y) {
 		for (int x = -1; x <= 1; ++x) {
-			float sampledDepthPCF = texture(shadowmap, depthmapCoords.xy + (texelSize * vec2(x, y))).r;
+			float sampledDepthPCF = texture(dirLightShadowmap, depthmapCoords.xy + (texelSize * vec2(x, y))).r;
 			shadow += currentDepth > sampledDepthPCF + shadowBias ? 1.0 : 0.0;
 		}
 	}
