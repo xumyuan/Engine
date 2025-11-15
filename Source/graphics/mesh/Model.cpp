@@ -167,6 +167,41 @@ namespace engine {
 			if (metallicTexture) {
 				newMesh.m_Material.setMetallicMap(metallicTexture);
 			}
+
+			// 加载材质参数
+			// 反照率颜色 (RGB)
+			aiColor4D albedoColor;
+			if (AI_SUCCESS == aiGetMaterialColor(material, AI_MATKEY_COLOR_DIFFUSE, &albedoColor)) {
+				newMesh.m_Material.SetAlbedoColour(glm::vec4(albedoColor.r, albedoColor.g, albedoColor.b, albedoColor.a));
+			}
+
+			// 金属度值
+			float metallicValue = 0.0f;
+			unsigned int maxMetallicValue = 1;
+			if (AI_SUCCESS == aiGetMaterialFloatArray(material, AI_MATKEY_METALLIC_FACTOR, &metallicValue, &maxMetallicValue)) {
+				newMesh.m_Material.SetMetallicValue(metallicValue);
+			}
+
+			// 粗糙度值
+			float roughnessValue = 0.0f;
+			unsigned int maxRoughnessValue = 1;
+			if (AI_SUCCESS == aiGetMaterialFloatArray(material, AI_MATKEY_ROUGHNESS_FACTOR, &roughnessValue, &maxRoughnessValue)) {
+				newMesh.m_Material.SetRoughnessValue(roughnessValue);
+			}
+
+			// 自发光颜色
+			aiColor4D emissionColor;
+			if (AI_SUCCESS == aiGetMaterialColor(material, AI_MATKEY_COLOR_EMISSIVE, &emissionColor)) {
+				newMesh.m_Material.SetEmissionColour(glm::vec3(emissionColor.r, emissionColor.g, emissionColor.b));
+			}
+
+			// 自发光强度
+			float emissionIntensity = 1.0f;
+			unsigned int maxEmissionIntensity = 1;
+			if (AI_SUCCESS == aiGetMaterialFloatArray(material, AI_MATKEY_EMISSIVE_INTENSITY, &emissionIntensity, &maxEmissionIntensity)) {
+				newMesh.m_Material.SetEmissionIntensity(emissionIntensity);
+			}
+
 		}
 
 		return newMesh;

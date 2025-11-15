@@ -109,10 +109,13 @@ namespace engine
 
 		// Reset state
 		m_GLCache->setDepthTest(true);
+		
+		BEGIN_EVENT("Render Skybox");
 		Skybox* skybox = m_ActiveScene->getSkybox();
 		m_GLCache->setStencilTest(false);
 
 		skybox->Draw(camera);
+		END_EVENT();
 
 		// Render pass output
 		LightingPassOutput passOutput;

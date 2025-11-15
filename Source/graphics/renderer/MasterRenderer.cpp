@@ -60,12 +60,15 @@ namespace engine
 		END_EVENT();
 #endif
 #else
+		BEGIN_EVENT("Shadowmap")
 		ShadowmapPassOutput shadowmapOutput = m_ShadowmapPass.generateShadowmaps(m_ActiveScene->getCamera());
-
+		END_EVENT();
+		BEGIN_EVENT("GeometryPass");
 		GeometryPassOutput geometryOutput = m_DeferredGeometryPass.ExecuteGeometryPass(m_ActiveScene->getCamera(), false);
-
+		END_EVENT();
+		BEGIN_EVENT("LightingPass");
 		LightingPassOutput deferredLightingOutput = m_DeferredLightingPass.ExecuteLightingPass(shadowmapOutput, geometryOutput.outputGBuffer, m_ActiveScene->getCamera(), true);
-
+		END_EVENT();
 		m_PostProcessPass.executeRenderPass(deferredLightingOutput.outputFramebuffer);
 
 #endif // FORWARD_RENDER

@@ -22,9 +22,12 @@ namespace engine {
 		inline void setAmbientOcclusionMap(Texture* texture) { m_AmbientOcclusionMap = texture; }
 		inline void setEmissionMap(Texture* texture) { m_EmissionMap = texture; }
 
-
 		inline void SetAlbedoColour(glm::vec4 value) { m_AlbedoColour = value; }
 		inline void SetEmissionColour(glm::vec3 value) { m_EmissionColour = value; }
+		inline void SetMetallicValue(float value) { m_MetallicValue = value; }
+		inline void SetRoughnessValue(float value) { m_RoughnessValue = value; }
+		inline void SetEmissionIntensity(float value) { m_EmissionIntensity = value; }
+		inline void SetParallaxStrength(float value) { m_ParallaxStrength = value; }
 
 	private:
 		Texture* m_AlbedoMap, * m_NormalMap, * m_MetallicMap, * m_RoughnessMap, * m_AmbientOcclusionMap, * m_EmissionMap;

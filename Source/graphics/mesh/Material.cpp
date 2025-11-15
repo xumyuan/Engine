@@ -27,6 +27,13 @@ namespace engine {
 			shader->setUniform("material.hasAlbedoTexture", false);
 		}
 
+		// 传递材质参数到着色器
+		shader->setUniform("material.metallicValue", m_MetallicValue);
+		shader->setUniform("material.roughnessValue", m_RoughnessValue);
+		shader->setUniform("material.emissionColour", m_EmissionColour);
+		shader->setUniform("material.emissionIntensity", m_EmissionIntensity);
+		shader->setUniform("material.parallaxStrength", m_ParallaxStrength);
+
 
 
 		shader->setUniform("material.texture_normal", currentTextureUnit);

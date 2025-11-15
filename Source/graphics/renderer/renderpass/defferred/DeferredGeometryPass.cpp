@@ -65,6 +65,7 @@ namespace engine {
 		Terrain* terrain = m_ActiveScene->getTerrain();
 		if (terrain)
 		{
+			BEGIN_EVENT("Render Terrain");
 			// Setup terrain information
 			m_GLCache->switchShader(m_TerrainShader);
 			m_TerrainShader->setUniform("view", camera->getViewMatrix());
@@ -75,6 +76,7 @@ namespace engine {
 			m_GLCache->setStencilFunc(GL_ALWAYS, StencilValue::TerrainStencilValue, 0xFF);
 			terrain->Draw(m_TerrainShader, m_RenderPassType);
 			m_GLCache->setStencilWriteMask(0x00);
+			END_EVENT();
 			
 		}
 
