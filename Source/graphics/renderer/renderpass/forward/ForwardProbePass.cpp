@@ -49,7 +49,7 @@ namespace engine {
 		BEGIN_EVENT("GenerateBRDFLUT")
 		generateBRDFLUT();
 		END_EVENT();
-		glm::vec3 probePosition = glm::vec3(55.0f, 153.0f, 163.0f);
+		glm::vec3 probePosition = glm::vec3(112.3f, 139.4f, 97.2f);
 		BEGIN_EVENT("GenerateLightProbe");
 		generateLightProbe(probePosition);
 		END_EVENT();
