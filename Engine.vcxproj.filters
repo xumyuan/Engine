@@ -33,9 +33,6 @@
     <ClInclude Include="Source\utils\Time.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Source\utils\Logger.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Source\graphics\mesh\Mesh.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -246,9 +243,6 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Source\utils\Timer.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\utils\Logger.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Source\graphics\mesh\Mesh.cpp">

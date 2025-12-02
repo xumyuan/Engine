@@ -223,7 +223,6 @@
     <ClInclude Include="Source\graphics\mesh\Model.h" />
     <ClInclude Include="Source\graphics\mesh\Mesh.h" />
     <ClInclude Include="ThridParty\stb_image.h" />
-    <ClInclude Include="Source\utils\Logger.h" />
     <ClInclude Include="Source\graphics\camera\FPSCamera.h" />
     <ClInclude Include="Source\graphics\shader.h" />
     <ClInclude Include="Source\graphics\Window.h" />
@@ -301,7 +300,6 @@
     <ClCompile Include="Source\graphics\mesh\Model.cpp" />
     <ClCompile Include="Source\graphics\mesh\Mesh.cpp" />
     <ClCompile Include="Source\utils\loaders\MeshLoader.cpp" />
-    <ClCompile Include="Source\utils\Logger.cpp" />
     <ClCompile Include="Source\graphics\camera\FPSCamera.cpp" />
     <ClCompile Include="Source\graphics\shader.cpp" />
     <ClCompile Include="Source\graphics\Window.cpp" />

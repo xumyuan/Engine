@@ -7,8 +7,8 @@
 #define MSAA_SAMPLE_AMOUNT 4
 
 // 窗口设置
-#define WINDOW_X_RESOLUTION 1600 * 1.5f
-#define WINDOW_Y_RESOLUTION 900 * 1.5f
+#define WINDOW_X_RESOLUTION 1600 * 1.2f
+#define WINDOW_Y_RESOLUTION 900 * 1.2f
 #define V_SYNC 0
 #define FULLSCREEN_MODE 0 
 
