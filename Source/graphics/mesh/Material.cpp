@@ -32,7 +32,7 @@ namespace engine {
 		shader->setUniform("material.roughnessValue", m_RoughnessValue);
 		shader->setUniform("material.emissionColour", m_EmissionColour);
 		shader->setUniform("material.emissionIntensity", m_EmissionIntensity);
-		shader->setUniform("material.parallaxStrength", m_ParallaxStrength);
+		shader->setUniform("parallaxStrength", m_ParallaxStrength);
 
 
 
@@ -75,12 +75,18 @@ namespace engine {
 			TextureLoader::getDefaultAO()->bind(currentTextureUnit++);
 		}
 
+		// Bind displacement texture (currently not used in forward rendering, but keeping consistency)
+		shader->setUniform("material.texture_displacement", currentTextureUnit);
+		TextureLoader::getDefaultNormal()->bind(currentTextureUnit++); // Use default for now
+
 		shader->setUniform("material.texture_emission", currentTextureUnit);
 		if (m_EmissionMap) {
 			m_EmissionMap->bind(currentTextureUnit++);
+			shader->setUniform("material.hasEmissionTexture", true);
 		}
 		else {
 			TextureLoader::getDefaultEmission()->bind(currentTextureUnit++);
+			shader->setUniform("material.hasEmissionTexture", false);
 		}
 	}
 

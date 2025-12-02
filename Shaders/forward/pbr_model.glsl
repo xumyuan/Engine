@@ -41,6 +41,15 @@ struct Material {
 	sampler2D texture_metallic;
 	sampler2D texture_roughness;
 	sampler2D texture_ao;
+	sampler2D texture_displacement;
+	sampler2D texture_emission;
+
+	vec4 albedoColour;
+	float metallicValue, roughnessValue; // Used if textures aren't provided
+
+	vec3 emissionColour;
+	float emissionIntensity;
+	bool hasAlbedoTexture, hasMetallicTexture, hasRoughnessTexture, hasEmissionTexture;
 };
 
 struct DirLight {
@@ -107,12 +116,12 @@ vec3 FresnelSchlick(float cosTheta, vec3 baseReflectivity);
 float CalculateShadow(vec3 normal, vec3 fragToDirLight);
 
 void main() {
-	// Sample textures
-	vec3 albedo = texture(material.texture_albedo, TexCoords).rgb;
-	float albedoAlpha = texture(material.texture_albedo, TexCoords).w;
+	// Sample textures - Use material values/textures based on availability
+	vec4 albedo = material.hasAlbedoTexture ? texture(material.texture_albedo, TexCoords).rgba * material.albedoColour : material.albedoColour;
+	float albedoAlpha = albedo.w;
 	vec3 normal = texture(material.texture_normal, TexCoords).rgb;
-	float metallic = texture(material.texture_metallic, TexCoords).r;
-	float unclampedRoughness = texture(material.texture_roughness, TexCoords).r; // 用于间接镜面反射
+	float metallic = material.hasMetallicTexture ? texture(material.texture_metallic, TexCoords).r : material.metallicValue;
+	float unclampedRoughness = material.hasRoughnessTexture ? texture(material.texture_roughness, TexCoords).r : material.roughnessValue; // 用于间接镜面反射
 	float roughness = max(unclampedRoughness, 0.04);
 	float ao = texture(material.texture_ao, TexCoords).r;
 
@@ -125,17 +134,17 @@ void main() {
 
 	// 电介质的平均基础镜面反射率约为 0.04，金属吸收其所有漫反射（折射）照明，因此其反照率用于代替镜面照明（反射）
 	vec3 baseReflectivity = vec3(0.04);
-	baseReflectivity = mix(baseReflectivity, albedo, metallic);
+	baseReflectivity = mix(baseReflectivity, albedo.rgb, metallic);
 
 
 	// 计算所有直接照明的每个光辐射率
 	vec3 directLightIrradiance = vec3(0.0);
-	directLightIrradiance += CalculateDirectionalLightRadiance(albedo, normal, metallic, roughness, fragToView, baseReflectivity);
-	directLightIrradiance += CalculatePointLightRadiance(albedo, normal, metallic, roughness, fragToView, baseReflectivity);
-	directLightIrradiance += CalculateSpotLightRadiance(albedo, normal, metallic, roughness, fragToView, baseReflectivity);
+	directLightIrradiance += CalculateDirectionalLightRadiance(albedo.rgb, normal, metallic, roughness, fragToView, baseReflectivity);
+	directLightIrradiance += CalculatePointLightRadiance(albedo.rgb, normal, metallic, roughness, fragToView, baseReflectivity);
+	directLightIrradiance += CalculateSpotLightRadiance(albedo.rgb, normal, metallic, roughness, fragToView, baseReflectivity);
 
 	// 计算漫反射和镜面反射的环境 IBL
-	vec3 ambient = vec3(0.03) * albedo * ao;
+	vec3 ambient = vec3(0.03) * albedo.rgb * ao;
 	if (computeIBL) {
 		// 计算镜面反射和漫反射光的比例
 		vec3 specularRatio = FresnelSchlick(max(dot(normal, fragToView), 0.0), baseReflectivity);
@@ -144,7 +153,7 @@ void main() {
 		diffuseRatio *= 1.0 - metallic;
 
 		// 环境光照的漫反射项
-		vec3 indirectDiffuse = texture(irradianceMap, normal).rgb * albedo;
+		vec3 indirectDiffuse = texture(irradianceMap, normal).rgb * albedo.rgb;
 
 		// 镜面反射项
 		vec3 prefilterColour = textureLod(prefilterMap, reflectionVec, unclampedRoughness * (reflectionProbeMipCount - 1)).rgb;
@@ -154,7 +163,20 @@ void main() {
 		ambient = (diffuseRatio * indirectDiffuse + indirectSpecular) * ao;
 		//ambient = vec3(brdfIntegration,0.0)*ao;
 	}
-	color = vec4(ambient + directLightIrradiance, albedoAlpha);
+	
+	// Check for emission and add it to final color
+	vec3 emission = vec3(0.0);
+	if (material.hasEmissionTexture) {
+		vec3 emissiveSample = texture(material.texture_emission, TexCoords).rgb;
+		if (!all(equal(emissiveSample, vec3(0.0)))) {
+			emission = emissiveSample * material.emissionIntensity;
+		}
+	}
+	else if (length(material.emissionColour) > 0.0) {
+		emission = material.emissionColour * material.emissionIntensity;
+	}
+	
+	color = vec4(ambient + directLightIrradiance + emission, albedoAlpha);
 }
 
 vec3 CalculateDirectionalLightRadiance(vec3 albedo, vec3 normal, float metallic, float roughness, vec3 fragToView, vec3 baseReflectivity) {
