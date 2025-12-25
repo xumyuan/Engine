@@ -32,7 +32,7 @@ namespace engine
 		}
 	}
 
-	LightingPassOutput DeferredLightingPass::ExecuteLightingPass(ShadowmapPassOutput& inputShadowmapData, GBuffer* inputGbuffer, ICamera* camera, bool useIBL)
+	LightingPassOutput DeferredLightingPass::ExecuteLightingPass(ShadowmapPassOutput& inputShadowmapData, GBuffer* inputGbuffer, PreLightingPassOutput& preLightingOutput, ICamera* camera, bool useIBL)
 	{
 		// Framebuffer setup
 		glViewport(0, 0, m_Framebuffer->getWidth(), m_Framebuffer->getHeight());
@@ -71,8 +71,15 @@ namespace engine
 		inputGbuffer->GetMaterialInfo()->bind(8);
 		m_LightingShader->setUniform("materialInfoTexture", 8);
 
-		/*preLightingOutput.ssaoTexture->bind(9);
-		m_LightingShader->setUniform("ssaoTexture", 9);*/
+		// Bind SSAO texture
+		if (preLightingOutput.ssaoTexture != nullptr) {
+			preLightingOutput.ssaoTexture->bind(9);
+			m_LightingShader->setUniform("ssaoTexture", 9);
+			m_LightingShader->setUniform("useSSAO", 1);
+		}
+		else {
+			m_LightingShader->setUniform("useSSAO", 0);
+		}
 
 		inputGbuffer->getDepthStencilTexture()->bind(10);
 		m_LightingShader->setUniform("depthTexture", 10);

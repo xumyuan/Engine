@@ -72,6 +72,9 @@ uniform sampler2D materialInfoTexture;
 uniform sampler2D ssaoTexture;
 uniform sampler2D depthTexture;
 
+// SSAO
+uniform int useSSAO;
+
 // IBL
 uniform int reflectionProbeMipCount;
 uniform bool computeIBL;
@@ -135,9 +138,8 @@ void main() {
 	float unclampedRoughness = texture(materialInfoTexture, TexCoords).g; // Used for indirect specular (reflections)
 	float roughness = max(unclampedRoughness, 0.04); // Used for calculations since specular highlights will be too fine, and will cause flicker
 	float materialAO = texture(materialInfoTexture, TexCoords).b;
-	//float sceneAO = texture(ssaoTexture, TexCoords).r;
-	//float ao = min(materialAO, sceneAO);
-	float ao = materialAO;
+	float sceneAO = (useSSAO == 1) ? texture(ssaoTexture, TexCoords).r : 1.0;
+	float ao = materialAO * sceneAO;
 	// Reconstruct fragPos
 	vec3 fragPos = WorldPosFromDepth();
 

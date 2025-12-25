@@ -166,6 +166,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Source\graphics\renderer\renderpass\SSAOPass.h" />
     <ClInclude Include="Source\physics\fluid\accelerate\UniformGrid.h" />
     <ClInclude Include="Source\physics\fluid\FluidSim.h" />
     <ClInclude Include="Source\physics\fluid\solvers\pbf.h" />
@@ -237,6 +238,7 @@
     <ClInclude Include="Source\graphics\texture\Texture.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\graphics\renderer\renderpass\SSAOPass.cpp" />
     <ClCompile Include="Source\physics\fluid\accelerate\UniformGrid.cpp" />
     <ClCompile Include="Source\physics\fluid\FluidSim.cpp" />
     <ClCompile Include="Source\physics\fluid\solvers\pbf.cpp" />

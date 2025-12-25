@@ -6,6 +6,7 @@
 #include <graphics/renderer/renderpass/defferred/DeferredLightingPass.h>
 #include <graphics/renderer/renderpass/PostProcessPass.h>
 #include <graphics/renderer/renderpass/ShadowmapPass.h>
+#include <graphics/renderer/renderpass/SSAOPass.h>
 #include <scene/Scene3D.h>
 #include <utils/Timer.h>
 
@@ -27,6 +28,7 @@ namespace engine
 		// other passes 
 		PostProcessPass m_PostProcessPass;
 		ShadowmapPass m_ShadowmapPass;
+		SSAOPass m_SSAOPass;
 
 		// Forward passes
 		ForwardLightingPass m_LightingPass;

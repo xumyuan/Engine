@@ -32,4 +32,4 @@
 #define SHADOWMAP_FAR_PLANE 400.0f
 
 // 是否前向渲染
-#define FORWARD_RENDER 1
+#define FORWARD_RENDER 0

@@ -26,6 +26,16 @@ namespace engine {
 		void setUniform(const char* name, const glm::mat4& matrix);
 		void setUniform(const char* name, const glm::mat3& matrix);
 
+		// std::string 重载
+		inline void setUniform(const std::string& name, float value) { setUniform(name.c_str(), value); }
+		inline void setUniform(const std::string& name, int value) { setUniform(name.c_str(), value); }
+		inline void setUniform(const std::string& name, const glm::vec2& vector) { setUniform(name.c_str(), vector); }
+		inline void setUniform(const std::string& name, const glm::vec3& vector) { setUniform(name.c_str(), vector); }
+		inline void setUniform(const std::string& name, const glm::vec4& vector) { setUniform(name.c_str(), vector); }
+		inline void setUniform(const std::string& name, const glm::ivec4& vector) { setUniform(name.c_str(), vector); }
+		inline void setUniform(const std::string& name, const glm::mat4& matrix) { setUniform(name.c_str(), matrix); }
+		inline void setUniform(const std::string& name, const glm::mat3& matrix) { setUniform(name.c_str(), matrix); }
+
 		inline GLuint getShaderID() { return m_ShaderID; }
 	private:
 

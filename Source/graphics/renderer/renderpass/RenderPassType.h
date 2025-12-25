@@ -10,7 +10,8 @@ namespace engine {
 		LightingPassType,
 		PostProcessPassType,
 		ProbePassType,
-		GeometryPassType
+		GeometryPassType,
+		SSAOPassType
 	};
 
 	struct ShadowmapPassOutput

@@ -15,7 +15,7 @@ namespace engine
 		DeferredLightingPass(Scene3D* scene, Framebuffer* framebuffer);
 		virtual ~DeferredLightingPass() override;
 
-		LightingPassOutput ExecuteLightingPass(ShadowmapPassOutput& inputShadowmapData, GBuffer* inputGbuffer, ICamera* camera, bool useIBL);
+		LightingPassOutput ExecuteLightingPass(ShadowmapPassOutput& inputShadowmapData, GBuffer* inputGbuffer, PreLightingPassOutput& preLightingOutput, ICamera* camera, bool useIBL);
 	private:
 		void BindShadowmap(Shader* shader, ShadowmapPassOutput& shadowmapData);
 	private:

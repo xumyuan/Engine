@@ -12,7 +12,8 @@ namespace engine
 		m_PostProcessPass(scene),
 		m_EnvironmentProbePass(scene),
 		m_DeferredGeometryPass(scene),
-		m_DeferredLightingPass(scene)
+		m_DeferredLightingPass(scene),
+		m_SSAOPass(scene)
 	{
 		m_GLCache = GLCache::getInstance();
 	}
@@ -66,8 +67,11 @@ namespace engine
 		BEGIN_EVENT("GeometryPass");
 		GeometryPassOutput geometryOutput = m_DeferredGeometryPass.ExecuteGeometryPass(m_ActiveScene->getCamera(), false);
 		END_EVENT();
+		BEGIN_EVENT("SSAOPass");
+		PreLightingPassOutput ssaoOutput = m_SSAOPass.executeSSAOPass(m_ActiveScene->getCamera(), geometryOutput.outputGBuffer);
+		END_EVENT();
 		BEGIN_EVENT("LightingPass");
-		LightingPassOutput deferredLightingOutput = m_DeferredLightingPass.ExecuteLightingPass(shadowmapOutput, geometryOutput.outputGBuffer, m_ActiveScene->getCamera(), true);
+		LightingPassOutput deferredLightingOutput = m_DeferredLightingPass.ExecuteLightingPass(shadowmapOutput, geometryOutput.outputGBuffer, ssaoOutput, m_ActiveScene->getCamera(), true);
 		END_EVENT();
 		m_PostProcessPass.executeRenderPass(deferredLightingOutput.outputFramebuffer);
 
