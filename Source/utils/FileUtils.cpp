@@ -19,6 +19,5 @@ namespace engine {
 		}
 
 		return result;
-		return result;
 	}
 }
