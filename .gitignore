@@ -353,6 +353,9 @@ MigrationBackup/
 
 vcpkg_installed/
 
+# ImGui layout file
+imgui.ini
+
 # Ensure all assets folder contents are committed
 !Assets/**
 
