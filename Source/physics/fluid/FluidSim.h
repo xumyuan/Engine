@@ -3,7 +3,7 @@
 #include "platform/OpenGL/IndexBuffer.h"
 #include "platform/OpenGL/VertexArray.h"
 #include "platform/OpenGL/Buffer.h"
-#include "graphics/shader.h"
+#include "graphics/Shader.h"
 #include "graphics/renderer/GLCache.h"
 #include <mutex>
 

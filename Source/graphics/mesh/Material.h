@@ -2,7 +2,7 @@
 #include "graphics/Shader.h"
 #include "graphics/texture/Texture.h"
 #include "utils/loaders/TextureLoader.h"
-#include "utils/json/json_type.h"
+#include "utils/json/JsonType.h"
 
 namespace engine {
 	class Material

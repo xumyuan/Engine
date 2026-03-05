@@ -2,11 +2,11 @@
 #include "DeferredLightingPass.h"
 
 #include <graphics/Window.h>
-#include <graphics/shader.h>
+#include <graphics/Shader.h>
 #include <graphics/texture/Cubemap.h>
 #include <graphics/renderer/GLCache.h>
 #include <graphics/camera/ICamera.h>
-#include <graphics/renderer/renderpass/defferred/DeferredGeometryPass.h>
+#include <graphics/renderer/renderpass/deferred/DeferredGeometryPass.h>
 #include <scene/Scene3D.h>
 #include <utils/loaders/ShaderLoader.h>
 

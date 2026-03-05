@@ -7,10 +7,10 @@
 #include "graphics/mesh/common/Quad.h"
 #include "physics/fluid/FluidSim.h"
 
-#include "thread/thread_pool.h"
+#include "thread/ThreadPool.h"
 
-#include "utils/json/typeProcess.h"
-#include "utils/json/json_type.h"
+#include "utils/json/TypeProcess.h"
+#include "utils/json/JsonType.h"
 #include "utils/json/JsonUtils.h"
 #include "utils/global_config/GlobalConfig.h"
 

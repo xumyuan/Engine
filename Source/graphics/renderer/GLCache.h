@@ -1,5 +1,5 @@
 #pragma once
-#include "graphics/shader.h"
+#include "graphics/Shader.h"
 #include "utils/Singleton.h"
 
 namespace engine {

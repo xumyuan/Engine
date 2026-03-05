@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "profile.h"
+#include "Profile.h"
 
 
 std::shared_ptr<spdlog::logger> Profile::logger = nullptr;

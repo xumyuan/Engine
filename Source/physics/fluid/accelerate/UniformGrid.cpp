@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "UniformGrid.h"
-#include "utils/profile/profile.h"
+#include "utils/profile/Profile.h"
 #include "omp.h"
 
 namespace engine {

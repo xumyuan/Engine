@@ -1,11 +1,11 @@
 #include "pch.h"
 #include <CompactNSearch.h>
-#include "utils/profile/profile.h"
+#include "utils/profile/Profile.h"
 #include "physics/fluid/SPHKernel.h"
 #include "omp.h"
 
-#include "pbf.h"
-#include "utils/debug_macro.h"
+#include "PBF.h"
+#include "utils/DebugMacro.h"
 
 namespace engine {
 

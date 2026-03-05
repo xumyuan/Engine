@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "TextureLoader.h"
-#include "thread/thread_pool.h"
+#include "thread/ThreadPool.h"
 
 namespace engine {
 

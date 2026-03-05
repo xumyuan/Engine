@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "typeProcess.h"
+#include "TypeProcess.h"
 
 namespace glm {
 	using json = nlohmann::json;

@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "SPHKernel.h"
 #include "FluidSim.h"
-#include "solvers/pbf.h"
+#include "solvers/PBF.h"
 
 #include <utils/loaders/ShaderLoader.h>
 #include <graphics/camera/FPSCamera.h>

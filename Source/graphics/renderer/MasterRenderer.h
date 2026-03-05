@@ -2,8 +2,8 @@
 
 #include <graphics/renderer/renderpass/forward/ForwardProbePass.h>
 #include <graphics/renderer/renderpass/forward/ForwardLightingPass.h>
-#include <graphics/renderer/renderpass/defferred/DeferredGeometryPass.h>
-#include <graphics/renderer/renderpass/defferred/DeferredLightingPass.h>
+#include <graphics/renderer/renderpass/deferred/DeferredGeometryPass.h>
+#include <graphics/renderer/renderpass/deferred/DeferredLightingPass.h>
 #include <graphics/renderer/renderpass/PostProcessPass.h>
 #include <graphics/renderer/renderpass/ShadowmapPass.h>
 #include <graphics/renderer/renderpass/SSAOPass.h>
