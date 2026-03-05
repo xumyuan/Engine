@@ -10,7 +10,7 @@
             "name": "default",
             "displayName": "Visual Studio 2022 (x64)",
             "generator": "Visual Studio 17 2022",
-            "binaryDir": "${sourceDir}/build",
+            "binaryDir": "${sourceDir}/Build",
             "architecture": {
                 "value": "x64",
                 "strategy": "set"
