@@ -3,7 +3,7 @@
 
 namespace engine {
 
-	FPSCamera::FPSCamera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), GLfloat yaw = YAW, GLfloat pitch = PITCH)
+	FPSCamera::FPSCamera(glm::vec3 position, glm::vec3 up, GLfloat yaw, GLfloat pitch)
 		: m_Front(glm::vec3(0.0f, 0.0f, -1.0f)), m_MovementSpeed(SPEED), m_MouseSensitivity(SENSITIVITY), m_FOV(FOV)
 	{
 		m_Position = position;

@@ -35,7 +35,7 @@ namespace engine {
 		GLfloat m_FOV;
 	public:
 		// Vector Constuctor
-		FPSCamera(glm::vec3 position, glm::vec3 up, GLfloat yaw, GLfloat pitch);
+		FPSCamera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), GLfloat yaw = YAW, GLfloat pitch = PITCH);
 		// Scalar Constructor
 		FPSCamera(GLfloat xPos, GLfloat yPos, GLfloat zPos, GLfloat xUp, GLfloat yUp, GLfloat zUp, GLfloat yaw, GLfloat pitch);
 
