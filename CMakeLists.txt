@@ -87,6 +87,7 @@ target_precompile_headers(${PROJECT_NAME} PRIVATE Source/pch.h)
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     _CRT_SECURE_NO_WARNINGS
     _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING
+    PROJECT_ROOT_DIR="${CMAKE_SOURCE_DIR}"
     $<$<CONFIG:Debug>:_DEBUG>
     $<$<NOT:$<CONFIG:Debug>>:NDEBUG>
 )

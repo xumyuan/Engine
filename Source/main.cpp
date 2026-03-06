@@ -16,7 +16,12 @@
 #include "utils/Time.h"
 #include "utils/Timer.h"
 
+#include <filesystem>
+
 int main() {
+
+	// 使用 CMake 注入的项目根目录，确保无论从哪里启动 exe 都能找到资源
+	std::filesystem::current_path(PROJECT_ROOT_DIR);
 
 	spdlog::info("window create...");
 	engine::Window window("Engine", WINDOW_X_RESOLUTION, WINDOW_Y_RESOLUTION);
