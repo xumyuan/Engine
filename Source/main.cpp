@@ -17,8 +17,17 @@
 #include "utils/Timer.h"
 
 #include <filesystem>
+#include <string>
 
-int main() {
+// RHI 测试前向声明
+namespace engine::rhi { void testNullDevice(); }
+
+int main(int argc, char* argv[]) {
+	// --test-rhi: 仅运行 RHI NullDevice 测试后退出
+	if (argc > 1 && std::string(argv[1]) == "--test-rhi") {
+		engine::rhi::testNullDevice();
+		return 0;
+	}
 
 	// 使用 CMake 注入的项目根目录，确保无论从哪里启动 exe 都能找到资源
 	std::filesystem::current_path(PROJECT_ROOT_DIR);

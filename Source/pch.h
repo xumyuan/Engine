@@ -17,6 +17,7 @@
 #include <optional>
 #include <variant>
 #include <random>
+#include <cstdint>
 
 #include <gl/glew.h>
 
