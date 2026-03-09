@@ -17,6 +17,7 @@ public:
     TextureHandle createTexture(const TextureDesc&) override {
         return TextureHandle(mNextHandle++);
     }
+    void generateMipmaps(const TextureHandle handle) override {}
     BufferHandle createBuffer(const BufferDesc&) override {
         return BufferHandle(mNextHandle++);
     }
@@ -57,6 +58,14 @@ public:
     void draw(uint32_t, uint32_t, uint32_t) override {}
     void setViewport(uint32_t, uint32_t, uint32_t, uint32_t) override {}
     void setScissor(uint32_t, uint32_t, uint32_t, uint32_t) override {}
+    void resolve(RenderTargetHandle, RenderTargetHandle) override {}
+    void blit(RenderTargetHandle, RenderTargetHandle,
+            uint32_t, uint32_t, uint32_t, uint32_t,
+            uint32_t, uint32_t, uint32_t, uint32_t, uint8_t) override {}
+
+    void pushDebugGroup(const char*) override {}
+    void popDebugGroup() override {}
+
     void flush() override {}
     void finish() override {}
 

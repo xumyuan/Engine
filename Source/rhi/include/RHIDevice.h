@@ -22,6 +22,7 @@ class RHIDevice {
 
     // ---------- 资源创建 ----------
     virtual TextureHandle createTexture(const TextureDesc& desc) = 0;
+    virtual void generateMipmaps(const TextureHandle handle) = 0;
     virtual BufferHandle createBuffer(const BufferDesc& desc) = 0;
     virtual ProgramHandle createProgram(const ProgramDesc& desc) = 0;
     virtual RenderTargetHandle createRenderTarget(const RenderTargetDesc& desc) = 0;
@@ -71,6 +72,26 @@ class RHIDevice {
     virtual void setScissor(uint32_t x, uint32_t y,
             uint32_t w, uint32_t h) = 0;
 
+    // ---------- Blit / Resolve ----------
+    // MSAA resolve：将多重采样 RT 解析到单采样 RT
+    virtual void resolve(RenderTargetHandle src, RenderTargetHandle dst) = 0;
+
+    // Blit：在两个 RT 之间拷贝指定附件（颜色/深度/模板）
+    enum BlitMask : uint8_t {
+        BlitColor   = 0x01,
+        BlitDepth   = 0x02,
+        BlitStencil = 0x04,
+    };
+    virtual void blit(RenderTargetHandle src, RenderTargetHandle dst,
+            uint32_t srcX, uint32_t srcY, uint32_t srcW, uint32_t srcH,
+            uint32_t dstX, uint32_t dstY, uint32_t dstW, uint32_t dstH,
+            uint8_t mask = BlitColor) = 0;
+
+    // ---------- 调试标记 ----------
+    virtual void pushDebugGroup(const char* name) = 0;
+    virtual void popDebugGroup() = 0;
+
+    // ---------- 同步 ----------
     virtual void flush() = 0;
     virtual void finish() = 0;
 

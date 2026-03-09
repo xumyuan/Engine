@@ -61,7 +61,7 @@ namespace engine
 		END_EVENT();
 #endif
 #else
-		BEGIN_EVENT("Shadowmap")
+		BEGIN_EVENT("Shadowmap");
 		ShadowmapPassOutput shadowmapOutput = m_ShadowmapPass.generateShadowmaps(m_ActiveScene->getCamera());
 		END_EVENT();
 		BEGIN_EVENT("GeometryPass");

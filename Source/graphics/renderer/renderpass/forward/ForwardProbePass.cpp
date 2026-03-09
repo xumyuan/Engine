@@ -46,7 +46,7 @@ namespace engine {
 	ForwardProbePass::~ForwardProbePass() {}
 
 	void ForwardProbePass::pregenerateProbes() {
-		BEGIN_EVENT("GenerateBRDFLUT")
+		BEGIN_EVENT("GenerateBRDFLUT");
 		generateBRDFLUT();
 		END_EVENT();
 		glm::vec3 probePosition = glm::vec3(112.3f, 139.4f, 97.2f);
@@ -110,7 +110,7 @@ namespace engine {
 			m_CubemapCamera.switchCameraToFace(i);
 
 			// Shadow pass
-			BEGIN_EVENT("ShadowmapPass")
+			BEGIN_EVENT("ShadowmapPass");
 			ShadowmapPassOutput shadowpassOutput = shadowPass.generateShadowmaps(&m_CubemapCamera);
 			END_EVENT();
 			// Light pass
@@ -171,12 +171,12 @@ namespace engine {
 		for (int i = 0; i < 6; ++i) {
 			BEGIN_EVENT("Reflection Probe[" +std::to_string(i) + "]");
 			m_CubemapCamera.switchCameraToFace(i);
-			BEGIN_EVENT("ShadowmapPass")
+			BEGIN_EVENT("ShadowmapPass");
 			ShadowmapPassOutput shadowpassOutput = shadowPass.generateShadowmaps(&m_CubemapCamera);
 			END_EVENT();
 			m_SceneCaptureLightingFramebuffer.bind();
 			m_SceneCaptureLightingFramebuffer.setColorAttachment(m_SceneCaptureCubemap.getCubemapID(), GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
-			BEGIN_EVENT("LightingPass")
+			BEGIN_EVENT("LightingPass");
 			lightingPass.executeRenderPass(shadowpassOutput, &m_CubemapCamera, false);
 			END_EVENT();
 			m_SceneCaptureLightingFramebuffer.setColorAttachment(0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);

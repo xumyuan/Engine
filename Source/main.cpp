@@ -15,6 +15,8 @@
 #include "ui/RuntimePane.h"
 #include "utils/Time.h"
 #include "utils/Timer.h"
+#include "utils/DebugEvent.h"
+#include "rhi/include/RHIDevice.h"
 
 #include <filesystem>
 #include <string>
@@ -35,6 +37,11 @@ int main(int argc, char* argv[]) {
 	spdlog::info("window create...");
 	engine::Window window("Engine", WINDOW_X_RESOLUTION, WINDOW_Y_RESOLUTION);
 	spdlog::info("window create succeed!");
+
+	// 初始化 RHI 设备（窗口创建后 GL 上下文已就绪）
+	auto rhiDevice = engine::rhi::RHIDevice::create(engine::rhi::Backend::OpenGL);
+	rhiDevice->initialize();
+	engine::setDebugDevice(rhiDevice.get());
 
 	spdlog::info("load textures...");
 	engine::TextureLoader::initializeDefaultTextures();

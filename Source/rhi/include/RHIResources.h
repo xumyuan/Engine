@@ -85,6 +85,28 @@ struct RenderPassParams {
     struct { uint32_t x, y, w, h; } viewport = {};
 };
 
+// ===== Stencil 操作 =====
+enum class StencilOp : uint8_t {
+    Keep,           // 保持当前值
+    Zero,           // 置零
+    Replace,        // 替换为参考值
+    IncrClamp,      // 自增（饱和）
+    DecrClamp,      // 自减（饱和）
+    Invert,         // 按位取反
+    IncrWrap,       // 自增（回绕）
+    DecrWrap,       // 自减（回绕）
+};
+
+struct StencilState {
+    CompareOp   func        = CompareOp::Always;   // 比较函数
+    StencilOp   stencilFail = StencilOp::Keep;     // stencil 测试失败
+    StencilOp   depthFail   = StencilOp::Keep;     // stencil 通过但 depth 失败
+    StencilOp   depthPass   = StencilOp::Keep;     // 两者都通过
+    uint8_t     readMask    = 0xFF;
+    uint8_t     writeMask   = 0xFF;
+    uint8_t     ref         = 0;                    // 参考值
+};
+
 // ===== 管线状态 =====
 struct PipelineState {
     ProgramHandle   program;
@@ -95,6 +117,11 @@ struct PipelineState {
     bool            depthTest = true;
     bool            depthWrite = true;
     CompareOp       depthFunc = CompareOp::Less;
+
+    // 模板测试
+    bool            stencilEnable = false;
+    StencilState    stencilFront;   // 正面的 stencil 状态
+    StencilState    stencilBack;    // 背面的 stencil 状态（可以和正面不同）
 
     // 混合
     bool            blendEnable = false;
