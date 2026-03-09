@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "PostProcessPass.h"
 
+#include <utils/DebugEvent.h>
 #include <utils/loaders/ShaderLoader.h>
 
 namespace engine
@@ -45,8 +46,10 @@ namespace engine
 		Framebuffer* target = supersampledTarget;
 
 #if DEBUG_ENABLED
-		if (DebugPane::getWireframeMode())
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		if (DebugPane::getWireframeMode()) {
+			if (auto* dev = engine::getDebugDevice())
+				dev->setPolygonMode(rhi::PolygonMode::Fill);
+		}
 #endif
 
 

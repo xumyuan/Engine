@@ -118,6 +118,12 @@ enum class CullMode : uint8_t {
   Back,
 };
 
+enum class PolygonMode : uint8_t {
+  Fill,
+  Line,
+  Point,
+};
+
 // ===== 常量 =====
 static constexpr uint32_t MAX_VERTEX_ATTRIBUTES = 16;
 static constexpr uint32_t MAX_DESCRIPTOR_SETS = 4;

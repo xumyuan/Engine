@@ -644,6 +644,17 @@ void OpenGLDevice::bindPipeline(const PipelineState& state) {
         glDisable(GL_CULL_FACE);
     }
 
+    // 多边形模式（线框/填充/点）
+    {
+        GLenum mode = GL_FILL;
+        switch (state.polygonMode) {
+            case PolygonMode::Line:  mode = GL_LINE;  break;
+            case PolygonMode::Point: mode = GL_POINT; break;
+            default: break;
+        }
+        glPolygonMode(GL_FRONT_AND_BACK, mode);
+    }
+
     // 混合
     if (state.blendEnable) {
         glEnable(GL_BLEND);
@@ -705,6 +716,16 @@ void OpenGLDevice::setViewport(uint32_t x, uint32_t y, uint32_t w, uint32_t h) {
 void OpenGLDevice::setScissor(uint32_t x, uint32_t y, uint32_t w, uint32_t h) {
     glEnable(GL_SCISSOR_TEST);
     glScissor(x, y, w, h);
+}
+
+void OpenGLDevice::setPolygonMode(PolygonMode mode) {
+    GLenum glMode = GL_FILL;
+    switch (mode) {
+        case PolygonMode::Line:  glMode = GL_LINE;  break;
+        case PolygonMode::Point: glMode = GL_POINT; break;
+        default: break;
+    }
+    glPolygonMode(GL_FRONT_AND_BACK, glMode);
 }
 
 void OpenGLDevice::resolve(RenderTargetHandle src, RenderTargetHandle dst) {

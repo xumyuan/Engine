@@ -71,6 +71,7 @@ class RHIDevice {
             uint32_t w, uint32_t h) = 0;
     virtual void setScissor(uint32_t x, uint32_t y,
             uint32_t w, uint32_t h) = 0;
+    virtual void setPolygonMode(PolygonMode mode) = 0;
 
     // ---------- Blit / Resolve ----------
     // MSAA resolve：将多重采样 RT 解析到单采样 RT

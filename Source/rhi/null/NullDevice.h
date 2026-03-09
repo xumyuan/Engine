@@ -58,6 +58,7 @@ public:
     void draw(uint32_t, uint32_t, uint32_t) override {}
     void setViewport(uint32_t, uint32_t, uint32_t, uint32_t) override {}
     void setScissor(uint32_t, uint32_t, uint32_t, uint32_t) override {}
+    void setPolygonMode(PolygonMode) override {}
     void resolve(RenderTargetHandle, RenderTargetHandle) override {}
     void blit(RenderTargetHandle, RenderTargetHandle,
             uint32_t, uint32_t, uint32_t, uint32_t,

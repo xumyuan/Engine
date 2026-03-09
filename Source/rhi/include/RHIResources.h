@@ -113,7 +113,8 @@ struct PipelineState {
     PrimitiveType   primitiveType = PrimitiveType::Triangles;
 
     // 光栅化
-    CullMode        cullMode  = CullMode::Back;
+    CullMode        cullMode    = CullMode::Back;
+    PolygonMode     polygonMode = PolygonMode::Fill;
     bool            depthTest = true;
     bool            depthWrite = true;
     CompareOp       depthFunc = CompareOp::Less;

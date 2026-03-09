@@ -74,9 +74,9 @@ int main(int argc, char* argv[]) {
 #if DEBUG_ENABLED
 		//线框模式
 		if (debugPane.getWireframeMode())
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			rhiDevice->setPolygonMode(engine::rhi::PolygonMode::Line);
 		else
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			rhiDevice->setPolygonMode(engine::rhi::PolygonMode::Fill);
 #endif
 
 		window.bind();
