@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "scene/Scene3D.h"
 
+#include <gl/glew.h>
+#include <GLFW/glfw3.h>
+
 #include "graphics/Shader.h"
 #include "graphics/Window.h"
 #include "graphics/camera/FPSCamera.h"

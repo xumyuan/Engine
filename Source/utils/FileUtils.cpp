@@ -3,7 +3,7 @@
 
 namespace engine {
 	std::string FileUtils::readFile(const std::string& filepath) {
-		std::ifstream ifs(filepath, std::ios::in, std::ios::binary);
+		std::ifstream ifs(filepath, std::ios::in | std::ios::binary);
 		std::string result;
 
 		if (ifs)

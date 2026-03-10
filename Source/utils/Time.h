@@ -4,13 +4,13 @@ namespace engine {
 
 	struct Time {
 	private:
-		GLdouble lastFrame;
-		GLdouble delta;
+		double lastFrame;
+		double delta;
 	public:
 		Time();
 		void update();
 
-		inline GLdouble getDeltaTime() const { return delta; }
+		inline double getDeltaTime() const { return delta; }
 	};
 
 }

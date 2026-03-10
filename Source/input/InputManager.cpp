@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "InputManager.h"
 
+#include <GLFW/glfw3.h>
+
 namespace engine {
 
 	// Static declarations

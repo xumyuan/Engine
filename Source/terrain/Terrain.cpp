@@ -54,7 +54,7 @@ namespace engine {
 		m_Textures[20] = TextureLoader::load2DTexture(std::string("Assets/terrain/blendMap.tga"), &textureSettings);
 
 		// generate mesh
-		GLint mapWidth, mapHeight;
+		int mapWidth, mapHeight;
 		unsigned char* heightMapImage = stbi_load("Assets/terrain/heightMap.png", &mapWidth, &mapHeight, 0, SOIL_LOAD_L);
 		if (mapWidth != mapHeight) {
 			//std::cout << "ERROR: Can't use a heightmap with a different width and height" << std::endl;
@@ -71,8 +71,8 @@ namespace engine {
 		std::vector<glm::vec3> bitangents(m_VertexSideCount * m_VertexSideCount, glm::vec3(0.0f));
 
 		// 顶点生成
-		for (GLuint z = 0; z < m_VertexSideCount; z++) {
-			for (GLuint x = 0; x < m_VertexSideCount; x++) {
+		for (unsigned int z = 0; z < m_VertexSideCount; z++) {
+			for (unsigned int x = 0; x < m_VertexSideCount; x++) {
 				positions.push_back(glm::vec3(x * m_TerrainSize, getVertexHeight(x, z, heightMapImage), z * m_TerrainSize));
 				uvs.push_back(glm::vec2((float)x / ((float)m_VertexSideCount - 1.0f), (float)z / ((float)m_VertexSideCount - 1.0f)));
 				normals.push_back(calculateNormal(x, z, heightMapImage));
@@ -84,8 +84,8 @@ namespace engine {
 
 		// 生成索引
 		// 统一三角形顶点顺序，允许使用背面剔除
-		for (GLuint height = 0; height < m_VertexSideCount - 1; ++height) {
-			for (GLuint width = 0; width < m_VertexSideCount - 1; ++width) {
+		for (unsigned int height = 0; height < m_VertexSideCount - 1; ++height) {
+			for (unsigned int width = 0; width < m_VertexSideCount - 1; ++width) {
 				//  T: top  B: bottom
 				//  L: left R: right
 				unsigned int indexTL = width + (height * m_VertexSideCount);
@@ -234,10 +234,10 @@ namespace engine {
 	}
 
 	glm::vec3 Terrain::calculateNormal(unsigned int x, unsigned int z, unsigned char* heightMapData) {
-		GLfloat heightR = getVertexHeight(x + 1, z, heightMapData);
-		GLfloat heightL = getVertexHeight(x - 1, z, heightMapData);
-		GLfloat heightU = getVertexHeight(x, z + 1, heightMapData);
-		GLfloat heightD = getVertexHeight(x, z - 1, heightMapData);
+		float heightR = getVertexHeight(x + 1, z, heightMapData);
+		float heightL = getVertexHeight(x - 1, z, heightMapData);
+		float heightU = getVertexHeight(x, z + 1, heightMapData);
+		float heightD = getVertexHeight(x, z - 1, heightMapData);
 
 		glm::vec3 normal(heightL - heightR, 2.0f, heightD - heightU);
 		normal = glm::normalize(normal);
@@ -245,7 +245,7 @@ namespace engine {
 		return normal;
 	}
 
-	GLfloat Terrain::getVertexHeight(unsigned int x, unsigned int z, unsigned char* heightMapData) {
+	float Terrain::getVertexHeight(unsigned int x, unsigned int z, unsigned char* heightMapData) {
 		if (x < 0 || x >= m_VertexSideCount || z < 0 || z >= m_VertexSideCount) {
 			return 0.0f;
 		}

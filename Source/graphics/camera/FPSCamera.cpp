@@ -1,9 +1,11 @@
 #include "pch.h"
 #include "FPSCamera.h"
 
+#include <GLFW/glfw3.h>
+
 namespace engine {
 
-	FPSCamera::FPSCamera(glm::vec3 position, glm::vec3 up, GLfloat yaw, GLfloat pitch)
+	FPSCamera::FPSCamera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
 		: m_Front(glm::vec3(0.0f, 0.0f, -1.0f)), m_MovementSpeed(SPEED), m_MouseSensitivity(SENSITIVITY), m_FOV(FOV)
 	{
 		m_Position = position;
@@ -16,7 +18,7 @@ namespace engine {
 		DebugPane::bindCameraPositionValue(&m_Position);
 	}
 
-	FPSCamera::FPSCamera(GLfloat xPos, GLfloat yPos, GLfloat zPos, GLfloat xUp, GLfloat yUp, GLfloat zUp, GLfloat yaw, GLfloat pitch)
+	FPSCamera::FPSCamera(float xPos, float yPos, float zPos, float xUp, float yUp, float zUp, float yaw, float pitch)
 		: m_Front(glm::vec3(0.0f, 0.0f, -1.0f)), m_MovementSpeed(SPEED), m_MouseSensitivity(SENSITIVITY), m_FOV(FOV)
 	{
 		m_Position = glm::vec3(xPos, yPos, zPos);
@@ -34,7 +36,7 @@ namespace engine {
 		return glm::perspective(glm::radians(m_FOV), (float)Window::getWidth() / (float)Window::getHeight(), NEAR_PLANE, FAR_PLANE);
 	}
 
-	void FPSCamera::processInput(GLfloat deltaTime) {
+	void FPSCamera::processInput(float deltaTime) {
 		// Keyboard input
 		if (InputManager::isKeyPressed(GLFW_KEY_W))
 			processKeyboard(engine::FORWARD, deltaTime);
@@ -62,8 +64,8 @@ namespace engine {
 		processMouseMovement(InputManager::getMouseXDelta(), -InputManager::getMouseYDelta(), true);
 	}
 
-	void FPSCamera::processKeyboard(Camera_Movement direction, GLfloat deltaTime) {
-		GLfloat velocity = m_MovementSpeed * deltaTime;
+	void FPSCamera::processKeyboard(Camera_Movement direction, float deltaTime) {
+		float velocity = m_MovementSpeed * deltaTime;
 		switch (direction) {
 		case FORWARD:
 			m_Position += m_Front * velocity;
@@ -86,7 +88,7 @@ namespace engine {
 		}
 	}
 
-	void FPSCamera::processMouseMovement(GLfloat xOffset, GLfloat yOffset, GLboolean constrainPitch = true) {
+	void FPSCamera::processMouseMovement(float xOffset, float yOffset, bool constrainPitch = true) {
 
 		if (!Window::getHideCursor())
 			return;
@@ -110,7 +112,7 @@ namespace engine {
 		updateCameraVectors();
 	}
 
-	void FPSCamera::processMouseScroll(GLfloat offset) {
+	void FPSCamera::processMouseScroll(float offset) {
 		if (offset != 0 && m_FOV >= 1.0f && m_FOV <= FOV) {
 			m_FOV -= offset;
 		}

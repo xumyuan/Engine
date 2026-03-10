@@ -3,6 +3,8 @@
 #include "FluidSim.h"
 #include "solvers/PBF.h"
 
+#include <gl/glew.h>
+
 #include <utils/loaders/ShaderLoader.h>
 #include <graphics/camera/FPSCamera.h>
 #include "utils/DebugEvent.h"

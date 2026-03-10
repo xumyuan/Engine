@@ -21,12 +21,12 @@ namespace engine {
 		bool getVisible() { return m_isVisible; }
 	private:
 		glm::vec3 calculateNormal(unsigned int x, unsigned int z, unsigned char* heightMapData);
-		GLfloat getVertexHeight(unsigned int x, unsigned int y, unsigned char* heightMapData);
+		float getVertexHeight(unsigned int x, unsigned int y, unsigned char* heightMapData);
 
 		float m_TextureTilingAmount;
 		float m_TerrainSize;
 		unsigned int m_VertexSideCount;
-		GLushort m_HeightMapScale;
+		uint16_t m_HeightMapScale;
 
 		glm::mat4 m_ModelMatrix;
 		glm::vec3 m_Position;

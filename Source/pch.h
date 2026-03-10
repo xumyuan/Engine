@@ -19,10 +19,6 @@
 #include <random>
 #include <cstdint>
 
-#include <gl/glew.h>
-
-#include <GLFW/glfw3.h>
-
 #include <stb_image.h>
 
 #include <SOIL/SOIL.h>

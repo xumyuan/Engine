@@ -182,11 +182,11 @@ namespace engine {
 
 
 	/*              Callback Functions              */
-	static void error_callback(int error, const char* description) {
+	void error_callback(int error, const char* description) {
 		std::cout << "Error:" << std::endl << description << std::endl;
 	}
 
-	static void window_resize_callback(GLFWwindow* window, int width, int height) {
+	void window_resize_callback(GLFWwindow* window, int width, int height) {
 		Window* win = (Window*)glfwGetWindowUserPointer(window);
 		if (width == 0 || height == 0) {
 			win->s_Width = WINDOW_X_RESOLUTION;
@@ -199,11 +199,11 @@ namespace engine {
 		glViewport(0, 0, win->s_Width, win->s_Height);
 	}
 
-	static void framebuffer_resize_callback(GLFWwindow* window, int width, int height) {
+	void framebuffer_resize_callback(GLFWwindow* window, int width, int height) {
 		Window* win = (Window*)glfwGetWindowUserPointer(window);
 	}
 
-	static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+	void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 		Window* win = (Window*)glfwGetWindowUserPointer(window);
 		g_InputManager.keyCallback(key, scancode, action, mods);
 		ImGui_ImplGlfw_KeyCallback(window, key, scancode, action, mods);
@@ -216,29 +216,29 @@ namespace engine {
 #endif
 	}
 
-	static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
+	void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
 		g_InputManager.mouseButtonCallback(button, action, mods);
 		ImGui_ImplGlfw_MouseButtonCallback(window, button, action, mods);
 	}
 
-	static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
+	void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
 		g_InputManager.cursorPositionCallback(xpos, ypos);
 	}
 
-	static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
+	void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
 		g_InputManager.scrollCallback(xoffset, yoffset);
 		ImGui_ImplGlfw_ScrollCallback(window, xoffset, yoffset);
 	}
 
-	static void char_callback(GLFWwindow* window, unsigned int c) {
+	void char_callback(GLFWwindow* window, unsigned int c) {
 		ImGui_ImplGlfw_CharCallback(window, c);
 	}
 
-	static void joystick_callback(int joystick, int event) {
+	void joystick_callback(int joystick, int event) {
 		g_InputManager.joystickCallback(joystick, event);
 	}
 
-	static void GLAPIENTRY DebugMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
+	void GLAPIENTRY DebugMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
 		fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
 			(type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
 			type, severity, message);

@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "MasterRenderer.h"
 
+#include <gl/glew.h>
 #include <ui/RuntimePane.h>
 
 namespace engine
