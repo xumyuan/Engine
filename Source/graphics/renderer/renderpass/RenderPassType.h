@@ -1,9 +1,20 @@
 #pragma once
-#include <platform/OpenGL/Framebuffers/Framebuffer.h>
-
-#include <platform/OpenGL/Framebuffers/GBuffer.h>
+#include <graphics/texture/Texture.h>
 
 namespace engine {
+
+	// 深度/模板附件格式
+	enum class DepthStencilFormat : uint8_t {
+		DepthOnly,          // Depth24
+		DepthStencil,       // Depth24Stencil8
+		DepthStencilFloat,  // Depth32FStencil8
+	};
+
+	enum StencilValue : int
+	{
+		ModelStencilValue = 0x01,
+		TerrainStencilValue = 0x02
+	};
 
 	enum RenderPassType {
 		ShadowmapPassType,
@@ -17,17 +28,28 @@ namespace engine {
 	struct ShadowmapPassOutput
 	{
 		glm::mat4 directionalLightViewProjMatrix;
-		Framebuffer* shadowmapFramebuffer;
+		rhi::RenderTargetHandle renderTarget;
+		Texture* depthTexture = nullptr;
 	};
 
 	struct LightingPassOutput
 	{
-		Framebuffer* outputFramebuffer;
+		rhi::RenderTargetHandle renderTarget;
+		Texture* colorTexture = nullptr;
+		uint32_t width = 0;
+		uint32_t height = 0;
+		bool isMultisampled = false;
 	};
 
 	struct GeometryPassOutput
 	{
-		GBuffer* outputGBuffer = nullptr;
+		rhi::RenderTargetHandle renderTarget;
+		Texture* albedoTexture = nullptr;
+		Texture* normalTexture = nullptr;
+		Texture* materialInfoTexture = nullptr;
+		Texture* depthStencilTexture = nullptr;
+		uint32_t width = 0;
+		uint32_t height = 0;
 	};
 
 	struct PreLightingPassOutput

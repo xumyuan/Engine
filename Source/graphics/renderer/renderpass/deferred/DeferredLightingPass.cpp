@@ -12,45 +12,44 @@
 
 namespace engine
 {
-	DeferredLightingPass::DeferredLightingPass(Scene3D* scene) : RenderPass(scene,RenderPassType::LightingPassType), m_AllocatedFramebuffer(true)
+	DeferredLightingPass::DeferredLightingPass(Scene3D* scene) : RenderPass(scene,RenderPassType::LightingPassType)
 	{
 		m_LightingShader = ShaderLoader::loadShader("Shaders/deferred/PBR_LightingPass.glsl");
 
-		m_Framebuffer = new Framebuffer(Window::getWidth(), Window::getHeight(), false);
-		m_Framebuffer->addColorTexture(FloatingPoint16).addDepthStencilTexture(NormalizedDepthStencil).createFramebuffer();
-	}
-
-	DeferredLightingPass::DeferredLightingPass(Scene3D* scene, Framebuffer* customFramebuffer) : RenderPass(scene, RenderPassType::LightingPassType), m_AllocatedFramebuffer(false), m_Framebuffer(customFramebuffer)
-	{
-		m_LightingShader = ShaderLoader::loadShader("Shaders/deferred/PBR_LightingPass.glsl");
+		m_RT = new RenderTarget(Window::getWidth(), Window::getHeight());
+		m_RT->addColorTexture(rhi::TextureFormat::RGBA16F)
+			.addDepthStencilTexture(DepthStencilFormat::DepthStencil).build();
 	}
 
 	DeferredLightingPass::~DeferredLightingPass()
 	{
-		if (m_AllocatedFramebuffer) {
-			delete m_Framebuffer;
-		}
+		delete m_RT;
 	}
 
-	LightingPassOutput DeferredLightingPass::ExecuteLightingPass(ShadowmapPassOutput& inputShadowmapData, GBuffer* inputGbuffer, PreLightingPassOutput& preLightingOutput, ICamera* camera, bool useIBL)
+	LightingPassOutput DeferredLightingPass::ExecuteLightingPass(ShadowmapPassOutput& inputShadowmapData, GeometryPassOutput& inputGbuffer, PreLightingPassOutput& preLightingOutput, ICamera* camera, bool useIBL)
 	{
-		// Framebuffer setup
-		glViewport(0, 0, m_Framebuffer->getWidth(), m_Framebuffer->getHeight());
-		glViewport(0, 0, m_Framebuffer->getWidth(), m_Framebuffer->getHeight());
-		m_Framebuffer->bind();
-		m_Framebuffer->clear();
+		m_RT->beginPass();
+
 		m_GLCache->setDepthTest(false);
 		m_GLCache->setMultisample(false);
 
-		// Move the depth + stencil of the GBuffer to our framebuffer
-		// NOTE: Framebuffers have to have identical depth + stencil formats for this to work
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, inputGbuffer->getFramebuffer());
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_Framebuffer->getFramebuffer());
-		glBlitFramebuffer(0, 0, inputGbuffer->getWidth(), inputGbuffer->getHeight(), 0, 0, m_Framebuffer->getWidth(), m_Framebuffer->getHeight(), GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, GL_NEAREST);
+		// Move the depth + stencil of the GBuffer to our render target
+		auto* device = getRHIDevice();
+		device->blit(inputGbuffer.renderTarget, m_RT->getHandle(),
+			0, 0, inputGbuffer.width, inputGbuffer.height,
+			0, 0, m_RT->getWidth(), m_RT->getHeight(),
+			rhi::RHIDevice::BlitDepth | rhi::RHIDevice::BlitStencil);
+
+		// Re-bind our RT after blit (blit may change FBO binding)
+		rhi::RenderPassParams rebindParams;
+		rebindParams.viewport = { 0, 0, m_RT->getWidth(), m_RT->getHeight() };
+		rebindParams.clearColorFlag = false;
+		rebindParams.clearDepthFlag = false;
+		m_RT->beginPass(rebindParams);
 
 		// Setup initial stencil state
 		m_GLCache->setStencilTest(true);
-		m_GLCache->setStencilWriteMask(0x00); // Do not update stencil values
+		m_GLCache->setStencilWriteMask(0x00);
 
 		DynamicLightManager* lightManager = m_ActiveScene->getDynamicLightManager();
 		ProbeManager* probeManager = m_ActiveScene->getProbeManager();
@@ -62,13 +61,13 @@ namespace engine
 		m_LightingShader->setUniform("projectionInverse", glm::inverse(camera->getProjectionMatrix()));
 
 		// Bind GBuffer data
-		inputGbuffer->GetAlbedo()->bind(6);
+		inputGbuffer.albedoTexture->bind(6);
 		m_LightingShader->setUniform("albedoTexture", 6);
 
-		inputGbuffer->GetNormal()->bind(7);
+		inputGbuffer.normalTexture->bind(7);
 		m_LightingShader->setUniform("normalTexture", 7);
 
-		inputGbuffer->GetMaterialInfo()->bind(8);
+		inputGbuffer.materialInfoTexture->bind(8);
 		m_LightingShader->setUniform("materialInfoTexture", 8);
 
 		// Bind SSAO texture
@@ -81,28 +80,26 @@ namespace engine
 			m_LightingShader->setUniform("useSSAO", 0);
 		}
 
-		inputGbuffer->getDepthStencilTexture()->bind(10);
+		inputGbuffer.depthStencilTexture->bind(10);
 		m_LightingShader->setUniform("depthTexture", 10);
 
 		// Shadowmap code
 		BindShadowmap(m_LightingShader, inputShadowmapData);
 
-		// Finally perform the lighting using the GBuffer
-
 		// IBL Bindings
 		glm::vec3 cameraPosition = camera->getPosition();
-		probeManager->bindProbe(cameraPosition, m_LightingShader); 
-		// TODO: Should use camera component
+		probeManager->bindProbe(cameraPosition, m_LightingShader);
+
+		// 将未使用的 samplerCube uniform (pointLightShadowCubemap) 指向已绑定 cubemap 的纹理单元，
+		// 避免其默认值 0 指向只有 GL_TEXTURE_2D 的 unit 导致 GL_INVALID_OPERATION: program texture usage
+		m_LightingShader->setUniform("pointLightShadowCubemap", 1); 
 
 		// Perform lighting on the terrain (turn IBL off)
-		
 		m_LightingShader->setUniform("computeIBL", 0);
 		m_GLCache->setStencilFunc(GL_EQUAL, StencilValue::TerrainStencilValue, 0xFF);
 		ModelRenderer::drawNdcPlane();
-		
 
 		// Perform lighting on the models in the scene
-		
 		if (useIBL)
 		{
 			m_LightingShader->setUniform("computeIBL", 1);
@@ -124,15 +121,21 @@ namespace engine
 		skybox->Draw(camera);
 		END_EVENT();
 
+		m_RT->endPass();
+
 		// Render pass output
 		LightingPassOutput passOutput;
-		passOutput.outputFramebuffer = m_Framebuffer;
+		passOutput.renderTarget = m_RT->getHandle();
+		passOutput.colorTexture = m_RT->getColorTexture();
+		passOutput.width = m_RT->getWidth();
+		passOutput.height = m_RT->getHeight();
+		passOutput.isMultisampled = false;
 		return passOutput;
 	}
 
 	void DeferredLightingPass::BindShadowmap(Shader* shader, ShadowmapPassOutput& shadowmapData)
 	{
-		shadowmapData.shadowmapFramebuffer->getDepthStencilTexture()->bind(0);
+		shadowmapData.depthTexture->bind(0);
 		shader->setUniform("dirLightShadowmap", 0);
 		shader->setUniform("dirLightShadowData.shadowBias", 0.01f);
 		shader->setUniform("dirLightShadowData.lightSpaceViewProjectionMatrix", shadowmapData.directionalLightViewProjMatrix);

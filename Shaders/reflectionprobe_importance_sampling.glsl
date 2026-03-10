@@ -11,7 +11,7 @@ uniform mat4 projection;
 void main() {
 	SampleDirection = position;
 
-	// È¥³ıÊÓÍ¼¾ØÕóÆ½ÒÆ²¿·Ö
+	// å»é™¤è§†å›¾çŸ©é˜µå¹³ç§»éƒ¨åˆ†
 	gl_Position = projection * mat4(mat3(view)) * vec4(position, 1.0f); 
 }
 
@@ -22,7 +22,7 @@ out vec4 FragColor;
 
 in vec3 SampleDirection;
 
-uniform samplerCube environmentMap;
+uniform samplerCube sceneCaptureCubemap;
 uniform float roughness;
 
 const float PI = 3.14159265359;
@@ -42,13 +42,13 @@ void main(){
 	vec3 prefilteredColor = vec3(0.0);
 	for(uint i = 0; i < SAMPLE_COUNT; ++i){
 		vec2 Xi = Hammersley(i, SAMPLE_COUNT);
-		// ÕâÀï²ÉÓÃÖØÒªĞÔ²ÉÑù£¬»ñÈ¡ÁË¸ü¿¿½ü·´Éä·½ÏòµÄÏòÁ¿
+		// è¿™é‡Œé‡‡ç”¨é‡è¦æ€§é‡‡æ ·ï¼Œè·å–äº†æ›´é è¿‘åå°„æ–¹å‘çš„å‘é‡
 		vec3 H  = ImportanceSampleGGX(Xi, N, roughness);
 		vec3 L  = normalize(2.0 * dot(V, H) * H - V);
 	
 		float NdotL = max(dot(N, L), 0.0);
 		if(NdotL > 0.0) {
-			prefilteredColor += texture(environmentMap, L).rgb * NdotL;
+			prefilteredColor += texture(sceneCaptureCubemap, L).rgb * NdotL;
 			totalWeight += NdotL;
 		}
 		
@@ -78,7 +78,7 @@ vec3 ImportanceSampleGGX(vec2 Xi, vec3 N, float roughness){
 	float a = roughness*roughness;
 
 	float phi = 2.0 * PI * Xi.x;
-	// ÕâÀï´Ö²Ú¶ÈÔ½Ğ¡£¬costhetaÔ½½Ó½ü1 ¼´½Ç¶ÈÔ½½Ó½ü0£¬²ÉÑùÔ½¼¯ÖĞ
+	// è¿™é‡Œç²—ç³™åº¦è¶Šå°ï¼Œcosthetaè¶Šæ¥è¿‘1 å³è§’åº¦è¶Šæ¥è¿‘0ï¼Œé‡‡æ ·è¶Šé›†ä¸­
 	float cosTheta = sqrt((1.0-Xi.y)/(1.0+(a*a-1.0)*Xi.y));
 	float sinTheta = sqrt(1.0 - cosTheta*cosTheta);
 
@@ -87,7 +87,7 @@ vec3 ImportanceSampleGGX(vec2 Xi, vec3 N, float roughness){
 	H.y = sin(phi) * sinTheta;
 	H.z = cosTheta;
 
-	// ´ÓÇĞÏß¿Õ¼ä×ª»»µ½ÊÀ½ç¿Õ¼ä
+	// ä»åˆ‡çº¿ç©ºé—´è½¬æ¢åˆ°ä¸–ç•Œç©ºé—´
 	vec3 up        = abs(N.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
 	vec3 tangent   = normalize(cross(up, N));
 	vec3 bitangent = cross(N, tangent);

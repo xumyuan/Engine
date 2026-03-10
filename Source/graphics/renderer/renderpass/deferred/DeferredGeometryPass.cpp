@@ -3,41 +3,66 @@
 
 #include <scene/Scene3D.h>
 #include <utils/loaders/ShaderLoader.h>
-#include <platform/OpenGL/Framebuffers/GBuffer.h>
 #include <graphics/renderer/renderpass/RenderPassType.h>
 #include <graphics/Window.h>
 
 namespace engine {
 
 	DeferredGeometryPass::DeferredGeometryPass(Scene3D* scene) : RenderPass(scene, RenderPassType::GeometryPassType),
-		m_AllocatedGBuffer(true),m_GBuffer(nullptr)
+		m_GBufferRT(Window::getWidth(), Window::getHeight())
 	{
 		m_ModelShader = ShaderLoader::loadShader("Shaders/deferred/PBR_Model_GeometryPass.glsl");
-		//m_SkinnedModelShader = ShaderLoader::loadShader("Shaders/deferred/PBR_Skinned_Model_GeometryPass.glsl");
 		m_TerrainShader = ShaderLoader::loadShader("Shaders/deferred/PBR_Terrain_GeometryPass.glsl");
 
-		m_GBuffer = new GBuffer(Window::getWidth(), Window::getHeight());
+		initGBuffer();
 	}
 
-	DeferredGeometryPass::DeferredGeometryPass(Scene3D* scene, GBuffer* customGBuffer) : RenderPass(scene, RenderPassType::GeometryPassType), m_AllocatedGBuffer(false), m_GBuffer(customGBuffer)
-	{
-		m_ModelShader = ShaderLoader::loadShader("Shaders/deferred/PBR_Model_GeometryPass.glsl");
-		m_TerrainShader = ShaderLoader::loadShader("Shaders/deferred/PBR_Terrain_GeometryPass.glsl");
+	void DeferredGeometryPass::initGBuffer() {
+		uint32_t w = Window::getWidth();
+		uint32_t h = Window::getHeight();
+
+		auto makeGBufferSettings = [](rhi::TextureFormat fmt) {
+			TextureSettings s;
+			s.format = fmt;
+			s.formatExplicitlySet = true;
+			s.wrapS = rhi::WrapMode::ClampToEdge;
+			s.wrapT = rhi::WrapMode::ClampToEdge;
+			s.minFilter = rhi::FilterMode::Nearest;
+			s.magFilter = rhi::FilterMode::Nearest;
+			s.anisotropy = 1.0f;
+			s.HasMips = false;
+			return s;
+		};
+
+		// render target 1: RGBA8 (albedo)
+		m_AlbedoTexture.setTextureSettings(makeGBufferSettings(rhi::TextureFormat::RGBA8));
+		m_AlbedoTexture.generate2DTexture(w, h, ChannelLayout::RGBA);
+
+		// render target 2: RGBA32F (normal)
+		m_NormalTexture.setTextureSettings(makeGBufferSettings(rhi::TextureFormat::RGBA32F));
+		m_NormalTexture.generate2DTexture(w, h, ChannelLayout::RGBA);
+
+		// render target 3: RGBA8 (material info)
+		m_MaterialInfoTexture.setTextureSettings(makeGBufferSettings(rhi::TextureFormat::RGBA8));
+		m_MaterialInfoTexture.generate2DTexture(w, h, ChannelLayout::RGBA);
+
+		// 构建 RenderTarget: 3个外部颜色附件 + 深度/模板纹理
+		m_GBufferRT.addExternalColorTexture(&m_AlbedoTexture)
+			.addExternalColorTexture(&m_NormalTexture)
+			.addExternalColorTexture(&m_MaterialInfoTexture)
+			.addDepthStencilTexture(DepthStencilFormat::DepthStencil)
+			.build();
 	}
 
 	DeferredGeometryPass::~DeferredGeometryPass()
 	{
-		if (m_AllocatedGBuffer) {
-			delete m_GBuffer;
-		}
 	}
 
 	GeometryPassOutput DeferredGeometryPass::ExecuteGeometryPass(ICamera* camera, bool renderOnlyStatic)
 	{
-		glViewport(0, 0, m_GBuffer->getWidth(), m_GBuffer->getHeight());
+		m_GBufferRT.beginPass();
+
 		m_GLCache->setStencilWriteMask(0xFF);
-		m_GBuffer->bind();
-		m_GBuffer->clear();
 		m_GLCache->setBlend(false);
 		m_GLCache->setMultisample(false);
 		
@@ -51,7 +76,7 @@ namespace engine {
 		m_ModelShader->setUniform("view", camera->getViewMatrix());
 		m_ModelShader->setUniform("projection", camera->getProjectionMatrix());
 	
-		// Render opaque objects (use stencil to denote models for the deferred lighting pass)
+		// Render opaque objects
 		m_GLCache->setStencilWriteMask(0xFF);
 		m_GLCache->setStencilFunc(GL_ALWAYS, StencilValue::ModelStencilValue, 0xFF);
 
@@ -66,26 +91,30 @@ namespace engine {
 		if (terrain)
 		{
 			BEGIN_EVENT("Render Terrain");
-			// Setup terrain information
 			m_GLCache->switchShader(m_TerrainShader);
 			m_TerrainShader->setUniform("view", camera->getViewMatrix());
 			m_TerrainShader->setUniform("projection", camera->getProjectionMatrix());
 
-			// Render the terrain (use stencil to denote the terrain for the deferred lighting pass)
 			m_GLCache->setStencilWriteMask(0xFF);
 			m_GLCache->setStencilFunc(GL_ALWAYS, StencilValue::TerrainStencilValue, 0xFF);
 			terrain->Draw(m_TerrainShader, m_RenderPassType);
 			m_GLCache->setStencilWriteMask(0x00);
 			END_EVENT();
-			
 		}
 
-		// Reset state
 		m_GLCache->setStencilTest(false);
+
+		m_GBufferRT.endPass();
 
 		// Render pass output
 		GeometryPassOutput passOutput;
-		passOutput.outputGBuffer = m_GBuffer;
+		passOutput.renderTarget = m_GBufferRT.getHandle();
+		passOutput.albedoTexture = &m_AlbedoTexture;
+		passOutput.normalTexture = &m_NormalTexture;
+		passOutput.materialInfoTexture = &m_MaterialInfoTexture;
+		passOutput.depthStencilTexture = m_GBufferRT.getDepthStencilTexture();
+		passOutput.width = m_GBufferRT.getWidth();
+		passOutput.height = m_GBufferRT.getHeight();
 		return passOutput;
 	}
 

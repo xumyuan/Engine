@@ -2,14 +2,14 @@
 
 namespace engine {
 
-static rhi::RHIDevice* gDebugDevice = nullptr;
+static rhi::RHIDevice* gRHIDevice = nullptr;
 
-void setDebugDevice(rhi::RHIDevice* device) {
-    gDebugDevice = device;
+void setRHIDevice(rhi::RHIDevice* device) {
+    gRHIDevice = device;
 }
 
-rhi::RHIDevice* getDebugDevice() {
-    return gDebugDevice;
+rhi::RHIDevice* getRHIDevice() {
+    return gRHIDevice;
 }
 
 } // namespace engine

@@ -8,6 +8,7 @@ namespace rhi {
 // OpenGL 后端内部资源记录
 struct GLTextureData {
     uint32_t glId = 0;
+    bool isRenderbuffer = false; // 后端自动决定：DepthAttachment 无 Sampled → RBO
     TextureDesc desc;
 };
 
@@ -77,7 +78,14 @@ public:
     void updateTexture(TextureHandle handle, uint32_t level,
             uint32_t xoffset, uint32_t yoffset,
             uint32_t width, uint32_t height,
+            TextureFormat srcFormat,
             const void* data, uint32_t dataSize) override;
+    void updateCubemapFace(TextureHandle handle, uint8_t face,
+            uint32_t level, uint32_t width, uint32_t height,
+            TextureFormat srcFormat,
+            const void* data, uint32_t dataSize) override;
+    void updateTextureSampler(TextureHandle handle,
+            const TextureDesc& desc) override;
 
     // ---------- 渲染命令 ----------
     void beginFrame(SwapChainHandle swapChain) override;
@@ -101,6 +109,11 @@ public:
             uint32_t srcX, uint32_t srcY, uint32_t srcW, uint32_t srcH,
             uint32_t dstX, uint32_t dstY, uint32_t dstW, uint32_t dstH,
             uint8_t mask = BlitColor) override;
+    void setRenderTargetColorAttachment(RenderTargetHandle rt,
+            uint8_t attachmentIndex, TextureHandle texture,
+            uint8_t level = 0, uint8_t layer = 0) override;
+    void copyTexture(TextureHandle src, TextureHandle dst,
+            uint32_t width, uint32_t height) override;
 
     void pushDebugGroup(const char* name) override;
     void popDebugGroup() override;

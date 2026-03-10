@@ -35,7 +35,7 @@ namespace engine
 		glFinish();
 		m_Timer.reset();
 #endif
-		BEGIN_EVENT("Shadowmap")
+		BEGIN_EVENT("Shadowmap");
 		// Shadow map pass
 		ShadowmapPassOutput shadowmapOutput = m_ShadowmapPass.generateShadowmaps(m_ActiveScene->getCamera());
 		END_EVENT();
@@ -53,7 +53,7 @@ namespace engine
 		m_Timer.reset();
 #endif
 		BEGIN_EVENT("PostProcess");
-		m_PostProcessPass.executeRenderPass(lightingOutput.outputFramebuffer);
+		m_PostProcessPass.executeRenderPass(lightingOutput);
 		END_EVENT();
 #if DEBUG_ENABLED
 		glFinish();
@@ -68,12 +68,12 @@ namespace engine
 		GeometryPassOutput geometryOutput = m_DeferredGeometryPass.ExecuteGeometryPass(m_ActiveScene->getCamera(), false);
 		END_EVENT();
 		BEGIN_EVENT("SSAOPass");
-		PreLightingPassOutput ssaoOutput = m_SSAOPass.executeSSAOPass(m_ActiveScene->getCamera(), geometryOutput.outputGBuffer);
+		PreLightingPassOutput ssaoOutput = m_SSAOPass.executeSSAOPass(m_ActiveScene->getCamera(), geometryOutput);
 		END_EVENT();
 		BEGIN_EVENT("LightingPass");
-		LightingPassOutput deferredLightingOutput = m_DeferredLightingPass.ExecuteLightingPass(shadowmapOutput, geometryOutput.outputGBuffer, ssaoOutput, m_ActiveScene->getCamera(), true);
+		LightingPassOutput deferredLightingOutput = m_DeferredLightingPass.ExecuteLightingPass(shadowmapOutput, geometryOutput, ssaoOutput, m_ActiveScene->getCamera(), true);
 		END_EVENT();
-		m_PostProcessPass.executeRenderPass(deferredLightingOutput.outputFramebuffer);
+		m_PostProcessPass.executeRenderPass(deferredLightingOutput);
 
 #endif // FORWARD_RENDER
 

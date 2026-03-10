@@ -3,6 +3,7 @@
 #include <graphics/camera/CubemapCamera.h>
 #include <graphics/renderer/renderpass/RenderPass.h>
 #include <graphics/renderer/renderpass/ShadowmapPass.h>
+#include <graphics/renderer/RenderTarget.h>
 #include <graphics/Shader.h>
 #include <scene/Scene3D.h>
 
@@ -18,10 +19,10 @@ namespace engine {
 		void generateLightProbe(glm::vec3& probePosition);
 		void generateReflectionProbe(glm::vec3& probePosition);
 	private:
-		Framebuffer m_SceneCaptureShadowFramebuffer, 
-			m_SceneCaptureLightingFramebuffer, 
-			m_LightProbeConvolutionFramebuffer, 
-			m_ReflectionProbeSamplingFramebuffer;
+		RenderTarget m_SceneCaptureShadowRT,
+			m_SceneCaptureLightingRT,
+			m_LightProbeConvolutionRT,
+			m_ReflectionProbeSamplingRT;
 		CubemapCamera m_CubemapCamera;
 		CubemapSettings m_SceneCaptureSettings;
 		Cubemap m_SceneCaptureCubemap;

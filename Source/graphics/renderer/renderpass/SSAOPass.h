@@ -1,6 +1,7 @@
 #pragma once
 #include <graphics/camera/ICamera.h>
 #include <graphics/renderer/renderpass/RenderPass.h>
+#include <graphics/renderer/RenderTarget.h>
 #include <graphics/Shader.h>
 #include <scene/Scene3D.h>
 
@@ -13,9 +14,9 @@ namespace engine
 		SSAOPass(Scene3D* scene);
 		virtual ~SSAOPass() override;
 
-		PreLightingPassOutput executeSSAOPass(ICamera* camera, GBuffer* gbuffer);
+		PreLightingPassOutput executeSSAOPass(ICamera* camera, GeometryPassOutput& gBufferOutput);
 
-		inline Texture* getSSAOTexture() { return m_SSAOBlurFramebuffer.getColorBufferTexture(); }
+		inline Texture* getSSAOTexture() { return m_SSAOBlurRT.getColorTexture(); }
 
 	private:
 		void generateSampleKernel();
@@ -25,11 +26,11 @@ namespace engine
 
 	private:
 		// SSAO Pass
-		Framebuffer m_SSAOFramebuffer;
+		RenderTarget m_SSAORT;
 		Shader* m_SSAOShader;
 
 		// Blur Pass
-		Framebuffer m_SSAOBlurFramebuffer;
+		RenderTarget m_SSAOBlurRT;
 		Shader* m_SSAOBlurShader;
 
 		// 采样核（半球内的随机采样点）
@@ -37,7 +38,7 @@ namespace engine
 		static const int KERNEL_SIZE = 64;
 
 		// 噪声纹理
-		unsigned int m_NoiseTexture;
+		Texture m_NoiseTexture;
 		static const int NOISE_SIZE = 4;
 
 		// SSAO 参数

@@ -16,6 +16,16 @@ namespace engine {
 	std::queue<std::function<void()>> TextureLoader::mainThreadTasks;
 	std::mutex TextureLoader::taskMutex;
 
+	// 将 stbi 通道数转为 ChannelLayout
+	static ChannelLayout channelsFromCount(int numComponents) {
+		switch (numComponents) {
+		case 1: return ChannelLayout::R;
+		case 2: return ChannelLayout::RG;
+		case 3: return ChannelLayout::RGB;
+		case 4: return ChannelLayout::RGBA;
+		default: return ChannelLayout::RGBA;
+		}
+	}
 
 	Texture* TextureLoader::load2DTexture(const std::string& path, TextureSettings* settings) {
 		// Check the cache
@@ -36,17 +46,12 @@ namespace engine {
 				return nullptr;
 			}
 
-			GLenum dataFormat;
-			switch (numComponents) {
-			case 1: dataFormat = GL_RED;  break;
-			case 3: dataFormat = GL_RGB;  break;
-			case 4: dataFormat = GL_RGBA; break;
-			}
+			ChannelLayout channels = channelsFromCount(numComponents);
 
 			{
 				std::lock_guard<std::mutex> lock(taskMutex);
 				mainThreadTasks.push([=] {
-					texture->generate2DTexture(width, height, dataFormat, GL_UNSIGNED_BYTE, data);
+					texture->generate2DTexture(width, height, channels, data);
 					stbi_image_free(data);
 					}
 				);
@@ -70,14 +75,8 @@ namespace engine {
 			unsigned char* data = stbi_load(faces[i].c_str(), &width, &height, &numComponents, 0);
 
 			if (data) {
-				GLenum dataFormat;
-				switch (numComponents) {
-				case 1: dataFormat = GL_RED;  break;
-				case 3: dataFormat = GL_RGB;  break;
-				case 4: dataFormat = GL_RGBA; break;
-				}
-
-				cubemap->generateCubemapFace(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, width, height, dataFormat, data);
+				ChannelLayout channels = channelsFromCount(numComponents);
+				cubemap->generateCubemapFace(static_cast<uint8_t>(i), width, height, channels, data);
 				stbi_image_free(data);
 			}
 			else {
@@ -91,48 +90,47 @@ namespace engine {
 	}
 
 	void TextureLoader::initializeDefaultTextures() {
-		// Setup texture and minimal filtering because they are 1x1 textures so they require none
 		TextureSettings srgbTextureSettings;
 		srgbTextureSettings.IsSRGB = true;
 
 		s_DefaultAlbedo = load2DTexture(std::string("Assets/textures/default/defaultAlbedo.png"), &srgbTextureSettings);
 		s_DefaultAlbedo->setAnisotropicFilteringMode(1.0f);
-		s_DefaultAlbedo->setTextureMinFilter(GL_NEAREST);
-		s_DefaultAlbedo->setTextureMagFilter(GL_NEAREST);
+		s_DefaultAlbedo->setTextureMinFilter(rhi::FilterMode::Nearest);
+		s_DefaultAlbedo->setTextureMagFilter(rhi::FilterMode::Nearest);
 		s_DefaultNormal = load2DTexture(std::string("Assets/textures/default/defaultNormal.png"));
 		s_DefaultNormal->setAnisotropicFilteringMode(1.0f);
-		s_DefaultNormal->setTextureMinFilter(GL_NEAREST);
-		s_DefaultNormal->setTextureMagFilter(GL_NEAREST);
+		s_DefaultNormal->setTextureMinFilter(rhi::FilterMode::Nearest);
+		s_DefaultNormal->setTextureMagFilter(rhi::FilterMode::Nearest);
 		s_FullMetallic = load2DTexture(std::string("Assets/textures/default/white.png"));
 		s_FullMetallic->setAnisotropicFilteringMode(1.0f);
-		s_FullMetallic->setTextureMinFilter(GL_NEAREST);
-		s_FullMetallic->setTextureMagFilter(GL_NEAREST);
+		s_FullMetallic->setTextureMinFilter(rhi::FilterMode::Nearest);
+		s_FullMetallic->setTextureMagFilter(rhi::FilterMode::Nearest);
 		s_NoMetallic = load2DTexture(std::string("Assets/textures/default/black.png"));
 		s_NoMetallic->setAnisotropicFilteringMode(1.0f);
-		s_NoMetallic->setTextureMinFilter(GL_NEAREST);
-		s_NoMetallic->setTextureMagFilter(GL_NEAREST);
+		s_NoMetallic->setTextureMinFilter(rhi::FilterMode::Nearest);
+		s_NoMetallic->setTextureMagFilter(rhi::FilterMode::Nearest);
 		s_FullRoughness = load2DTexture(std::string("Assets/textures/default/white.png"));
 		s_FullRoughness->setAnisotropicFilteringMode(1.0f);
-		s_FullRoughness->setTextureMinFilter(GL_NEAREST);
-		s_FullRoughness->setTextureMagFilter(GL_NEAREST);
+		s_FullRoughness->setTextureMinFilter(rhi::FilterMode::Nearest);
+		s_FullRoughness->setTextureMagFilter(rhi::FilterMode::Nearest);
 		s_NoRoughness = load2DTexture(std::string("Assets/textures/default/black.png"));
 		s_NoRoughness->setAnisotropicFilteringMode(1.0f);
-		s_NoRoughness->setTextureMinFilter(GL_NEAREST);
-		s_NoRoughness->setTextureMagFilter(GL_NEAREST);
+		s_NoRoughness->setTextureMinFilter(rhi::FilterMode::Nearest);
+		s_NoRoughness->setTextureMagFilter(rhi::FilterMode::Nearest);
 		s_DefaultAO = load2DTexture(std::string("Assets/textures/default/white.png"));
 		s_DefaultAO->setAnisotropicFilteringMode(1.0f);
-		s_DefaultAO->setTextureMinFilter(GL_NEAREST);
-		s_DefaultAO->setTextureMagFilter(GL_NEAREST);
+		s_DefaultAO->setTextureMinFilter(rhi::FilterMode::Nearest);
+		s_DefaultAO->setTextureMagFilter(rhi::FilterMode::Nearest);
 
 		s_DefaultNormal = load2DTexture(std::string("Assets/textures/default/defaultNormal.png"), &srgbTextureSettings);
 		s_DefaultNormal->setAnisotropicFilteringMode(1.0f);
-		s_DefaultNormal->setTextureMinFilter(GL_NEAREST);
-		s_DefaultNormal->setTextureMagFilter(GL_NEAREST);
+		s_DefaultNormal->setTextureMinFilter(rhi::FilterMode::Nearest);
+		s_DefaultNormal->setTextureMagFilter(rhi::FilterMode::Nearest);
 
 		s_DefaultEmission = load2DTexture(std::string("Assets/textures/default/black.png"), &srgbTextureSettings);
 		s_DefaultEmission->setAnisotropicFilteringMode(1.0f);
-		s_DefaultEmission->setTextureMinFilter(GL_NEAREST);
-		s_DefaultEmission->setTextureMagFilter(GL_NEAREST);
+		s_DefaultEmission->setTextureMinFilter(rhi::FilterMode::Nearest);
+		s_DefaultEmission->setTextureMagFilter(rhi::FilterMode::Nearest);
 	}
 
 

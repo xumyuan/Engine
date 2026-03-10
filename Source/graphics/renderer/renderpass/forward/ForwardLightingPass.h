@@ -1,6 +1,7 @@
 #pragma once
 
 #include <graphics/renderer/renderpass/RenderPass.h>
+#include <graphics/renderer/RenderTarget.h>
 #include <graphics/Shader.h>
 #include <scene/Scene3D.h>
 
@@ -11,14 +12,15 @@ namespace engine
 	{
 	public:
 		ForwardLightingPass(Scene3D* scene);
-		ForwardLightingPass(Scene3D* scene, Framebuffer* customFramebuffer);
+		ForwardLightingPass(Scene3D* scene, RenderTarget* customRT);
 		virtual ~ForwardLightingPass() override;
 
 		LightingPassOutput executeRenderPass(ShadowmapPassOutput& shadowmapData, ICamera* camera, bool useIBL);
 	private:
 		void bindShadowmap(Shader* shader, ShadowmapPassOutput& shadowmapData);
 	private:
-		Framebuffer* m_Framebuffer = nullptr;
+		RenderTarget* m_RT = nullptr;
+		bool m_OwnsRT = false;
 
 		Shader* m_ModelShader, * m_TerrainShader;
 		

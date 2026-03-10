@@ -8,30 +8,33 @@
 namespace engine
 {
 
-	ForwardLightingPass::ForwardLightingPass(Scene3D* scene) : RenderPass(scene, RenderPassType::LightingPassType)
+	ForwardLightingPass::ForwardLightingPass(Scene3D* scene) : RenderPass(scene, RenderPassType::LightingPassType), m_OwnsRT(true)
 	{
 		m_ModelShader = ShaderLoader::loadShader("Shaders/forward/pbr_model.glsl");
 		m_TerrainShader = ShaderLoader::loadShader("Shaders/forward/pbr_terrain.glsl");
-		bool shouldMultisample = MSAA_SAMPLE_AMOUNT > 1.0 ? true : false;
-		m_Framebuffer = new Framebuffer(Window::getWidth(), Window::getHeight(), shouldMultisample);
+		uint8_t samples = MSAA_SAMPLE_AMOUNT > 1 ? static_cast<uint8_t>(MSAA_SAMPLE_AMOUNT) : 1;
+		m_RT = new RenderTarget(Window::getWidth(), Window::getHeight(), samples);
 
-		m_Framebuffer->addColorTexture(FloatingPoint16).addDepthStencilRBO(NormalizedDepthStencil).createFramebuffer();
+		m_RT->addColorTexture(rhi::TextureFormat::RGBA16F)
+			.addDepthStencilTexture(DepthStencilFormat::DepthStencil, false).build();
 	}
 
-	ForwardLightingPass::ForwardLightingPass(Scene3D* scene, Framebuffer* customFramebuffer) : RenderPass(scene, RenderPassType::LightingPassType), m_Framebuffer(customFramebuffer)
+	ForwardLightingPass::ForwardLightingPass(Scene3D* scene, RenderTarget* customRT) : RenderPass(scene, RenderPassType::LightingPassType), m_RT(customRT), m_OwnsRT(false)
 	{
 		m_ModelShader = ShaderLoader::loadShader("Shaders/forward/pbr_model.glsl");
 		m_TerrainShader = ShaderLoader::loadShader("Shaders/forward/pbr_terrain.glsl");
 	}
 
-	ForwardLightingPass::~ForwardLightingPass() {}
+	ForwardLightingPass::~ForwardLightingPass() {
+		if (m_OwnsRT) {
+			delete m_RT;
+		}
+	}
 
 	LightingPassOutput ForwardLightingPass::executeRenderPass(ShadowmapPassOutput& shadowmapData, ICamera* camera, bool useIBL) {
-		glViewport(0, 0, m_Framebuffer->getWidth(), m_Framebuffer->getHeight());
-		m_Framebuffer->bind();
-		m_Framebuffer->clear();
+		m_RT->beginPass();
 
-		if (m_Framebuffer->isMultisampled()) {
+		if (m_RT->isMultisampled()) {
 			m_GLCache->setMultisample(true);
 		}
 		else {
@@ -61,7 +64,16 @@ namespace engine
 		}
 		else {
 			m_ModelShader->setUniform("computeIBL", 0);
-
+			// 即使不使用 IBL，也必须绑定正确类型的纹理到 samplerCube uniform 对应的纹理单元，
+			// 否则 samplerCube 默认指向 unit 0（绑定的是 GL_TEXTURE_2D shadowmap），
+			// 导致 GL_INVALID_OPERATION: program texture usage
+			Skybox* skyboxForBind = m_ActiveScene->getSkybox();
+			if (skyboxForBind && skyboxForBind->getSkyboxCubemap()) {
+				skyboxForBind->getSkyboxCubemap()->bind(1);
+				m_ModelShader->setUniform("irradianceMap", 1);
+				skyboxForBind->getSkyboxCubemap()->bind(2);
+				m_ModelShader->setUniform("prefilterMap", 2);
+			}
 		}
 		// Render the scene
 		m_ActiveScene->addModelsToRenderer();
@@ -88,17 +100,21 @@ namespace engine
 		m_GLCache->switchShader(m_ModelShader);
 		modelRenderer->flushTransparent(m_ModelShader, m_RenderPassType);
 
+		m_RT->endPass();
+
 		// Render pass output
 		LightingPassOutput passOutput;
-		passOutput.outputFramebuffer = m_Framebuffer;
+		passOutput.renderTarget = m_RT->getHandle();
+		passOutput.colorTexture = m_RT->getColorTexture();
+		passOutput.width = m_RT->getWidth();
+		passOutput.height = m_RT->getHeight();
+		passOutput.isMultisampled = m_RT->isMultisampled();
 		return passOutput;
 	}
 
 	void ForwardLightingPass::bindShadowmap(Shader* shader, ShadowmapPassOutput& shadowmapData) {
-		shadowmapData.shadowmapFramebuffer->getDepthStencilTexture()->bind(0);
+		shadowmapData.depthTexture->bind(0);
 		shader->setUniform("dirLightShadowmap", 0);
-		/*shader->setUniform("shadowmap", 0);
-		shader->setUniform("lightSpaceViewProjectionMatrix", shadowmapData.directionalLightViewProjMatrix);*/
 		shader->setUniform("lightSpaceViewProjectionMatrix", shadowmapData.directionalLightViewProjMatrix);
 		shader->setUniform("dirLightShadowData.shadowBias", 0.01f);
 		shader->setUniform("dirLightShadowData.lightSpaceViewProjectionMatrix", shadowmapData.directionalLightViewProjMatrix);

@@ -2,6 +2,7 @@
 
 #include <graphics/renderer/renderpass/RenderPass.h>
 #include <graphics/renderer/renderpass/RenderPassType.h>
+#include <graphics/renderer/RenderTarget.h>
 
 namespace engine
 {
@@ -12,15 +13,13 @@ namespace engine
 	class DeferredLightingPass : public RenderPass {
 	public:
 		DeferredLightingPass(Scene3D* scene);
-		DeferredLightingPass(Scene3D* scene, Framebuffer* framebuffer);
 		virtual ~DeferredLightingPass() override;
 
-		LightingPassOutput ExecuteLightingPass(ShadowmapPassOutput& inputShadowmapData, GBuffer* inputGbuffer, PreLightingPassOutput& preLightingOutput, ICamera* camera, bool useIBL);
+		LightingPassOutput ExecuteLightingPass(ShadowmapPassOutput& inputShadowmapData, GeometryPassOutput& inputGbuffer, PreLightingPassOutput& preLightingOutput, ICamera* camera, bool useIBL);
 	private:
 		void BindShadowmap(Shader* shader, ShadowmapPassOutput& shadowmapData);
 	private:
-		bool m_AllocatedFramebuffer;
-		Framebuffer* m_Framebuffer;
+		RenderTarget* m_RT;
 		Shader* m_LightingShader;
 	};
 }

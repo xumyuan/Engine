@@ -186,6 +186,28 @@ static bool isIntegerAttrib(VertexAttribType type) {
     }
 }
 
+static GLenum toGLFilterMode(FilterMode mode) {
+    switch (mode) {
+        case FilterMode::Nearest:               return GL_NEAREST;
+        case FilterMode::Linear:                return GL_LINEAR;
+        case FilterMode::NearestMipmapNearest:  return GL_NEAREST_MIPMAP_NEAREST;
+        case FilterMode::LinearMipmapNearest:   return GL_LINEAR_MIPMAP_NEAREST;
+        case FilterMode::NearestMipmapLinear:   return GL_NEAREST_MIPMAP_LINEAR;
+        case FilterMode::LinearMipmapLinear:    return GL_LINEAR_MIPMAP_LINEAR;
+        default:                                return GL_LINEAR;
+    }
+}
+
+static GLenum toGLWrapMode(WrapMode mode) {
+    switch (mode) {
+        case WrapMode::Repeat:         return GL_REPEAT;
+        case WrapMode::MirroredRepeat: return GL_MIRRORED_REPEAT;
+        case WrapMode::ClampToEdge:    return GL_CLAMP_TO_EDGE;
+        case WrapMode::ClampToBorder:  return GL_CLAMP_TO_BORDER;
+        default:                       return GL_REPEAT;
+    }
+}
+
 // ============================================================================
 // 生命周期
 // ============================================================================
@@ -204,7 +226,13 @@ bool OpenGLDevice::initialize() {
 
 void OpenGLDevice::terminate() {
     // 销毁所有残留资源
-    for (auto& [id, data] : mTextures)       { glDeleteTextures(1, &data.glId); }
+    for (auto& [id, data] : mTextures) {
+        if (data.isRenderbuffer) {
+            glDeleteRenderbuffers(1, &data.glId);
+        } else {
+            glDeleteTextures(1, &data.glId);
+        }
+    }
     for (auto& [id, data] : mBuffers)        { glDeleteBuffers(1, &data.glId); }
     for (auto& [id, data] : mPrograms)       { glDeleteProgram(data.glId); }
     for (auto& [id, data] : mRenderTargets)  { glDeleteFramebuffers(1, &data.fboId); }
@@ -242,6 +270,34 @@ uint32_t OpenGLDevice::getMaxTextureSize() const noexcept {
 // ============================================================================
 
 TextureHandle OpenGLDevice::createTexture(const TextureDesc& desc) {
+    // ── Filament 风格：DepthAttachment 无 Sampled → 自动选 renderbuffer ──
+    bool isDepthUsage = (desc.usage & TextureUsage::DepthAttachment);
+    bool isSampled    = (desc.usage & TextureUsage::Sampled);
+    bool useRBO       = isDepthUsage && !isSampled && (desc.type == TextureType::Texture2D);
+
+    if (useRBO) {
+        GLuint rbo = 0;
+        glGenRenderbuffers(1, &rbo);
+        glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+
+        GLenum internalFmt = toGLInternalFormat(desc.format);
+        if (desc.samples > 1) {
+            glRenderbufferStorageMultisample(GL_RENDERBUFFER, desc.samples,
+                    internalFmt, desc.width, desc.height);
+        } else {
+            glRenderbufferStorage(GL_RENDERBUFFER, internalFmt,
+                    desc.width, desc.height);
+        }
+        glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+        auto hid = allocHandle();
+        TextureDesc storedDesc = desc;
+        storedDesc.levels = 1;
+        mTextures[hid] = { rbo, /*isRenderbuffer=*/true, storedDesc };
+        return TextureHandle(hid);
+    }
+
+    // ── 常规纹理路径 ──
     GLuint tex = 0;
     glGenTextures(1, &tex);
 
@@ -252,42 +308,67 @@ TextureHandle OpenGLDevice::createTexture(const TextureDesc& desc) {
     GLenum fmt         = toGLFormat(desc.format);
     GLenum pixelType   = toGLPixelType(desc.format);
 
+    uint8_t actualLevels = desc.levels;
+    if (actualLevels == 0) {
+        // 自动计算 mip 层数
+        uint32_t maxDim = std::max(desc.width, desc.height);
+        actualLevels = static_cast<uint8_t>(std::floor(std::log2(maxDim))) + 1;
+    }
+
     if (desc.samples > 1) {
         glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE,
                 desc.samples, internalFmt, desc.width, desc.height, GL_TRUE);
     } else if (desc.type == TextureType::Texture2D) {
-        for (uint8_t level = 0; level < desc.levels; ++level) {
+        for (uint8_t level = 0; level < actualLevels; ++level) {
             uint32_t w = std::max(1u, desc.width >> level);
             uint32_t h = std::max(1u, desc.height >> level);
             glTexImage2D(GL_TEXTURE_2D, level, internalFmt, w, h, 0, fmt, pixelType, nullptr);
         }
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-                desc.levels > 1 ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        // 使用 desc 中的采样器参数
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, toGLFilterMode(desc.minFilter));
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, toGLFilterMode(desc.magFilter));
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, toGLWrapMode(desc.wrapS));
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, toGLWrapMode(desc.wrapT));
+        if (desc.hasBorder) {
+            glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, desc.borderColor);
+        }
+        if (desc.anisotropy > 1.0f) {
+            float maxAnisotropy;
+            glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAnisotropy);
+            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT,
+                    std::min(maxAnisotropy, desc.anisotropy));
+        }
     } else if (desc.type == TextureType::TextureCube) {
         for (int face = 0; face < 6; ++face) {
-            for (uint8_t level = 0; level < desc.levels; ++level) {
+            for (uint8_t level = 0; level < actualLevels; ++level) {
                 uint32_t w = std::max(1u, desc.width >> level);
                 uint32_t h = std::max(1u, desc.height >> level);
                 glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face,
                         level, internalFmt, w, h, 0, fmt, pixelType, nullptr);
             }
         }
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER,
-                desc.levels > 1 ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+        // 使用 desc 中的采样器参数
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, toGLFilterMode(desc.minFilter));
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, toGLFilterMode(desc.magFilter));
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, toGLWrapMode(desc.wrapS));
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, toGLWrapMode(desc.wrapT));
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, toGLWrapMode(desc.wrapR));
+        if (desc.anisotropy > 1.0f) {
+            float maxAnisotropy;
+            glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAnisotropy);
+            glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_ANISOTROPY_EXT,
+                    std::min(maxAnisotropy, desc.anisotropy));
+        }
     }
     // TODO: Texture2DArray, Texture3D
 
     glBindTexture(target, 0);
 
     auto hid = allocHandle();
-    mTextures[hid] = { tex, desc };
+    // 存储实际的 levels 数到 desc 副本中
+    TextureDesc storedDesc = desc;
+    storedDesc.levels = actualLevels;
+    mTextures[hid] = { tex, /*isRenderbuffer=*/false, storedDesc };
     return TextureHandle(hid);
 }
 
@@ -392,29 +473,48 @@ RenderTargetHandle OpenGLDevice::createRenderTarget(const RenderTargetDesc& desc
         if (it != mTextures.end()) {
             GLenum attachment = GL_COLOR_ATTACHMENT0 + i;
             GLenum target = toGLTextureTarget(it->second.desc.type, it->second.desc.samples);
-            glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, target,
-                    it->second.glId, desc.colorLevels[i]);
+
+            if (it->second.desc.type == TextureType::TextureCube) {
+                // cubemap 面：用 colorLayers 指定面
+                glFramebufferTexture2D(GL_FRAMEBUFFER, attachment,
+                        GL_TEXTURE_CUBE_MAP_POSITIVE_X + desc.colorLayers[i],
+                        it->second.glId, desc.colorLevels[i]);
+            } else {
+                glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, target,
+                        it->second.glId, desc.colorLevels[i]);
+            }
             drawBuffers.push_back(attachment);
         }
     }
 
-    if (!drawBuffers.empty()) {
+    if (drawBuffers.empty()) {
+        glDrawBuffer(GL_NONE);
+        glReadBuffer(GL_NONE);
+    } else {
         glDrawBuffers(static_cast<GLsizei>(drawBuffers.size()), drawBuffers.data());
     }
 
-    // 挂载深度附件
+    // 挂载深度附件 —— 统一通过 depthAttachment handle
+    // 后端自动判断该 handle 对应的是 texture 还是 renderbuffer (Filament 风格)
     if (static_cast<bool>(desc.depthAttachment)) {
         auto it = mTextures.find(desc.depthAttachment.getId());
         if (it != mTextures.end()) {
-            GLenum target = toGLTextureTarget(it->second.desc.type, it->second.desc.samples);
             GLenum attachPoint = GL_DEPTH_ATTACHMENT;
-            // 如果格式包含 stencil
             if (it->second.desc.format == TextureFormat::Depth24Stencil8 ||
                 it->second.desc.format == TextureFormat::Depth32FStencil8) {
                 attachPoint = GL_DEPTH_STENCIL_ATTACHMENT;
             }
-            glFramebufferTexture2D(GL_FRAMEBUFFER, attachPoint, target,
-                    it->second.glId, desc.depthLevel);
+
+            if (it->second.isRenderbuffer) {
+                // 该 "纹理" 实际是 RBO（usage = DepthAttachment 无 Sampled）
+                glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachPoint,
+                        GL_RENDERBUFFER, it->second.glId);
+            } else {
+                // 常规深度纹理
+                GLenum target = toGLTextureTarget(it->second.desc.type, it->second.desc.samples);
+                glFramebufferTexture2D(GL_FRAMEBUFFER, attachPoint, target,
+                        it->second.glId, desc.depthLevel);
+            }
         }
     }
 
@@ -495,7 +595,11 @@ SwapChainHandle OpenGLDevice::createSwapChain(void* nativeWindow,
 void OpenGLDevice::destroyTexture(TextureHandle handle) {
     auto it = mTextures.find(handle.getId());
     if (it != mTextures.end()) {
-        glDeleteTextures(1, &it->second.glId);
+        if (it->second.isRenderbuffer) {
+            glDeleteRenderbuffers(1, &it->second.glId);
+        } else {
+            glDeleteTextures(1, &it->second.glId);
+        }
         mTextures.erase(it);
     }
 }
@@ -552,17 +656,77 @@ void OpenGLDevice::updateBuffer(BufferHandle handle, const BufferDataDesc& data)
 void OpenGLDevice::updateTexture(TextureHandle handle, uint32_t level,
         uint32_t xoffset, uint32_t yoffset,
         uint32_t width, uint32_t height,
+        TextureFormat srcFormat,
         const void* data, uint32_t /*dataSize*/) {
     auto it = mTextures.find(handle.getId());
     if (it == mTextures.end()) return;
 
     GLenum target = toGLTextureTarget(it->second.desc.type, it->second.desc.samples);
-    GLenum fmt = toGLFormat(it->second.desc.format);
-    GLenum pixelType = toGLPixelType(it->second.desc.format);
+    // 使用 srcFormat 来决定上传数据的通道格式和像素类型
+    GLenum fmt = toGLFormat(srcFormat);
+    GLenum pixelType = toGLPixelType(srcFormat);
 
     glBindTexture(target, it->second.glId);
     glTexSubImage2D(target, level, xoffset, yoffset, width, height, fmt, pixelType, data);
     glBindTexture(target, 0);
+}
+
+void OpenGLDevice::updateCubemapFace(TextureHandle handle, uint8_t face,
+        uint32_t level, uint32_t width, uint32_t height,
+        TextureFormat srcFormat,
+        const void* data, uint32_t /*dataSize*/) {
+    auto it = mTextures.find(handle.getId());
+    if (it == mTextures.end()) return;
+
+    // 使用 srcFormat 来决定上传数据的通道格式和像素类型
+    GLenum fmt = toGLFormat(srcFormat);
+    GLenum pixelType = toGLPixelType(srcFormat);
+    GLenum internalFmt = toGLInternalFormat(it->second.desc.format);
+
+    glBindTexture(GL_TEXTURE_CUBE_MAP, it->second.glId);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face,
+            level, internalFmt, width, height, 0, fmt, pixelType, data);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+}
+
+void OpenGLDevice::updateTextureSampler(TextureHandle handle,
+        const TextureDesc& desc) {
+    auto it = mTextures.find(handle.getId());
+    if (it == mTextures.end()) return;
+
+    GLenum target = toGLTextureTarget(desc.type, desc.samples);
+    glBindTexture(target, it->second.glId);
+
+    glTexParameteri(target, GL_TEXTURE_WRAP_S, toGLWrapMode(desc.wrapS));
+    glTexParameteri(target, GL_TEXTURE_WRAP_T, toGLWrapMode(desc.wrapT));
+    if (desc.type == TextureType::TextureCube || desc.type == TextureType::TextureCubeArray
+        || desc.type == TextureType::Texture3D) {
+        glTexParameteri(target, GL_TEXTURE_WRAP_R, toGLWrapMode(desc.wrapR));
+    }
+    if (desc.hasBorder) {
+        glTexParameterfv(target, GL_TEXTURE_BORDER_COLOR, desc.borderColor);
+    }
+
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, toGLFilterMode(desc.minFilter));
+    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, toGLFilterMode(desc.magFilter));
+
+    if (desc.levels > 1) {
+        glGenerateMipmap(target);
+        glTexParameteri(target, GL_TEXTURE_LOD_BIAS, desc.lodBias);
+    }
+
+    // 各向异性过滤
+    if (desc.anisotropy > 1.0f) {
+        float maxAnisotropy;
+        glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAnisotropy);
+        float amount = std::min(maxAnisotropy, desc.anisotropy);
+        glTexParameterf(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, amount);
+    }
+
+    glBindTexture(target, 0);
+
+    // 同步 desc 中的采样器参数到内部存储
+    it->second.desc = desc;
 }
 
 // ============================================================================
@@ -726,6 +890,55 @@ void OpenGLDevice::setPolygonMode(PolygonMode mode) {
         default: break;
     }
     glPolygonMode(GL_FRONT_AND_BACK, glMode);
+}
+
+void OpenGLDevice::setRenderTargetColorAttachment(RenderTargetHandle rt,
+        uint8_t attachmentIndex, TextureHandle texture,
+        uint8_t level, uint8_t layer) {
+    auto rtIt = mRenderTargets.find(rt.getId());
+    if (rtIt == mRenderTargets.end()) return;
+
+    glBindFramebuffer(GL_FRAMEBUFFER, rtIt->second.fboId);
+    GLenum attachment = GL_COLOR_ATTACHMENT0 + attachmentIndex;
+
+    if (!static_cast<bool>(texture)) {
+        // 解绑附件
+        glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, 0, 0);
+    } else {
+        auto texIt = mTextures.find(texture.getId());
+        if (texIt != mTextures.end()) {
+            if (texIt->second.desc.type == TextureType::TextureCube) {
+                // cubemap 面
+                glFramebufferTexture2D(GL_FRAMEBUFFER, attachment,
+                        GL_TEXTURE_CUBE_MAP_POSITIVE_X + layer,
+                        texIt->second.glId, level);
+            } else if (texIt->second.desc.samples > 1) {
+                glFramebufferTexture2D(GL_FRAMEBUFFER, attachment,
+                        GL_TEXTURE_2D_MULTISAMPLE,
+                        texIt->second.glId, level);
+            } else {
+                glFramebufferTexture2D(GL_FRAMEBUFFER, attachment,
+                        GL_TEXTURE_2D,
+                        texIt->second.glId, level);
+            }
+        }
+    }
+    // 不解绑 FBO，调用方通常在 beginRenderPass 中已经绑定了
+}
+
+void OpenGLDevice::copyTexture(TextureHandle src, TextureHandle dst,
+        uint32_t width, uint32_t height) {
+    auto srcIt = mTextures.find(src.getId());
+    auto dstIt = mTextures.find(dst.getId());
+    if (srcIt == mTextures.end() || dstIt == mTextures.end()) return;
+
+    GLenum srcTarget = toGLTextureTarget(srcIt->second.desc.type, srcIt->second.desc.samples);
+    GLenum dstTarget = toGLTextureTarget(dstIt->second.desc.type, dstIt->second.desc.samples);
+
+    glCopyImageSubData(
+        srcIt->second.glId, srcTarget, 0, 0, 0, 0,
+        dstIt->second.glId, dstTarget, 0, 0, 0, 0,
+        width, height, 1);
 }
 
 void OpenGLDevice::resolve(RenderTargetHandle src, RenderTargetHandle dst) {

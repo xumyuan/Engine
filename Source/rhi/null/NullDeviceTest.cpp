@@ -44,7 +44,7 @@ void testNullDevice() {
 
     // 更新操作
     device.updateBuffer(buf, {});
-    device.updateTexture(tex, 0, 0, 0, 1, 1, nullptr, 0);
+    device.updateTexture(tex, 0, 0, 0, 1, 1, TextureFormat::RGBA8, nullptr, 0);
 
     // 销毁
     device.destroyTexture(tex);

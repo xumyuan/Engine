@@ -8,19 +8,19 @@ namespace engine
 {
 
 	PostProcessPass::PostProcessPass(Scene3D* scene) : RenderPass(scene, RenderPassType::PostProcessPassType),
-		m_ScreenRenderTarget(Window::getWidth(), Window::getHeight(), false),
-		m_GammaCorrectTarget(Window::getWidth(), Window::getHeight(), false),
-		m_FullRenderTarget(Window::getWidth(), Window::getHeight(), false)
+		m_ResolveRT(Window::getWidth(), Window::getHeight()),
+		m_GammaCorrectTarget(Window::getWidth(), Window::getHeight()),
+		m_FullRenderTarget(Window::getWidth(), Window::getHeight())
 	{
 		m_GammaCorrectShader = ShaderLoader::loadShader("Shaders/post_process/gammaCorrect.glsl");
 		m_PassthroughShader = ShaderLoader::loadShader("Shaders/post_process/copy.glsl");
 		m_FxaaShader = ShaderLoader::loadShader("Shaders/post_process/fxaa.glsl");
 
-
-		m_GammaCorrectTarget.addColorTexture(Normalized8).addDepthStencilRBO(NormalizedDepthOnly).createFramebuffer();
-		m_ScreenRenderTarget.addColorTexture(FloatingPoint16).addDepthStencilRBO(NormalizedDepthOnly).createFramebuffer();
-		m_FullRenderTarget.addColorTexture(FloatingPoint16).createFramebuffer();
-
+		m_GammaCorrectTarget.addColorTexture(rhi::TextureFormat::RGBA8)
+			.addDepthStencilTexture(DepthStencilFormat::DepthOnly, false).build();
+		m_ResolveRT.addColorTexture(rhi::TextureFormat::RGBA16F)
+			.addDepthStencilTexture(DepthStencilFormat::DepthOnly, false).build();
+		m_FullRenderTarget.addColorTexture(rhi::TextureFormat::RGBA16F).build();
 
 		DebugPane::bindGammaCorrectionValue(&m_GammaCorrection);
 		DebugPane::bindExposureValue(&m_Exposure);
@@ -29,21 +29,18 @@ namespace engine
 
 	PostProcessPass::~PostProcessPass() {}
 
-	void PostProcessPass::executeRenderPass(Framebuffer* framebufferToProcess) {
-		glViewport(0, 0, Window::getWidth(), Window::getHeight());
+	void PostProcessPass::executeRenderPass(LightingPassOutput& lightingOutput) {
+		auto* device = getRHIDevice();
 
-		// 如果输入 RenderTarget 是多重采样的。通过将其位块传送到非多重采样的 RenderTarget 来解决它，以便我们可以对其进行后期处理
-		Framebuffer* supersampledTarget = framebufferToProcess;
-		if (framebufferToProcess->isMultisampled()) {
-			glBindFramebuffer(GL_READ_FRAMEBUFFER, framebufferToProcess->getFramebuffer());
-			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_ScreenRenderTarget.getFramebuffer());
-
-			glBlitFramebuffer(0, 0, framebufferToProcess->getWidth(),
-				framebufferToProcess->getHeight(), 0, 0, m_ScreenRenderTarget.getWidth(), m_ScreenRenderTarget.getHeight(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
-
-			supersampledTarget = &m_ScreenRenderTarget;
+		// 如果输入是多重采样的，通过 blit 到非多采样 RT 解析
+		Texture* sourceColorTexture = lightingOutput.colorTexture;
+		if (lightingOutput.isMultisampled) {
+			device->blit(lightingOutput.renderTarget, m_ResolveRT.getHandle(),
+				0, 0, lightingOutput.width, lightingOutput.height,
+				0, 0, m_ResolveRT.getWidth(), m_ResolveRT.getHeight(),
+				rhi::RHIDevice::BlitColor);
+			sourceColorTexture = m_ResolveRT.getColorTexture();
 		}
-		Framebuffer* target = supersampledTarget;
 
 #if DEBUG_ENABLED
 		if (DebugPane::getWireframeMode()) {
@@ -52,43 +49,36 @@ namespace engine
 		}
 #endif
 
-
-		Framebuffer* framebufferToRenderTo = nullptr;
-		// todo: 这里交换fxaa和伽马矫正的顺序会导致图像右上角出现花屏
-		// 暂未找到原因
-		// 3.26 解决的方法是fullrendertarget的纹理格式为FloatingPoint16
-
 		// 伽马矫正
-		gammaCorrect(&m_GammaCorrectTarget, target->getColorBufferTexture());
-		target = &m_GammaCorrectTarget;
+		gammaCorrect(&m_GammaCorrectTarget, sourceColorTexture);
+		Texture* currentTexture = m_GammaCorrectTarget.getColorTexture();
 
 		// fxaa
 		if (m_FxaaEnabled) {
-			framebufferToRenderTo = &m_FullRenderTarget;
-			fxaa(framebufferToRenderTo, target->getColorBufferTexture());
-			target = framebufferToRenderTo;
+			fxaa(&m_FullRenderTarget, currentTexture);
+			currentTexture = m_FullRenderTarget.getColorTexture();
 		}
 
-
+		// 输出到默认帧缓冲（屏幕）
 		Window::bind();
 		Window::clear();
 
 		m_GLCache->switchShader(m_PassthroughShader);
 		m_PassthroughShader->setUniform("input_texture", 0);
-		target->getColorBufferTexture()->bind(0);
+		currentTexture->bind(0);
 		ModelRenderer::drawNdcPlane();
 	}
 
 
-	void PostProcessPass::gammaCorrect(Framebuffer* target, Texture* hdrTexture) {
-		glViewport(0, 0, target->getWidth(), target->getHeight());
+	void PostProcessPass::gammaCorrect(RenderTarget* target, Texture* hdrTexture) {
+		target->beginPass();
+
 		m_GLCache->switchShader(m_GammaCorrectShader);
 		m_GLCache->setDepthTest(false);
 		m_GLCache->setBlend(false);
 		m_GLCache->setFaceCull(true);
 		m_GLCache->setCullFace(GL_BACK);
 		m_GLCache->setStencilTest(false);
-		target->bind();
 
 		m_GammaCorrectShader->setUniform("gamma_inverse", 1.0f / m_GammaCorrection);
 		m_GammaCorrectShader->setUniform("exposure", m_Exposure);
@@ -98,18 +88,18 @@ namespace engine
 
 		ModelRenderer::drawNdcPlane();
 
+		target->endPass();
 	}
 
-	void PostProcessPass::fxaa(Framebuffer* target, Texture* texture) {
-		glViewport(0, 0, target->getWidth(), target->getHeight());
-		m_GLCache->switchShader(m_FxaaShader);
+	void PostProcessPass::fxaa(RenderTarget* target, Texture* texture) {
+		target->beginPass();
 
+		m_GLCache->switchShader(m_FxaaShader);
 		m_GLCache->setDepthTest(false);
 		m_GLCache->setBlend(false);
 		m_GLCache->setFaceCull(true);
 		m_GLCache->setCullFace(GL_BACK);
 		m_GLCache->setStencilTest(false);
-		target->bind();
 
 		m_FxaaShader->setUniform("texel_size", glm::vec2(1.0f / (float)Window::getWidth(), 1.0f / (float)Window::getHeight()));
 
@@ -117,6 +107,8 @@ namespace engine
 		texture->bind(0);
 
 		ModelRenderer::drawNdcPlane();
+
+		target->endPass();
 	}
 
 }

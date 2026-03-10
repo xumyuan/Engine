@@ -1,41 +1,71 @@
 #pragma once
 
-namespace engine {
-	struct TextureSettings {
-		// 纹理数据格式
-		GLenum TextureFormat = GL_NONE;
+#include "rhi/include/RHIDevice.h"
+#include "rhi/include/RHIResources.h"
 
-		/*标志纹理是否为sRGB纹理，如果是，则在采样前要线性化
-		* 用于颜色的都应该是线性化的，但是包含数据的 比如高度图和法线图不应该是线性化的
-		* 自己生成的默认就是在线性空间的
-		*/
+namespace engine {
+
+	struct TextureSettings {
+		// 纹理格式（RHI 枚举）
+		rhi::TextureFormat format = rhi::TextureFormat::RGBA8;
+
+		// 标记格式是否被显式设置（用于 resolveFormat 判断是否应根据通道数推导格式）
+		bool formatExplicitlySet = false;
+
+		// 是否为 sRGB 纹理（如果是，采样前自动线性化）
+		// 用于颜色的纹理应为 sRGB，数据纹理（法线、高度等）不应
 		bool IsSRGB = false;
 
 		// 纹理环绕选项
-		GLenum TextureWrapSMode = GL_REPEAT;
-		GLenum TextureWrapTMode = GL_REPEAT;
+		rhi::WrapMode wrapS = rhi::WrapMode::Repeat;
+		rhi::WrapMode wrapT = rhi::WrapMode::Repeat;
 		bool HasBorder = false;
-		glm::vec4 BorderColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+		float BorderColor[4] = {1.0f, 1.0f, 1.0f, 1.0f};
 
 		// 纹理过滤选项
-		GLenum TextureMinificationFilterMode = GL_LINEAR_MIPMAP_LINEAR;//多个纹素映射到一个像素时的过滤方式
-		GLenum TextureMagnificationFilterMode = GL_LINEAR;// 多个像素映射到一个纹素时的过滤方式
-		float TextureAnisotropyLevel = ANISOTROPIC_FILTERING_LEVEL; // 指定独立于纹理 min 和 mag 过滤，应为 2 的幂（1.0 表示使用通常的各向同性纹理过滤，这意味着不使用各向异性过滤）
+		rhi::FilterMode minFilter = rhi::FilterMode::LinearMipmapLinear;
+		rhi::FilterMode magFilter = rhi::FilterMode::Linear;
+		float anisotropy = 8.0f; // ANISOTROPIC_FILTERING_LEVEL
 
 		// Mip options
 		bool HasMips = true;
-		int MipBias = 0; // 正值表示选择较模糊的纹理，负值表示较清晰的纹理，可以显示纹理锯齿
+		int MipBias = 0;
 	};
+
+	// 通道数枚举（替代 GL_RED, GL_RGB, GL_RGBA 等）
+	enum class ChannelLayout : uint8_t {
+		R = 1,
+		RG = 2,
+		RGB = 3,
+		RGBA = 4,
+		Depth,
+		DepthStencil,
+	};
+
+	// 将 ChannelLayout 转为 TextureFormat（用作上传数据的源格式描述）
+	inline rhi::TextureFormat channelLayoutToUploadFormat(ChannelLayout channels) {
+		switch (channels) {
+		case ChannelLayout::R:            return rhi::TextureFormat::R8;
+		case ChannelLayout::RG:           return rhi::TextureFormat::RG8;
+		case ChannelLayout::RGB:          return rhi::TextureFormat::RGB8;
+		case ChannelLayout::RGBA:         return rhi::TextureFormat::RGBA8;
+		case ChannelLayout::Depth:        return rhi::TextureFormat::Depth24;
+		case ChannelLayout::DepthStencil: return rhi::TextureFormat::Depth24Stencil8;
+		default:                          return rhi::TextureFormat::RGBA8;
+		}
+	}
 
 	class Texture {
 	public:
 		Texture();
 		Texture(const TextureSettings& settings);
-		Texture(const Texture& teture);
+		Texture(const Texture& texture);
 		~Texture();
 
-		// 创建纹理
-		void generate2DTexture(unsigned int width, unsigned int height, GLenum dataFormat, GLenum pixelDataType = GL_UNSIGNED_BYTE, const void* data = nullptr);
+		// 创建纹理（通过 RHI Device）
+		void generate2DTexture(unsigned int width, unsigned int height,
+			ChannelLayout channels = ChannelLayout::RGBA,
+			const void* data = nullptr);
 
 		void generate2DMultisampleTexture(unsigned int width, unsigned int height);
 		void generateMips();
@@ -43,35 +73,46 @@ namespace engine {
 		void bind(int unit = 0);
 		void unbind();
 
-		// Texture Tuning Functions
-		void setTextureWrapS(GLenum textureWrapMode);
-		void setTextureWrapT(GLenum textureWrapMode);
+		// Texture Tuning Functions（使用 RHI 枚举）
+		void setTextureWrapS(rhi::WrapMode wrapMode);
+		void setTextureWrapT(rhi::WrapMode wrapMode);
 		void setHasBorder(bool hasBorder);
-		void setBorderColor(glm::vec4& borderColor);
-		void setTextureMinFilter(GLenum textureFilterMode);
-		void setTextureMagFilter(GLenum textureFilterMode);
-		void setAnisotropicFilteringMode(float textureAnisotropyLevel);
+		void setBorderColor(float r, float g, float b, float a);
+		void setTextureMinFilter(rhi::FilterMode filterMode);
+		void setTextureMagFilter(rhi::FilterMode filterMode);
+		void setAnisotropicFilteringMode(float level);
 		void setMipBias(int mipBias);
 		void setHasMips(bool hasMips);
 
 		// Pre-generation controls only
-		inline void setTextureSettings(TextureSettings settings) { m_TextureSettings = settings; }
-		inline void setTextureFormat(GLenum format) { m_TextureSettings.TextureFormat = format; }
-		// 不要用它来绑定纹理并使用它。 而是调用 Bind() 函数
-		inline unsigned int getTextureId()const { return m_TextureId; }
-		inline bool isGenerated() const { return m_TextureId != 0; }
-		inline unsigned int getTextureTarget() const { return m_TextureTarget; }
+		inline void setTextureSettings(const TextureSettings& settings) { m_TextureSettings = settings; }
+		inline void setTextureFormat(rhi::TextureFormat format) { m_TextureSettings.format = format; m_TextureSettings.formatExplicitlySet = true; }
+
+		// 获取 RHI 句柄
+		inline rhi::TextureHandle getRHIHandle() const { return m_RHIHandle; }
+
+		// 兼容旧代码：获取底层 GL 纹理 ID（过渡期使用）
+		unsigned int getTextureId() const;
+		inline bool isGenerated() const { return static_cast<bool>(m_RHIHandle); }
 		inline unsigned int getWidth() const { return m_Width; }
-		inline unsigned int getHeight()const { return m_Height; }
+		inline unsigned int getHeight() const { return m_Height; }
+		inline bool isMultisample() const { return m_IsMultisample; }
 		inline const TextureSettings& getTextureSettings() const { return m_TextureSettings; }
+
 	private:
 		void applyTextureSettings();
+		rhi::TextureDesc buildTextureDesc(unsigned int width, unsigned int height) const;
+
+		// 根据通道数和 sRGB 标志确定纹理格式
+		static rhi::TextureFormat resolveFormat(rhi::TextureFormat explicitFormat,
+			ChannelLayout channels, bool isSRGB, bool formatExplicitlySet);
+
 	private:
-		unsigned int m_TextureId;
-		GLenum m_TextureTarget;
+		rhi::TextureHandle m_RHIHandle;
+		rhi::RHIDevice* m_Device;
 
 		unsigned int m_Width, m_Height;
-		//GLenum m_TextureFormat;
+		bool m_IsMultisample;
 
 		TextureSettings m_TextureSettings;
 	};

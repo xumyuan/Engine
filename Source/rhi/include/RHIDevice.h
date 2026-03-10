@@ -45,10 +45,25 @@ class RHIDevice {
 
     // ---------- 资源更新 ----------
     virtual void updateBuffer(BufferHandle handle, const BufferDataDesc& data) = 0;
+
+    // srcFormat: 源数据的实际像素格式（用于确定通道数和类型）
+    // 当 srcFormat 与纹理内部格式不同时（如 RGB8 数据上传到 RGBA8 纹理），驱动会自动转换
     virtual void updateTexture(TextureHandle handle, uint32_t level,
             uint32_t xoffset, uint32_t yoffset,
             uint32_t width, uint32_t height,
+            TextureFormat srcFormat,
             const void* data, uint32_t dataSize) = 0;
+
+    // 更新 cubemap 某一面的数据（face: 0~5 对应 +X,-X,+Y,-Y,+Z,-Z）
+    // srcFormat: 源数据的实际像素格式
+    virtual void updateCubemapFace(TextureHandle handle, uint8_t face,
+            uint32_t level, uint32_t width, uint32_t height,
+            TextureFormat srcFormat,
+            const void* data, uint32_t dataSize) = 0;
+
+    // 更新纹理采样器参数
+    virtual void updateTextureSampler(TextureHandle handle,
+            const TextureDesc& desc) = 0;
 
     // ---------- 渲染命令 ----------
     virtual void beginFrame(SwapChainHandle swapChain) = 0;
@@ -72,6 +87,20 @@ class RHIDevice {
     virtual void setScissor(uint32_t x, uint32_t y,
             uint32_t w, uint32_t h) = 0;
     virtual void setPolygonMode(PolygonMode mode) = 0;
+
+    // ---------- RenderTarget 动态附件管理 ----------
+    // 运行时替换渲染目标的颜色附件（用于将纹理/cubemap 面挂到已有 RT 上渲染）
+    // attachmentIndex: 颜色附件索引 (0 ~ MAX_COLOR_ATTACHMENTS-1)
+    // texture: 要挂载的纹理 (无效 handle 表示解绑)
+    // level: mip 层级
+    // layer: 数组层/cubemap 面 (对 2D 纹理传 0；cubemap 面传 0~5)
+    virtual void setRenderTargetColorAttachment(RenderTargetHandle rt,
+            uint8_t attachmentIndex, TextureHandle texture,
+            uint8_t level = 0, uint8_t layer = 0) = 0;
+
+    // 纹理间拷贝（替代 glCopyImageSubData）
+    virtual void copyTexture(TextureHandle src, TextureHandle dst,
+            uint32_t width, uint32_t height) = 0;
 
     // ---------- Blit / Resolve ----------
     // MSAA resolve：将多重采样 RT 解析到单采样 RT

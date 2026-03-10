@@ -18,9 +18,11 @@ namespace engine {
 	void LightProbe::generate() {
 		// 生成环境探针并设置生成标志
 		CubemapSettings settings;
+		settings.format = rhi::TextureFormat::RGBA16F;
+		settings.formatExplicitlySet = true;
 		m_IrradianceMap = new Cubemap(settings);
 		for (int i = 0; i < 6; i++) {
-			m_IrradianceMap->generateCubemapFace(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, (unsigned int)m_ProbeResolution.x, (unsigned int)m_ProbeResolution.y, GL_RGB, nullptr);
+			m_IrradianceMap->generateCubemapFace(static_cast<uint8_t>(i), (unsigned int)m_ProbeResolution.x, (unsigned int)m_ProbeResolution.y, ChannelLayout::RGBA, nullptr);
 		}
 
 		m_Generated = true;

@@ -45,7 +45,10 @@ public:
 
     void updateBuffer(BufferHandle, const BufferDataDesc&) override {}
     void updateTexture(TextureHandle, uint32_t, uint32_t, uint32_t,
-            uint32_t, uint32_t, const void*, uint32_t) override {}
+            uint32_t, uint32_t, TextureFormat, const void*, uint32_t) override {}
+    void updateCubemapFace(TextureHandle, uint8_t, uint32_t,
+            uint32_t, uint32_t, TextureFormat, const void*, uint32_t) override {}
+    void updateTextureSampler(TextureHandle, const TextureDesc&) override {}
 
     void beginFrame(SwapChainHandle) override {}
     void endFrame() override {}
@@ -63,6 +66,9 @@ public:
     void blit(RenderTargetHandle, RenderTargetHandle,
             uint32_t, uint32_t, uint32_t, uint32_t,
             uint32_t, uint32_t, uint32_t, uint32_t, uint8_t) override {}
+    void setRenderTargetColorAttachment(RenderTargetHandle, uint8_t,
+            TextureHandle, uint8_t, uint8_t) override {}
+    void copyTexture(TextureHandle, TextureHandle, uint32_t, uint32_t) override {}
 
     void pushDebugGroup(const char*) override {}
     void popDebugGroup() override {}

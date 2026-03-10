@@ -5,6 +5,23 @@
 namespace engine {
 namespace rhi {
 
+// ===== 采样器过滤 =====
+enum class FilterMode : uint8_t {
+  Nearest,
+  Linear,
+  NearestMipmapNearest,
+  LinearMipmapNearest,
+  NearestMipmapLinear,
+  LinearMipmapLinear,
+};
+
+enum class WrapMode : uint8_t {
+  Repeat,
+  MirroredRepeat,
+  ClampToEdge,
+  ClampToBorder,
+};
+
 // ===== 纹理描述 =====
 struct TextureDesc {
   TextureType type = TextureType::Texture2D;
@@ -15,6 +32,17 @@ struct TextureDesc {
   uint32_t depth = 1;  // 3D 纹理深度或数组层数
   uint8_t levels = 1;  // mipmap 层数
   uint8_t samples = 1; // MSAA 采样数
+
+  // 采样器参数（创建时可选设定）
+  FilterMode minFilter = FilterMode::LinearMipmapLinear;
+  FilterMode magFilter = FilterMode::Linear;
+  WrapMode wrapS = WrapMode::Repeat;
+  WrapMode wrapT = WrapMode::Repeat;
+  WrapMode wrapR = WrapMode::Repeat;
+  float anisotropy = 1.0f;
+  bool hasBorder = false;
+  float borderColor[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+  int lodBias = 0;
 };
 
 // ===== 缓冲区描述 =====

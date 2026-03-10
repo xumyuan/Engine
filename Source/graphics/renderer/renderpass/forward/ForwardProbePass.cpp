@@ -10,31 +10,32 @@
 namespace engine {
 
 	ForwardProbePass::ForwardProbePass(Scene3D* scene) : RenderPass(scene, RenderPassType::ProbePassType),
-		m_SceneCaptureShadowFramebuffer(IBL_CAPTURE_RESOLUTION, IBL_CAPTURE_RESOLUTION, false),
-		m_SceneCaptureLightingFramebuffer(IBL_CAPTURE_RESOLUTION, IBL_CAPTURE_RESOLUTION, false),
-		m_LightProbeConvolutionFramebuffer(LIGHT_PROBE_RESOLUTION, LIGHT_PROBE_RESOLUTION, false),
-		m_ReflectionProbeSamplingFramebuffer(REFLECTION_PROBE_RESOLUTION, REFLECTION_PROBE_RESOLUTION, false),
+		m_SceneCaptureShadowRT(IBL_CAPTURE_RESOLUTION, IBL_CAPTURE_RESOLUTION),
+		m_SceneCaptureLightingRT(IBL_CAPTURE_RESOLUTION, IBL_CAPTURE_RESOLUTION),
+		m_LightProbeConvolutionRT(LIGHT_PROBE_RESOLUTION, LIGHT_PROBE_RESOLUTION),
+		m_ReflectionProbeSamplingRT(REFLECTION_PROBE_RESOLUTION, REFLECTION_PROBE_RESOLUTION),
 		m_SceneCaptureCubemap(m_SceneCaptureSettings)
 	{
-		m_SceneCaptureSettings.TextureFormat = GL_RGBA16F;
+		m_SceneCaptureSettings.format = rhi::TextureFormat::RGBA16F;
+		m_SceneCaptureSettings.formatExplicitlySet = true;
 		m_SceneCaptureCubemap.setCubemapSettings(m_SceneCaptureSettings);
 
-		m_SceneCaptureShadowFramebuffer.addDepthStencilTexture(NormalizedDepthOnly).createFramebuffer();
-		m_SceneCaptureLightingFramebuffer.addColorTexture(FloatingPoint16)
-			.addDepthStencilRBO(NormalizedDepthOnly).createFramebuffer();
+		m_SceneCaptureShadowRT.addDepthStencilTexture(DepthStencilFormat::DepthOnly).build();
+		m_SceneCaptureLightingRT.addColorTexture(rhi::TextureFormat::RGBA16F)
+			.addDepthStencilTexture(DepthStencilFormat::DepthOnly, false).build();
 
-		m_LightProbeConvolutionFramebuffer.addColorTexture(FloatingPoint16)
-			.createFramebuffer();
-		m_ReflectionProbeSamplingFramebuffer.addColorTexture(FloatingPoint16).
-			createFramebuffer();
+		m_LightProbeConvolutionRT.addColorTexture(rhi::TextureFormat::RGBA16F)
+			.build();
+		m_ReflectionProbeSamplingRT.addColorTexture(rhi::TextureFormat::RGBA16F)
+			.build();
 
 		BEGIN_EVENT("Generate Cubemap Face");
 		for (int i = 0; i < 6; i++) {
 			m_SceneCaptureCubemap.generateCubemapFace(
-				GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 
+				static_cast<uint8_t>(i), 
 				IBL_CAPTURE_RESOLUTION, 
 				IBL_CAPTURE_RESOLUTION, 
-				GL_RGB, nullptr);
+				ChannelLayout::RGBA, nullptr);
 		}
 		END_EVENT();
 
@@ -60,33 +61,40 @@ namespace engine {
 
 	void ForwardProbePass::generateBRDFLUT() {
 		Shader* brdfIntegrationShader = ShaderLoader::loadShader("Shaders/prebrdf.glsl");
-		ModelRenderer* modelRenderer = m_ActiveScene->getModelRenderer();
 
-		// brdf的纹理设置
+		// brdf 的纹理设置
 		TextureSettings textureSettings;
-		textureSettings.TextureWrapSMode = GL_CLAMP_TO_EDGE;
-		textureSettings.TextureWrapTMode = GL_CLAMP_TO_EDGE;
-		textureSettings.TextureMinificationFilterMode = GL_LINEAR;
-		textureSettings.TextureMagnificationFilterMode = GL_LINEAR;
-		textureSettings.TextureAnisotropyLevel = 1.0f;
+		textureSettings.wrapS = rhi::WrapMode::ClampToEdge;
+		textureSettings.wrapT = rhi::WrapMode::ClampToEdge;
+		textureSettings.minFilter = rhi::FilterMode::Linear;
+		textureSettings.magFilter = rhi::FilterMode::Linear;
+		textureSettings.anisotropy = 1.0f;
 		textureSettings.HasMips = false;
 
 		Texture* brdfLUT = new Texture(textureSettings);
-		brdfLUT->generate2DTexture(BRDF_LUT_RESOLUTION, BRDF_LUT_RESOLUTION, GL_RG);
+		brdfLUT->generate2DTexture(BRDF_LUT_RESOLUTION, BRDF_LUT_RESOLUTION, ChannelLayout::RG);
 
-		// 设置lut的帧缓冲区
-		Framebuffer brdfBuffer(BRDF_LUT_RESOLUTION, BRDF_LUT_RESOLUTION, false);
+		// 设置 LUT 的渲染目标
+		RenderTarget brdfRT(BRDF_LUT_RESOLUTION, BRDF_LUT_RESOLUTION);
+		brdfRT.addColorTexture(rhi::TextureFormat::RGBA8).build();
 
-		brdfBuffer.addColorTexture(Normalized8).createFramebuffer();
-		brdfBuffer.bind();
+		// 临时将 brdfLUT 挂到 RT 的颜色附件
+		auto* device = getRHIDevice();
+		rhi::RenderPassParams params;
+		params.viewport = { 0, 0, BRDF_LUT_RESOLUTION, BRDF_LUT_RESOLUTION };
+		params.clearColorFlag = true;
+		params.clearDepthFlag = false;
+		brdfRT.beginPass(params);
+		brdfRT.setColorAttachment(0, brdfLUT->getRHIHandle());
 
 		m_GLCache->switchShader(brdfIntegrationShader);
 		m_GLCache->setDepthTest(false);
 
-		glViewport(0, 0, BRDF_LUT_RESOLUTION, BRDF_LUT_RESOLUTION);
-		brdfBuffer.setColorAttachment(brdfLUT->getTextureId(), GL_TEXTURE_2D);
 		ModelRenderer::drawNdcPlane();
-		brdfBuffer.setColorAttachment(0, GL_TEXTURE_2D);
+
+		// 恢复原始附件
+		brdfRT.setColorAttachment(0, rhi::TextureHandle());
+		brdfRT.endPass();
 
 		m_GLCache->setDepthTest(true);
 
@@ -100,56 +108,67 @@ namespace engine {
 
 		// Initialize step before rendering to the probe's cubemap
 		m_CubemapCamera.setCenterPosition(probePosition);
-		ShadowmapPass shadowPass(m_ActiveScene, &m_SceneCaptureShadowFramebuffer);
-		ForwardLightingPass lightingPass(m_ActiveScene, &m_SceneCaptureLightingFramebuffer);
+		ShadowmapPass shadowPass(m_ActiveScene, &m_SceneCaptureShadowRT);
+		ForwardLightingPass lightingPass(m_ActiveScene, &m_SceneCaptureLightingRT);
 
 		// Render the scene to the probe's cubemap
 		for (int i = 0; i < 6; i++) {
 			BEGIN_EVENT("Lighting Probe Cubemap[" + std::to_string(i) + "]");
-			// Setup the camera's view
 			m_CubemapCamera.switchCameraToFace(i);
 
-			// Shadow pass
 			BEGIN_EVENT("ShadowmapPass");
 			ShadowmapPassOutput shadowpassOutput = shadowPass.generateShadowmaps(&m_CubemapCamera);
 			END_EVENT();
-			// Light pass
-			m_SceneCaptureLightingFramebuffer.bind();
-			m_SceneCaptureLightingFramebuffer.setColorAttachment(m_SceneCaptureCubemap.getCubemapID(), GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
+
+			// 先将 cubemap 面挂到 lighting RT 的颜色附件（FBO 状态持久化）
+			// 然后让 lighting pass 的 beginPass 绑定同一 FBO 并清除
+			auto* device = getRHIDevice();
+			device->setRenderTargetColorAttachment(m_SceneCaptureLightingRT.getHandle(), 0,
+				m_SceneCaptureCubemap.getRHIHandle(), 0, static_cast<uint8_t>(i));
+
 			BEGIN_EVENT("LightingPass");
 			lightingPass.executeRenderPass(shadowpassOutput, &m_CubemapCamera, false);
 			END_EVENT();
-			m_SceneCaptureLightingFramebuffer.setColorAttachment(0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
+
+			// 恢复原始颜色附件
+			device->setRenderTargetColorAttachment(m_SceneCaptureLightingRT.getHandle(), 0,
+				m_SceneCaptureLightingRT.getColorTexture()->getRHIHandle());
 			END_EVENT();
 		}
 
 		// 捕获并应用辐照度图的卷积（间接漫反射）
 		m_GLCache->switchShader(m_ConvolutionShader);
 		m_GLCache->setFaceCull(false);
-		m_GLCache->setDepthTest(false); // Important cause the depth buffer isn't cleared so it zero depth
+		m_GLCache->setDepthTest(false);
 
 		m_ConvolutionShader->setUniform("projection", m_CubemapCamera.getProjectionMatrix());
 		m_SceneCaptureCubemap.bind(0);
 		m_ConvolutionShader->setUniform("sceneCaptureCubemap", 0);
 
-		m_LightProbeConvolutionFramebuffer.bind();
+		rhi::RenderPassParams convParams;
+		convParams.viewport = { 0, 0, m_LightProbeConvolutionRT.getWidth(), m_LightProbeConvolutionRT.getHeight() };
+		convParams.clearColorFlag = false;
+		convParams.clearDepthFlag = false;
+		m_LightProbeConvolutionRT.beginPass(convParams);
 
-		// auto* skybox = m_ActiveScene->getSkybox()->getSkyboxCubemap();
-		// skybox->bind(0);
-		glViewport(0, 0, m_LightProbeConvolutionFramebuffer.getWidth(), m_LightProbeConvolutionFramebuffer.getHeight());
-		BEGIN_EVENT("Convolution");
-		for (int i = 0; i < 6; i++) {
-			// Setup the camera's view
-			m_CubemapCamera.switchCameraToFace(i);
-			m_ConvolutionShader->setUniform("view", m_CubemapCamera.getViewMatrix());
+		{
+			auto* device = getRHIDevice();
+			BEGIN_EVENT("Convolution");
+			for (int i = 0; i < 6; i++) {
+				m_CubemapCamera.switchCameraToFace(i);
+				m_ConvolutionShader->setUniform("view", m_CubemapCamera.getViewMatrix());
 
-			// 对场景的捕捉进行卷积并将其存储在光探针的立方体贴图中
-			m_LightProbeConvolutionFramebuffer.setColorAttachment(lightProbe->getIrradianceMap()->getCubemapID(), GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
-			// 由于我们正在对立方体贴图进行采样，因此只需使用 NDC 空间中的立方体
-			ModelRenderer::drawNdcCube();
-			m_LightProbeConvolutionFramebuffer.setColorAttachment(0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
+				device->setRenderTargetColorAttachment(m_LightProbeConvolutionRT.getHandle(), 0,
+					lightProbe->getIrradianceMap()->getRHIHandle(), 0, static_cast<uint8_t>(i));
+				ModelRenderer::drawNdcCube();
+			}
+			// 恢复原始附件
+			device->setRenderTargetColorAttachment(m_LightProbeConvolutionRT.getHandle(), 0,
+				m_LightProbeConvolutionRT.getColorTexture()->getRHIHandle());
+			END_EVENT();
 		}
-		END_EVENT();
+		m_LightProbeConvolutionRT.endPass();
+
 		m_GLCache->setFaceCull(true);
 		m_GLCache->setDepthTest(true);
 
@@ -162,62 +181,76 @@ namespace engine {
 		ReflectionProbe* reflectionProbe = new ReflectionProbe(probePosition, probeResolution, true);
 		reflectionProbe->generate();
 
-		// 初始化 用于渲染到探针立方体贴图
 		m_CubemapCamera.setCenterPosition(probePosition);
-		ShadowmapPass shadowPass(m_ActiveScene, &m_SceneCaptureShadowFramebuffer);
-		ForwardLightingPass lightingPass(m_ActiveScene, &m_SceneCaptureLightingFramebuffer);
+		ShadowmapPass shadowPass(m_ActiveScene, &m_SceneCaptureShadowRT);
+		ForwardLightingPass lightingPass(m_ActiveScene, &m_SceneCaptureLightingRT);
 
 		// 将场景渲染到探针的立方体贴图
 		for (int i = 0; i < 6; ++i) {
-			BEGIN_EVENT("Reflection Probe[" +std::to_string(i) + "]");
+			BEGIN_EVENT("Reflection Probe[" + std::to_string(i) + "]");
 			m_CubemapCamera.switchCameraToFace(i);
 			BEGIN_EVENT("ShadowmapPass");
 			ShadowmapPassOutput shadowpassOutput = shadowPass.generateShadowmaps(&m_CubemapCamera);
 			END_EVENT();
-			m_SceneCaptureLightingFramebuffer.bind();
-			m_SceneCaptureLightingFramebuffer.setColorAttachment(m_SceneCaptureCubemap.getCubemapID(), GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
+
+			// 先将 cubemap 面挂到 lighting RT 的颜色附件
+			auto* device = getRHIDevice();
+			device->setRenderTargetColorAttachment(m_SceneCaptureLightingRT.getHandle(), 0,
+				m_SceneCaptureCubemap.getRHIHandle(), 0, static_cast<uint8_t>(i));
+
 			BEGIN_EVENT("LightingPass");
 			lightingPass.executeRenderPass(shadowpassOutput, &m_CubemapCamera, false);
 			END_EVENT();
-			m_SceneCaptureLightingFramebuffer.setColorAttachment(0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
+
+			// 恢复原始颜色附件
+			device->setRenderTargetColorAttachment(m_SceneCaptureLightingRT.getHandle(), 0,
+				m_SceneCaptureLightingRT.getColorTexture()->getRHIHandle());
 			END_EVENT();
 		}
 
-		// 对代表增加的粗糙度级别的立方体贴图 mip 进行捕获并执行重要性采样
+		// 对代表增加的粗糙度级别的立方体贴图 mip 进行重要性采样
 		m_GLCache->switchShader(m_ImportanceSamplingShader);
 		m_GLCache->setFaceCull(false);
-		m_GLCache->setDepthTest(false); // Important cause the depth buffer isn't cleared so it zero depth
+		m_GLCache->setDepthTest(false);
 
 		m_ImportanceSamplingShader->setUniform("projection", m_CubemapCamera.getProjectionMatrix());
 		m_SceneCaptureCubemap.bind(0);
 		m_ImportanceSamplingShader->setUniform("sceneCaptureCubemap", 0);
 
-		m_ReflectionProbeSamplingFramebuffer.bind();
+		rhi::RenderPassParams sampleParams;
+		sampleParams.clearColorFlag = false;
+		sampleParams.clearDepthFlag = false;
+		m_ReflectionProbeSamplingRT.beginPass(sampleParams);
+
 		BEGIN_EVENT("Generate mip");
-		for (int mip = 0; mip < REFLECTION_PROBE_MIP_COUNT; mip++) {
-			// Calculate the size of this mip and resize
-			unsigned int mipWidth = m_ReflectionProbeSamplingFramebuffer.getWidth() >> mip;
-			unsigned int mipHeight = m_ReflectionProbeSamplingFramebuffer.getHeight() >> mip;
+		{
+			auto* device = getRHIDevice();
+			for (int mip = 0; mip < REFLECTION_PROBE_MIP_COUNT; mip++) {
+				unsigned int mipWidth = m_ReflectionProbeSamplingRT.getWidth() >> mip;
+				unsigned int mipHeight = m_ReflectionProbeSamplingRT.getHeight() >> mip;
 
-			/*	glBindRenderbuffer(GL_RENDERBUFFER, m_ReflectionProbeSamplingFramebuffer.getDepthStencilRBO());
-				glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipWidth, mipHeight);*/
-			glViewport(0, 0, mipWidth, mipHeight);
+				device->setViewport(0, 0, mipWidth, mipHeight);
 
-			float mipRoughnessLevel = (float)mip / (float)(REFLECTION_PROBE_MIP_COUNT - 1);
-			m_ImportanceSamplingShader->setUniform("roughness", mipRoughnessLevel);
-			for (int i = 0; i < 6; i++) {
-				// Setup the camera's view
-				m_CubemapCamera.switchCameraToFace(i);
-				m_ImportanceSamplingShader->setUniform("view", m_CubemapCamera.getViewMatrix());
-				// 对场景捕获的重要性进行采样并将其存储在反射探针的立方体贴图中
-				m_ReflectionProbeSamplingFramebuffer.setColorAttachment(reflectionProbe->getPrefilterMap()->getCubemapID(), GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, mip);
-				// Since we are sampling a cubemap, just use a cube
-				ModelRenderer::drawNdcCube();
-				m_ReflectionProbeSamplingFramebuffer.setColorAttachment(0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
+				float mipRoughnessLevel = (float)mip / (float)(REFLECTION_PROBE_MIP_COUNT - 1);
+				m_ImportanceSamplingShader->setUniform("roughness", mipRoughnessLevel);
+				for (int i = 0; i < 6; i++) {
+					m_CubemapCamera.switchCameraToFace(i);
+					m_ImportanceSamplingShader->setUniform("view", m_CubemapCamera.getViewMatrix());
+					device->setRenderTargetColorAttachment(m_ReflectionProbeSamplingRT.getHandle(), 0,
+						reflectionProbe->getPrefilterMap()->getRHIHandle(),
+						static_cast<uint8_t>(mip), static_cast<uint8_t>(i));
+					ModelRenderer::drawNdcCube();
+				}
 			}
+			// 恢复原始附件
+			device->setRenderTargetColorAttachment(m_ReflectionProbeSamplingRT.getHandle(), 0,
+				m_ReflectionProbeSamplingRT.getColorTexture()->getRHIHandle());
 		}
 		END_EVENT();
+		m_ReflectionProbeSamplingRT.endPass();
 
+		m_GLCache->setFaceCull(true);
+		m_GLCache->setDepthTest(true);
 
 		ProbeManager* probeManager = m_ActiveScene->getProbeManager();
 		probeManager->addProbe(reflectionProbe);

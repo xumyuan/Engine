@@ -11,18 +11,18 @@ namespace engine
 
 	SSAOPass::SSAOPass(Scene3D* scene)
 		: RenderPass(scene, RenderPassType::SSAOPassType),
-		m_SSAOFramebuffer(Window::getWidth(), Window::getHeight(), false),
-		m_SSAOBlurFramebuffer(Window::getWidth(), Window::getHeight(), false)
+		m_SSAORT(Window::getWidth(), Window::getHeight()),
+		m_SSAOBlurRT(Window::getWidth(), Window::getHeight())
 	{
 		// 加载着色器
 		m_SSAOShader = ShaderLoader::loadShader("Shaders/post_process/ssao.glsl");
 		m_SSAOBlurShader = ShaderLoader::loadShader("Shaders/post_process/ssao_blur.glsl");
 
-		// 创建 SSAO Framebuffer（单通道，存储 AO 值）
-		m_SSAOFramebuffer.addColorTexture(NormalizedSingleChannel8).createFramebuffer();
+		// 创建 SSAO RenderTarget（单通道，存储 AO 值）
+		m_SSAORT.addColorTexture(rhi::TextureFormat::R8).build();
 
-		// 创建模糊后的 Framebuffer
-		m_SSAOBlurFramebuffer.addColorTexture(NormalizedSingleChannel8).createFramebuffer();
+		// 创建模糊后的 RenderTarget
+		m_SSAOBlurRT.addColorTexture(rhi::TextureFormat::R8).build();
 
 		// 生成采样核和噪声纹理
 		generateSampleKernel();
@@ -31,7 +31,6 @@ namespace engine
 
 	SSAOPass::~SSAOPass()
 	{
-		glDeleteTextures(1, &m_NoiseTexture);
 	}
 
 	float SSAOPass::lerp(float a, float b, float t)
@@ -70,36 +69,40 @@ namespace engine
 		std::uniform_real_distribution<float> randomFloats(0.0f, 1.0f);
 		std::default_random_engine generator;
 
-		// 生成 4x4 的随机旋转向量
-		std::vector<glm::vec3> ssaoNoise;
+		// 生成 4x4 的随机旋转向量（使用 RGBA float 存储，避免 RGB 对齐问题）
+		std::vector<glm::vec4> ssaoNoise;
 		for (int i = 0; i < NOISE_SIZE * NOISE_SIZE; ++i)
 		{
 			// 绕 z 轴的随机旋转向量
-			glm::vec3 noise(
+			glm::vec4 noise(
 				randomFloats(generator) * 2.0f - 1.0f,
 				randomFloats(generator) * 2.0f - 1.0f,
+				0.0f,
 				0.0f
 			);
 			ssaoNoise.push_back(noise);
 		}
 
-		// 创建噪声纹理
-		glGenTextures(1, &m_NoiseTexture);
-		glBindTexture(GL_TEXTURE_2D, m_NoiseTexture);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, NOISE_SIZE, NOISE_SIZE, 0, GL_RGB, GL_FLOAT, &ssaoNoise[0]);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		// 通过 RHI 创建噪声纹理
+		TextureSettings noiseSettings;
+		noiseSettings.format = rhi::TextureFormat::RGBA16F;
+		noiseSettings.formatExplicitlySet = true;
+		noiseSettings.minFilter = rhi::FilterMode::Nearest;
+		noiseSettings.magFilter = rhi::FilterMode::Nearest;
+		noiseSettings.wrapS = rhi::WrapMode::Repeat;
+		noiseSettings.wrapT = rhi::WrapMode::Repeat;
+		noiseSettings.anisotropy = 1.0f;
+		noiseSettings.HasMips = false;
+		m_NoiseTexture.setTextureSettings(noiseSettings);
+		m_NoiseTexture.generate2DTexture(NOISE_SIZE, NOISE_SIZE, ChannelLayout::RGBA,
+			ssaoNoise.data());
 	}
 
-	PreLightingPassOutput SSAOPass::executeSSAOPass(ICamera* camera, GBuffer* gbuffer)
+	PreLightingPassOutput SSAOPass::executeSSAOPass(ICamera* camera, GeometryPassOutput& gBufferOutput)
 	{
 		BEGIN_EVENT("SSAO");
 		// ========== SSAO Pass ==========
-		glViewport(0, 0, m_SSAOFramebuffer.getWidth(), m_SSAOFramebuffer.getHeight());
-		m_SSAOFramebuffer.bind();
-		m_SSAOFramebuffer.clear();
+		m_SSAORT.beginPass();
 
 		m_GLCache->setDepthTest(false);
 		m_GLCache->setBlend(false);
@@ -125,38 +128,37 @@ namespace engine
 		m_SSAOShader->setUniform("kernelSize", KERNEL_SIZE);
 
 		// 绑定 GBuffer 纹理
-		gbuffer->GetNormal()->bind(0);
+		gBufferOutput.normalTexture->bind(0);
 		m_SSAOShader->setUniform("gNormal", 0);
 
-		gbuffer->getDepthStencilTexture()->bind(1);
+		gBufferOutput.depthStencilTexture->bind(1);
 		m_SSAOShader->setUniform("gDepth", 1);
 
 		// 绑定噪声纹理
-		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, m_NoiseTexture);
+		m_NoiseTexture.bind(2);
 		m_SSAOShader->setUniform("texNoise", 2);
 
 		// 绘制全屏四边形
 		ModelRenderer::drawNdcPlane();
+		m_SSAORT.endPass();
 		END_EVENT();
 
 		BEGIN_EVENT("SSAO Blur");
 		// ========== Blur Pass ==========
-		glViewport(0, 0, m_SSAOBlurFramebuffer.getWidth(), m_SSAOBlurFramebuffer.getHeight());
-		m_SSAOBlurFramebuffer.bind();
-		m_SSAOBlurFramebuffer.clear();
+		m_SSAOBlurRT.beginPass();
 
 		m_GLCache->switchShader(m_SSAOBlurShader);
 
-		m_SSAOFramebuffer.getColorBufferTexture()->bind(0);
+		m_SSAORT.getColorTexture()->bind(0);
 		m_SSAOBlurShader->setUniform("ssaoInput", 0);
 
 		ModelRenderer::drawNdcPlane();
+		m_SSAOBlurRT.endPass();
 		END_EVENT();
 
 		// 返回结果
 		PreLightingPassOutput output;
-		output.ssaoTexture = m_SSAOBlurFramebuffer.getColorBufferTexture();
+		output.ssaoTexture = m_SSAOBlurRT.getColorTexture();
 		return output;
 	}
 

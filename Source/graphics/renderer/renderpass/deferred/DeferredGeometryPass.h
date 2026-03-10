@@ -1,34 +1,33 @@
 #pragma once
 #include <graphics/renderer/renderpass/RenderPass.h>
+#include <graphics/renderer/RenderTarget.h>
 #include <graphics/Shader.h>
 #include <scene/Scene3D.h>
+
 namespace engine
 {
-
-	/*enum DeferredStencilValue :int {
-		ModelStencilValue = 0x01,
-		LightStencilValue = 0x02,
-	};*/
-
 	class Shader;
 	class Scene3D;
 	class ICamera;
-	class GBuffer;
 
 	class DeferredGeometryPass :public RenderPass
 	{
 	public:
 		DeferredGeometryPass(Scene3D* scene);
-		DeferredGeometryPass(Scene3D* scene, GBuffer* customGBuffer);
 		virtual ~DeferredGeometryPass() override;
 		GeometryPassOutput ExecuteGeometryPass(ICamera* camera, bool renderOnlyStatic);
 	private:
-		bool m_AllocatedGBuffer;
-		GBuffer* m_GBuffer;
-		Shader* m_ModelShader, /** m_SkinnedModelShader,*/* m_TerrainShader;
+		void initGBuffer();
+	private:
+		RenderTarget m_GBufferRT;
+		// GBuffer 纹理
+		// 0 RGBA8  ->  albedo.r     albedo.g        albedo.b             albedo's alpha
+		// 1 RGBA32F -> normal.x     normal.y        normal.z
+		// 2 RGBA8  ->  metallic     roughness       ambientOcclusion     emissionIntensity
+		Texture m_AlbedoTexture;
+		Texture m_NormalTexture;
+		Texture m_MaterialInfoTexture;
+
+		Shader* m_ModelShader, * m_TerrainShader;
 	};
 }
-
-
-
-

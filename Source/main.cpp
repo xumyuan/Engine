@@ -9,7 +9,6 @@
 #include "graphics/renderer/GLCache.h"
 #include "graphics/renderer/MasterRenderer.h"
 #include "input/InputManager.h"
-#include "platform/OpenGL/Framebuffers/Framebuffer.h"
 #include "terrain/Terrain.h"
 #include "ui/DebugPane.h"
 #include "ui/RuntimePane.h"

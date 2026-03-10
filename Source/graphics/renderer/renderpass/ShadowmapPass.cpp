@@ -6,25 +6,26 @@
 namespace engine
 {
 
-	ShadowmapPass::ShadowmapPass(Scene3D* scene) : RenderPass(scene, RenderPassType::ShadowmapPassType)
+	ShadowmapPass::ShadowmapPass(Scene3D* scene) : RenderPass(scene, RenderPassType::ShadowmapPassType), m_OwnsRT(true)
 	{
 		m_ShadowmapShader = ShaderLoader::loadShader("Shaders/shadowmap.glsl");
-		m_ShadowmapFramebuffer = new Framebuffer(SHADOWMAP_RESOLUTION_X, SHADOWMAP_RESOLUTION_Y, false);
-		m_ShadowmapFramebuffer->addDepthStencilTexture(NormalizedDepthOnly).
-			createFramebuffer();
+		m_RT = new RenderTarget(SHADOWMAP_RESOLUTION_X, SHADOWMAP_RESOLUTION_Y);
+		m_RT->addDepthStencilTexture(DepthStencilFormat::DepthOnly).build();
 	}
 
-	ShadowmapPass::ShadowmapPass(Scene3D* scene, Framebuffer* customFramebuffer) : RenderPass(scene, RenderPassType::ShadowmapPassType), m_ShadowmapFramebuffer(customFramebuffer)
+	ShadowmapPass::ShadowmapPass(Scene3D* scene, RenderTarget* customRT) : RenderPass(scene, RenderPassType::ShadowmapPassType), m_RT(customRT), m_OwnsRT(false)
 	{
 		m_ShadowmapShader = ShaderLoader::loadShader("Shaders/shadowmap.glsl");
 	}
 
-	ShadowmapPass::~ShadowmapPass() {}
+	ShadowmapPass::~ShadowmapPass() {
+		if (m_OwnsRT) {
+			delete m_RT;
+		}
+	}
 
 	ShadowmapPassOutput ShadowmapPass::generateShadowmaps(ICamera* camera) {
-		glViewport(0, 0, m_ShadowmapFramebuffer->getWidth(), m_ShadowmapFramebuffer->getHeight());
-		m_ShadowmapFramebuffer->bind();
-		m_ShadowmapFramebuffer->clear();
+		m_RT->beginPass();
 
 		// Setup
 		ModelRenderer* modelRenderer = m_ActiveScene->getModelRenderer();
@@ -48,10 +49,13 @@ namespace engine
 		// Render terrain
 		terrain->Draw(m_ShadowmapShader, m_RenderPassType);
 
+		m_RT->endPass();
+
 		// Render pass output
 		ShadowmapPassOutput passOutput;
 		passOutput.directionalLightViewProjMatrix = directionalLightViewProjMatrix;
-		passOutput.shadowmapFramebuffer = m_ShadowmapFramebuffer;
+		passOutput.renderTarget = m_RT->getHandle();
+		passOutput.depthTexture = m_RT->getDepthStencilTexture();
 		return passOutput;
 	}
 

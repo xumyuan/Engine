@@ -34,7 +34,7 @@ namespace engine {
 		m_Textures[7] = TextureLoader::load2DTexture(std::string("Assets/terrain/rock/rockNormal.tga"), &srgbTextureSettings);
 
 		TextureSettings textureSettings;
-		textureSettings.TextureFormat = GL_RGB;
+		textureSettings.format = rhi::TextureFormat::RGB8;
 
 		m_Textures[8] = TextureLoader::load2DTexture(std::string("Assets/terrain/grass/grassRoughness.tga"), &textureSettings);
 		m_Textures[9] = TextureLoader::load2DTexture(std::string("Assets/terrain/dirt/dirtRoughness.tga"), &textureSettings);

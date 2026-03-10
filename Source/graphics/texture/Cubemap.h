@@ -1,20 +1,26 @@
 #pragma once
 
+#include "Texture.h"  // for ChannelLayout
+
 namespace engine {
 
 	struct CubemapSettings {
-		GLenum TextureFormat = GL_NONE;
+		rhi::TextureFormat format = rhi::TextureFormat::RGBA8;
+
+		// 标记格式是否被显式设置
+		bool formatExplicitlySet = false;
 
 		bool IsSRGB = false;
+
 		// Texture wrapping options
-		GLenum TextureWrapSMode = GL_CLAMP_TO_EDGE;
-		GLenum TextureWrapTMode = GL_CLAMP_TO_EDGE;
-		GLenum TextureWrapRMode = GL_CLAMP_TO_EDGE;
+		rhi::WrapMode wrapS = rhi::WrapMode::ClampToEdge;
+		rhi::WrapMode wrapT = rhi::WrapMode::ClampToEdge;
+		rhi::WrapMode wrapR = rhi::WrapMode::ClampToEdge;
 
 		// Texture filtering options
-		GLenum TextureMinificationFilterMode = GL_LINEAR; // 当纹理移得更远并且多个纹素映射到一个像素时的过滤模式（三线性以获得最佳质量）
-		GLenum TextureMagnificationFilterMode = GL_LINEAR; // 当纹理变得更接近并且多个像素映射到单个纹素时的过滤模式（永远不需要超过双线性，因为这与在这种情况下一样准确）
-		float TextureAnisotropyLevel = ANISOTROPIC_FILTERING_LEVEL;
+		rhi::FilterMode minFilter = rhi::FilterMode::Linear;
+		rhi::FilterMode magFilter = rhi::FilterMode::Linear;
+		float anisotropy = 8.0f; // ANISOTROPIC_FILTERING_LEVEL
 
 		// Mip Settings
 		bool HasMips = false;
@@ -26,24 +32,35 @@ namespace engine {
 		Cubemap(const CubemapSettings& settings = CubemapSettings());
 		~Cubemap();
 
-		void generateCubemapFace(GLenum face, unsigned int faceWidth, unsigned int faceHeight, GLenum dataFormat, const unsigned char* data);
+		// face: 0~5 对应 +X,-X,+Y,-Y,+Z,-Z
+		void generateCubemapFace(uint8_t face, unsigned int faceWidth, unsigned int faceHeight,
+			ChannelLayout channels, const unsigned char* data);
 
 		void bind(int unit = 0);
 		void unbind();
 
 		// Pre-generation controls only
-		inline void setCubemapSettings(CubemapSettings settings) { m_CubemapSettings = settings; }
+		inline void setCubemapSettings(const CubemapSettings& settings) { m_CubemapSettings = settings; }
 
 		// Getters
-		unsigned int getCubemapID() { return m_CubemapID; }
+		inline rhi::TextureHandle getRHIHandle() const { return m_RHIHandle; }
+
+		// 兼容旧代码
+		unsigned int getCubemapID();
 
 		inline unsigned int getFaceWidth() { return m_FaceWidth; }
 		inline unsigned int getFaceHeight() { return m_FaceHeight; }
 
 	private:
 		void applyCubemapSettings();
+		rhi::TextureDesc buildCubemapDesc() const;
+
+		static rhi::TextureFormat resolveFormat(rhi::TextureFormat explicitFormat,
+			ChannelLayout channels, bool isSRGB, bool formatExplicitlySet);
+
 	private:
-		unsigned int m_CubemapID;
+		rhi::TextureHandle m_RHIHandle;
+		rhi::RHIDevice* m_Device;
 
 		unsigned int m_FaceWidth, m_FaceHeight;
 		unsigned int m_FacesGenerated;
