@@ -62,8 +62,10 @@ namespace engine {
 	void ForwardProbePass::generateBRDFLUT() {
 		Shader* brdfIntegrationShader = ShaderLoader::loadShader("Shaders/prebrdf.glsl");
 
-		// brdf 的纹理设置
+		// brdf 的纹理设置 —— 必须使用浮点格式以保留 BRDF 积分精度
 		TextureSettings textureSettings;
+		textureSettings.format = rhi::TextureFormat::RG16F;
+		textureSettings.formatExplicitlySet = true;
 		textureSettings.wrapS = rhi::WrapMode::ClampToEdge;
 		textureSettings.wrapT = rhi::WrapMode::ClampToEdge;
 		textureSettings.minFilter = rhi::FilterMode::Linear;
@@ -74,9 +76,9 @@ namespace engine {
 		Texture* brdfLUT = new Texture(textureSettings);
 		brdfLUT->generate2DTexture(BRDF_LUT_RESOLUTION, BRDF_LUT_RESOLUTION, ChannelLayout::RG);
 
-		// 设置 LUT 的渲染目标
+		// 设置 LUT 的渲染目标（颜色格式与 LUT 一致）
 		RenderTarget brdfRT(BRDF_LUT_RESOLUTION, BRDF_LUT_RESOLUTION);
-		brdfRT.addColorTexture(rhi::TextureFormat::RGBA8).build();
+		brdfRT.addColorTexture(rhi::TextureFormat::RG16F).build();
 
 		// 临时将 brdfLUT 挂到 RT 的颜色附件
 		auto* device = getRHIDevice();
