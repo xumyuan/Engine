@@ -873,6 +873,16 @@ void OpenGLDevice::draw(uint32_t indexCount, uint32_t indexOffset, uint32_t inst
     }
 }
 
+void OpenGLDevice::drawArrays(PrimitiveType primitive, uint32_t vertexCount,
+        uint32_t firstVertex, uint32_t instanceCount) {
+    GLenum mode = toGLPrimitive(primitive);
+    if (instanceCount > 1) {
+        glDrawArraysInstanced(mode, firstVertex, vertexCount, instanceCount);
+    } else {
+        glDrawArrays(mode, firstVertex, vertexCount);
+    }
+}
+
 void OpenGLDevice::setViewport(uint32_t x, uint32_t y, uint32_t w, uint32_t h) {
     glViewport(x, y, w, h);
 }

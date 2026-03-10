@@ -9,12 +9,12 @@ namespace engine {
 		loadModel(path);
 	}
 
-	Model::Model(const Mesh& mesh) {
-		m_Meshes.push_back(mesh);
+	Model::Model(Mesh&& mesh) {
+		m_Meshes.push_back(std::move(mesh));
 	}
 
-	Model::Model(const std::vector<Mesh>& meshes) {
-		m_Meshes = meshes;
+	Model::Model(std::vector<Mesh>&& meshes) {
+		m_Meshes = std::move(meshes);
 	}
 
 	void Model::Draw(Shader* shader, RenderPassType pass) const {

@@ -4,9 +4,7 @@
 
 #include "graphics/camera/FPSCamera.h"
 #include "graphics/renderer/GLCache.h"
-#include "platform/OpenGL/Buffer.h"
-#include "platform/OpenGL/IndexBuffer.h"
-#include "platform/OpenGL/VertexArray.h"
+#include "rhi/include/RHIDevice.h"
 #include "utils/loaders/TextureLoader.h"
 
 namespace engine {
@@ -14,6 +12,7 @@ namespace engine {
 	class Skybox {
 	public:
 		Skybox(const std::vector<std::string>& filePaths);
+		~Skybox();
 
 		void Draw(ICamera* camera);
 
@@ -22,9 +21,10 @@ namespace engine {
 		Shader *m_SkyboxShader;
 		GLCache* m_GLCache;
 
-		VertexArray m_SkyboxVAO;
-		IndexBuffer m_SkyboxIBO;
-		Buffer  m_SkyboxVBO;
+		rhi::RHIDevice*            m_Device = nullptr;
+		rhi::BufferHandle          m_VertexBuffer;
+		rhi::BufferHandle          m_IndexBuffer;
+		rhi::RenderPrimitiveHandle m_RenderPrimitive;
 		Cubemap* m_SkyboxCubemap;
 	};
 

@@ -5,16 +5,36 @@
 
 #include <utils/loaders/ShaderLoader.h>
 #include <graphics/camera/FPSCamera.h>
+#include "utils/DebugEvent.h"
 
 namespace engine {
 
 	FluidSim::FluidSim(size_t pnum, Boundary boundary) :m_maxParticleNum(pnum)
 	{
+		m_Device = getRHIDevice();
 		m_particleShader = ShaderLoader::loadShader("Shaders/fluid/particle_draw.glsl");
 		m_GLCache = GLCache::getInstance();
 
-		m_fluidVBO.load(nullptr, m_maxParticleNum * 3, 3, DrawType::Dynamic);
-		m_fluidVAO.addBuffer(&m_fluidVBO, 0, sizeof(glm::vec3));
+		// ── 创建 dynamic Vertex Buffer ──
+		rhi::BufferDesc vbDesc;
+		vbDesc.usage = rhi::BufferUsage::Vertex;
+		vbDesc.size = static_cast<uint32_t>(m_maxParticleNum * 3 * sizeof(float));
+		vbDesc.dynamic = true;
+		m_VertexBuffer = m_Device->createBuffer(vbDesc);
+
+		// ── 构建 VertexLayout ──
+		rhi::VertexLayout layout = {};
+		layout.attributes[0].bufferIndex = 0;
+		layout.attributes[0].offset = 0;
+		layout.attributes[0].type = rhi::VertexAttribType::Float3;
+		layout.strides[0] = sizeof(glm::vec3);
+		layout.attributeCount = 1;
+		layout.bufferCount = 1;
+
+		// ── 创建 RenderPrimitive (无索引) ──
+		rhi::BufferHandle vbs[] = { m_VertexBuffer };
+		m_RenderPrimitive = m_Device->createRenderPrimitive(
+			layout, vbs, 1, rhi::BufferHandle(), rhi::IndexType::UInt32);
 
 		m_simParams.spacing = 1.0f; // 粒子间距
 		m_simParams.sphRadius = 3.0f * m_simParams.spacing; // SPH核半径
@@ -43,6 +63,12 @@ namespace engine {
 
 	FluidSim::~FluidSim()
 	{
+		if (m_Device) {
+			if (static_cast<bool>(m_RenderPrimitive))
+				m_Device->destroyRenderPrimitive(m_RenderPrimitive);
+			if (static_cast<bool>(m_VertexBuffer))
+				m_Device->destroyBuffer(m_VertexBuffer);
+		}
 	}
 
 	void FluidSim::init()
@@ -85,11 +111,17 @@ namespace engine {
 			if (shouldBreak) break;
 		}
 
-		m_fluidVBO.subData((float*)m_positions.data());
+		subPosData();
 	}
 
 	void FluidSim::subPosData() {
-		m_fluidVBO.subData((float*)m_positions.data());
+		if (!m_Device) return;
+
+		rhi::BufferDataDesc bufData;
+		bufData.data = m_positions.data();
+		bufData.size = static_cast<uint32_t>(m_particleNum * sizeof(glm::vec3));
+		bufData.offset = 0;
+		m_Device->updateBuffer(m_VertexBuffer, bufData);
 	}
 
 	void FluidSim::drawParticle(FPSCamera* camera) {
@@ -135,15 +167,13 @@ namespace engine {
 
 		glEnable(GL_PROGRAM_POINT_SIZE);
 		glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
-		//glEnable(GL_POINT_SPRITE);
 
-		m_fluidVAO.bind();
-		glDrawArrays(GL_POINTS, 0, m_particleNum);
-		m_fluidVAO.unbind();
+		m_Device->bindRenderPrimitive(m_RenderPrimitive);
+		m_Device->drawArrays(rhi::PrimitiveType::Points,
+			static_cast<uint32_t>(m_particleNum));
 
 		glDisable(GL_PROGRAM_POINT_SIZE);
 		glDisable(GL_VERTEX_PROGRAM_POINT_SIZE);
-		//glDisable(GL_POINT_SPRITE);
 	}
 
 	void FluidSim::startSim() {

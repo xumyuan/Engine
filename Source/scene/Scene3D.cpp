@@ -123,7 +123,7 @@ namespace engine {
 						
 						// 创建光球模型
 						Sphere* lightSphere = new Sphere(10, 10);
-						Model* lightSphereModel = new Model(*lightSphere);
+						Model* lightSphereModel = new Model(std::move(*lightSphere));
 						
 						// 设置材质为光源颜色
 						auto& material = lightSphereModel->getMeshes()[0].getMaterial();

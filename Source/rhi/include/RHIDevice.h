@@ -82,6 +82,8 @@ class RHIDevice {
 
     virtual void draw(uint32_t indexCount, uint32_t indexOffset,
             uint32_t instanceCount = 1) = 0;
+    virtual void drawArrays(PrimitiveType primitive, uint32_t vertexCount,
+            uint32_t firstVertex = 0, uint32_t instanceCount = 1) = 0;
     virtual void setViewport(uint32_t x, uint32_t y,
             uint32_t w, uint32_t h) = 0;
     virtual void setScissor(uint32_t x, uint32_t y,

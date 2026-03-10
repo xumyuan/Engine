@@ -19,8 +19,8 @@ namespace engine {
 	class Model {
 	public:
 		Model(const char* path);
-		Model(const Mesh& mesh);
-		Model(const std::vector<Mesh>& meshes);
+		Model(Mesh&& mesh);
+		Model(std::vector<Mesh>&& meshes);
 
 		void Draw(Shader* shader, RenderPassType pass) const;
 		inline std::vector<Mesh>& getMeshes() { return m_Meshes; }

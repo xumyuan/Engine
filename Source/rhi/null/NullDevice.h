@@ -59,6 +59,7 @@ public:
     void bindUniformBuffer(uint32_t, uint32_t, BufferHandle, uint32_t, uint32_t) override {}
     void bindTexture(uint32_t, uint32_t, TextureHandle) override {}
     void draw(uint32_t, uint32_t, uint32_t) override {}
+    void drawArrays(PrimitiveType, uint32_t, uint32_t, uint32_t) override {}
     void setViewport(uint32_t, uint32_t, uint32_t, uint32_t) override {}
     void setScissor(uint32_t, uint32_t, uint32_t, uint32_t) override {}
     void setPolygonMode(PolygonMode) override {}

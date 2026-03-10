@@ -1,8 +1,6 @@
 #pragma once
 
-#include "platform/OpenGL/IndexBuffer.h"
-#include "platform/OpenGL/VertexArray.h"
-#include "platform/OpenGL/Buffer.h"
+#include "rhi/include/RHIDevice.h"
 #include "graphics/Shader.h"
 #include "graphics/renderer/GLCache.h"
 #include <mutex>
@@ -72,9 +70,11 @@ namespace engine {
 		// neighborList
 		std::vector<std::vector<size_t>> m_neighborList;
 
-		// buffer
-		VertexArray m_fluidVAO;
-		Buffer	m_fluidVBO;
+		// RHI buffer
+		rhi::RHIDevice*            m_Device = nullptr;
+		rhi::BufferHandle          m_VertexBuffer;
+		rhi::RenderPrimitiveHandle m_RenderPrimitive;
+
 		// shader
 		Shader* m_particleShader;
 

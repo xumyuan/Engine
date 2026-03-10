@@ -100,6 +100,8 @@ public:
     void bindTexture(uint32_t set, uint32_t binding, TextureHandle handle) override;
 
     void draw(uint32_t indexCount, uint32_t indexOffset, uint32_t instanceCount = 1) override;
+    void drawArrays(PrimitiveType primitive, uint32_t vertexCount,
+            uint32_t firstVertex = 0, uint32_t instanceCount = 1) override;
     void setViewport(uint32_t x, uint32_t y, uint32_t w, uint32_t h) override;
     void setScissor(uint32_t x, uint32_t y, uint32_t w, uint32_t h) override;
     void setPolygonMode(PolygonMode mode) override;
