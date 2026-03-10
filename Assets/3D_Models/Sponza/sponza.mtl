@@ -34,7 +34,6 @@ Ni 1.000000
 d 0.000000
 illum 2
 
-
 newmtl Material__57
 Ns 7.843137
 Ka 0.000000 0.000000 0.000000
@@ -46,6 +45,7 @@ illum 2
 map_Kd textures/vase_plant.tga
 map_d textures/vase_plant_mask.tga
 map_Ka textures/vase_plant.tga
+map_Pr textures/vase_plant_rough.tga
 
 newmtl arch
 Ns 7.843137
@@ -58,6 +58,7 @@ illum 2
 map_Kd textures/sponza_arch_diff.tga
 map_Ka textures/sponza_arch_diff.tga
 norm textures/sponza_arch_ddn.tga
+map_Pr textures/sponza_arch_rough.tga
 
 newmtl bricks
 Ns 7.843137
@@ -70,6 +71,7 @@ illum 2
 map_Kd textures/spnza_bricks_a_diff.tga
 norm textures/spnza_bricks_a_ddn.tga
 map_Ka textures/spnza_bricks_a_diff.tga
+map_Pr textures/spnza_bricks_a_rough.tga
 
 newmtl ceiling
 Ns 7.843137
@@ -82,6 +84,7 @@ illum 2
 map_Kd textures/sponza_ceiling_a_diff.tga
 map_Ka textures/sponza_ceiling_a_diff.tga
 norm textures/sponza_ceiling_a_ddn.tga
+map_Pr textures/sponza_ceiling_a_rough.tga
 
 newmtl chain
 Ns 7.843137
@@ -107,6 +110,7 @@ illum 2
 map_Kd textures/sponza_column_a_diff.tga
 norm textures/sponza_column_a_ddn.tga
 map_Ka textures/sponza_column_a_diff.tga
+map_Pr textures/sponza_column_a_rough.tga
 
 newmtl column_b
 Ns 7.843137
@@ -119,6 +123,7 @@ illum 2
 map_Kd textures/sponza_column_b_diff.tga
 norm textures/sponza_column_b_ddn.tga
 map_Ka textures/sponza_column_b_diff.tga
+map_Pr textures/sponza_column_b_rough.tga
 
 newmtl column_c
 Ns 7.843137
@@ -131,6 +136,7 @@ illum 2
 map_Kd textures/sponza_column_c_diff.tga
 norm textures/sponza_column_c_ddn.tga
 map_Ka textures/sponza_column_c_diff.tga
+map_Pr textures/sponza_column_c_rough.tga
 
 newmtl details
 Ns 7.843137
@@ -143,6 +149,7 @@ illum 2
 map_Kd textures/sponza_details_diff.tga
 map_Ka textures/sponza_details_diff.tga
 norm textures/sponza_details_ddn.tga
+map_Pr textures/sponza_details_rough.tga
 
 newmtl fabric_a
 Ns 7.843137
@@ -155,6 +162,7 @@ illum 2
 map_Kd textures/sponza_fabric_diff.tga
 map_Ka textures/sponza_fabric_diff.tga
 norm textures/sponza_fabric_ddn.tga
+map_Pr textures/sponza_fabric_rough.tga
 
 newmtl fabric_c
 Ns 7.843137
@@ -167,7 +175,7 @@ illum 2
 map_Kd textures/sponza_curtain_diff.tga
 map_Ka textures/sponza_curtain_diff.tga
 norm textures/sponza_curtain_ddn.tga
-
+map_Pr textures/sponza_fabric_rough.tga
 
 newmtl fabric_d
 Ns 7.843137
@@ -180,7 +188,7 @@ illum 2
 map_Kd textures/sponza_fabric_blue_diff.tga
 map_Ka textures/sponza_fabric_blue_diff.tga
 norm textures/sponza_fabric_ddn.tga
-
+map_Pr textures/sponza_fabric_rough.tga
 
 newmtl fabric_e
 Ns 7.843137
@@ -193,7 +201,7 @@ illum 2
 map_Kd textures/sponza_fabric_green_diff.tga
 map_Ka textures/sponza_fabric_green_diff.tga
 norm textures/sponza_fabric_ddn.tga
-
+map_Pr textures/sponza_fabric_rough.tga
 
 newmtl fabric_f
 Ns 7.843137
@@ -206,6 +214,7 @@ illum 2
 map_Kd textures/sponza_curtain_green_diff.tga
 map_Ka textures/sponza_curtain_green_diff.tga
 norm textures/sponza_curtain_ddn.tga
+map_Pr textures/sponza_fabric_rough.tga
 
 newmtl fabric_g
 Ns 7.843137
@@ -218,7 +227,7 @@ illum 2
 map_Kd textures/sponza_curtain_blue_diff.tga
 map_Ka textures/sponza_curtain_blue_diff.tga
 norm textures/sponza_curtain_ddn.tga
-
+map_Pr textures/sponza_fabric_rough.tga
 
 newmtl flagpole
 Ns 7.843137
@@ -231,6 +240,7 @@ illum 2
 map_Kd textures/sponza_flagpole_diff.tga
 map_Ka textures/sponza_flagpole_diff.tga
 norm textures/sponza_flagpole_ddn.tga
+map_Pr textures/sponza_flagpole_rough.tga
 
 newmtl floor
 Ns 7.843137
@@ -243,6 +253,7 @@ illum 2
 map_Kd textures/sponza_floor_a_diff.tga
 map_Ka textures/sponza_floor_a_diff.tga
 norm textures/sponza_floor_a_ddn.tga
+map_Pr textures/sponza_floor_a_rough.tga
 
 newmtl leaf
 Ns 7.843137
@@ -256,6 +267,7 @@ map_Kd textures/sponza_thorn_diff.tga
 map_d textures/sponza_thorn_mask.tga
 norm textures/sponza_thorn_ddn.tga
 map_Ka textures/sponza_thorn_diff.tga
+map_Pr textures/sponza_thorn_rough.tga
 
 newmtl roof
 Ns 7.843137
@@ -267,7 +279,7 @@ d 0.000000
 illum 2
 map_Kd textures/sponza_roof_diff.tga
 map_Ka textures/sponza_roof_diff.tga
-map_Ka textures/sponza_roof_ddn.tga
+norm textures/sponza_roof_ddn.tga
 
 newmtl vase
 Ns 7.843137
@@ -304,3 +316,4 @@ illum 2
 map_Kd textures/vase_round.tga
 norm textures/vase_round_ddn.tga
 map_Ka textures/vase_round.tga
+map_Pr textures/vase_round_rough.tga
