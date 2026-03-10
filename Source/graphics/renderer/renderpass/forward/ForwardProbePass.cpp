@@ -86,11 +86,15 @@ namespace engine {
 		params.viewport = { 0, 0, BRDF_LUT_RESOLUTION, BRDF_LUT_RESOLUTION };
 		params.clearColorFlag = true;
 		params.clearDepthFlag = false;
+		params.clearStencilFlag = false;
 		brdfRT.beginPass(params);
 		brdfRT.setColorAttachment(0, brdfLUT->getRHIHandle());
 
-		m_GLCache->switchShader(brdfIntegrationShader);
-		m_GLCache->setDepthTest(false);
+		rhi::PipelineState pipeline;
+		pipeline.program = brdfIntegrationShader->getProgramHandle();
+		pipeline.depthTest = false;
+		pipeline.cullMode = rhi::CullMode::Back;
+		bindPipelineState(pipeline);
 
 		ModelRenderer::drawNdcPlane();
 
@@ -98,7 +102,11 @@ namespace engine {
 		brdfRT.setColorAttachment(0, rhi::TextureHandle());
 		brdfRT.endPass();
 
-		m_GLCache->setDepthTest(true);
+		// 恢复深度测试
+		rhi::PipelineState restorePipeline;
+		restorePipeline.depthTest = true;
+		restorePipeline.cullMode = rhi::CullMode::Back;
+		bindPipelineState(restorePipeline);
 
 		ReflectionProbe::setBRDFLUT(brdfLUT);
 	}
@@ -139,9 +147,11 @@ namespace engine {
 		}
 
 		// 捕获并应用辐照度图的卷积（间接漫反射）
-		m_GLCache->switchShader(m_ConvolutionShader);
-		m_GLCache->setFaceCull(false);
-		m_GLCache->setDepthTest(false);
+		rhi::PipelineState convPipeline;
+		convPipeline.program = m_ConvolutionShader->getProgramHandle();
+		convPipeline.cullMode = rhi::CullMode::None;
+		convPipeline.depthTest = false;
+		bindPipelineState(convPipeline);
 
 		m_ConvolutionShader->setUniform("projection", m_CubemapCamera.getProjectionMatrix());
 		m_SceneCaptureCubemap.bind(0);
@@ -151,6 +161,7 @@ namespace engine {
 		convParams.viewport = { 0, 0, m_LightProbeConvolutionRT.getWidth(), m_LightProbeConvolutionRT.getHeight() };
 		convParams.clearColorFlag = false;
 		convParams.clearDepthFlag = false;
+		convParams.clearStencilFlag = false;
 		m_LightProbeConvolutionRT.beginPass(convParams);
 
 		{
@@ -171,8 +182,11 @@ namespace engine {
 		}
 		m_LightProbeConvolutionRT.endPass();
 
-		m_GLCache->setFaceCull(true);
-		m_GLCache->setDepthTest(true);
+		// 恢复状态
+		rhi::PipelineState restorePipeline;
+		restorePipeline.cullMode = rhi::CullMode::Back;
+		restorePipeline.depthTest = true;
+		bindPipelineState(restorePipeline);
 
 		ProbeManager* probeManager = m_ActiveScene->getProbeManager();
 		probeManager->addProbe(lightProbe);
@@ -211,9 +225,11 @@ namespace engine {
 		}
 
 		// 对代表增加的粗糙度级别的立方体贴图 mip 进行重要性采样
-		m_GLCache->switchShader(m_ImportanceSamplingShader);
-		m_GLCache->setFaceCull(false);
-		m_GLCache->setDepthTest(false);
+		rhi::PipelineState samplePipeline;
+		samplePipeline.program = m_ImportanceSamplingShader->getProgramHandle();
+		samplePipeline.cullMode = rhi::CullMode::None;
+		samplePipeline.depthTest = false;
+		bindPipelineState(samplePipeline);
 
 		m_ImportanceSamplingShader->setUniform("projection", m_CubemapCamera.getProjectionMatrix());
 		m_SceneCaptureCubemap.bind(0);
@@ -222,6 +238,7 @@ namespace engine {
 		rhi::RenderPassParams sampleParams;
 		sampleParams.clearColorFlag = false;
 		sampleParams.clearDepthFlag = false;
+		sampleParams.clearStencilFlag = false;
 		m_ReflectionProbeSamplingRT.beginPass(sampleParams);
 
 		BEGIN_EVENT("Generate mip");
@@ -251,8 +268,11 @@ namespace engine {
 		END_EVENT();
 		m_ReflectionProbeSamplingRT.endPass();
 
-		m_GLCache->setFaceCull(true);
-		m_GLCache->setDepthTest(true);
+		// 恢复状态
+		rhi::PipelineState restorePipeline;
+		restorePipeline.cullMode = rhi::CullMode::Back;
+		restorePipeline.depthTest = true;
+		bindPipelineState(restorePipeline);
 
 		ProbeManager* probeManager = m_ActiveScene->getProbeManager();
 		probeManager->addProbe(reflectionProbe);

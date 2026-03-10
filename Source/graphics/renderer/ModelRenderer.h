@@ -1,5 +1,4 @@
 #pragma once
-#include "GLCache.h"
 #include "graphics/renderer/renderpass/RenderPassType.h"
 
 #include "scene/RenderableModel.h"
@@ -7,6 +6,8 @@
 #include "graphics/mesh/Model.h"
 #include <graphics/mesh/common/Cube.h>
 #include "graphics/mesh/common/Quad.h"
+#include "rhi/include/RHIDevice.h"
+#include "rhi/include/RHIResources.h"
 
 
 namespace engine {
@@ -34,7 +35,6 @@ namespace engine {
 		std::deque<RenderableModel*> m_TransparentRenderQueue;
 
 		FPSCamera* m_Camera;
-		GLCache* m_GLCache;
 	};
 
 }

@@ -5,7 +5,6 @@
 #include "graphics/camera/FPSCamera.h"
 #include "graphics/dynamic_lights/DynamicLightManager.h"
 #include "graphics/ibl/ProbeManager.h"
-#include "graphics/renderer/GLCache.h"
 #include "graphics/renderer/ModelRenderer.h"
 #include "scene/RenderableModel.h"
 #include "terrain/Terrain.h"
@@ -39,9 +38,6 @@ namespace engine {
 		void init();
 
 	private:
-		// Global Data
-		GLCache* m_GLCache;
-
 		// Global Config
 		GlobalConfig* m_config;
 

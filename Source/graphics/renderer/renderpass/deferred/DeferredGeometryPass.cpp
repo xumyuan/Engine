@@ -62,47 +62,82 @@ namespace engine {
 	{
 		m_GBufferRT.beginPass();
 
-		m_GLCache->setStencilWriteMask(0xFF);
-		m_GLCache->setBlend(false);
-		m_GLCache->setMultisample(false);
-		
-		// Setup initial stencil state
-		m_GLCache->setStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-		m_GLCache->setStencilWriteMask(0x00);
-		m_GLCache->setStencilTest(true);
+		// 构建基础管线状态
+		rhi::PipelineState pipeline;
+		pipeline.program = m_ModelShader->getProgramHandle();
+		pipeline.depthTest = true;
+		pipeline.depthWrite = true;
+		pipeline.blendEnable = false;
+		pipeline.multisample = false;
+		pipeline.cullMode = rhi::CullMode::Back;
 
-		m_GLCache->switchShader(m_ModelShader);
+		// 初始 stencil 设置：开启测试，设置 op 为 Keep/Keep/Replace，写 mask 0x00（暂不写入 stencil）
+		rhi::StencilState baseStencil;
+		baseStencil.stencilFail = rhi::StencilOp::Keep;
+		baseStencil.depthFail = rhi::StencilOp::Keep;
+		baseStencil.depthPass = rhi::StencilOp::Replace;
+		baseStencil.writeMask = 0x00;
+		baseStencil.readMask = 0xFF;
+		baseStencil.func = rhi::CompareOp::Always;
+		baseStencil.ref = 0;
+
+		pipeline.stencilEnable = true;
+		pipeline.stencilFront = baseStencil;
+		pipeline.stencilBack = baseStencil;
+		bindPipelineState(pipeline);
+
 		m_ModelShader->setUniform("viewPos", camera->getPosition());
 		m_ModelShader->setUniform("view", camera->getViewMatrix());
 		m_ModelShader->setUniform("projection", camera->getProjectionMatrix());
 	
-		// Render opaque objects
-		m_GLCache->setStencilWriteMask(0xFF);
-		m_GLCache->setStencilFunc(GL_ALWAYS, StencilValue::ModelStencilValue, 0xFF);
+		// Render opaque objects: 开启 stencil 写入，model stencil value
+		pipeline.stencilFront.writeMask = 0xFF;
+		pipeline.stencilFront.func = rhi::CompareOp::Always;
+		pipeline.stencilFront.ref = StencilValue::ModelStencilValue;
+		pipeline.stencilBack = pipeline.stencilFront;
+		bindPipelineState(pipeline);
 
 		ModelRenderer* modelRenderer = m_ActiveScene->getModelRenderer();
 		
 		m_ActiveScene->addModelsToRenderer();
 
 		modelRenderer->flushOpaque(m_ModelShader, m_RenderPassType);
-		m_GLCache->setStencilWriteMask(0x00);
+
+		// 关闭 stencil 写入
+		pipeline.stencilFront.writeMask = 0x00;
+		pipeline.stencilBack.writeMask = 0x00;
+		bindPipelineState(pipeline);
 
 		Terrain* terrain = m_ActiveScene->getTerrain();
 		if (terrain)
 		{
 			BEGIN_EVENT("Render Terrain");
-			m_GLCache->switchShader(m_TerrainShader);
+			// 切换 terrain shader
+			pipeline.program = m_TerrainShader->getProgramHandle();
+			bindPipelineState(pipeline);
+
 			m_TerrainShader->setUniform("view", camera->getViewMatrix());
 			m_TerrainShader->setUniform("projection", camera->getProjectionMatrix());
 
-			m_GLCache->setStencilWriteMask(0xFF);
-			m_GLCache->setStencilFunc(GL_ALWAYS, StencilValue::TerrainStencilValue, 0xFF);
+			// 开启 stencil 写入，terrain stencil value
+			pipeline.stencilFront.writeMask = 0xFF;
+			pipeline.stencilFront.func = rhi::CompareOp::Always;
+			pipeline.stencilFront.ref = StencilValue::TerrainStencilValue;
+			pipeline.stencilBack = pipeline.stencilFront;
+			bindPipelineState(pipeline);
+
 			terrain->Draw(m_TerrainShader, m_RenderPassType);
-			m_GLCache->setStencilWriteMask(0x00);
+
+			// 关闭 stencil 写入
+			pipeline.stencilFront.writeMask = 0x00;
+			pipeline.stencilBack.writeMask = 0x00;
+			bindPipelineState(pipeline);
 			END_EVENT();
 		}
 
-		m_GLCache->setStencilTest(false);
+		// 关闭 stencil 测试
+		pipeline.stencilEnable = false;
+		bindPipelineState(pipeline);
 
 		m_GBufferRT.endPass();
 

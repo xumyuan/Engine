@@ -110,6 +110,7 @@ struct RenderPassParams {
     uint8_t     clearStencil   = 0;
     bool        clearColorFlag = true;
     bool        clearDepthFlag = true;
+    bool        clearStencilFlag = true;    // 默认清除 stencil（与 depth 保持一致）
     struct { uint32_t x, y, w, h; } viewport = {};
 };
 
@@ -146,6 +147,7 @@ struct PipelineState {
     bool            depthTest = true;
     bool            depthWrite = true;
     CompareOp       depthFunc = CompareOp::Less;
+    bool            multisample = false;
 
     // 模板测试
     bool            stencilEnable = false;

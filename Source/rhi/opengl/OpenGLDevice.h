@@ -142,7 +142,7 @@ private:
     HandleBase::HandleId mNextHandle = 1;
     uint32_t mMaxTextureSize = 0;
 
-    // 当前绑定状态跟踪
+    // 当前绑定状态（仅用于 draw 时读取 primitiveType 等，不用于 diff）
     PipelineState mCurrentPipeline;
     RenderTargetHandle mCurrentRenderTarget;
     SwapChainHandle mCurrentSwapChain;

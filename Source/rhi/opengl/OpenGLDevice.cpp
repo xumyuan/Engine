@@ -131,6 +131,20 @@ static GLenum toGLBlendFactor(BlendFactor f) {
     }
 }
 
+static GLenum toGLStencilOp(StencilOp op) {
+    switch (op) {
+        case StencilOp::Keep:      return GL_KEEP;
+        case StencilOp::Zero:      return GL_ZERO;
+        case StencilOp::Replace:   return GL_REPLACE;
+        case StencilOp::IncrClamp: return GL_INCR;
+        case StencilOp::DecrClamp: return GL_DECR;
+        case StencilOp::Invert:    return GL_INVERT;
+        case StencilOp::IncrWrap:  return GL_INCR_WRAP;
+        case StencilOp::DecrWrap:  return GL_DECR_WRAP;
+        default:                   return GL_KEEP;
+    }
+}
+
 static GLenum toGLPrimitive(PrimitiveType type) {
     switch (type) {
         case PrimitiveType::Triangles:     return GL_TRIANGLES;
@@ -772,7 +786,13 @@ void OpenGLDevice::beginRenderPass(RenderTargetHandle target,
     }
     if (params.clearDepthFlag) {
         glClearDepth(params.clearDepth);
+        glDepthMask(GL_TRUE);   // 确保深度写入开启，否则 glClear 无法清除深度
         clearBits |= GL_DEPTH_BUFFER_BIT;
+    }
+    if (params.clearStencilFlag) {
+        glClearStencil(params.clearStencil);
+        glStencilMask(0xFF);    // 确保 stencil 写入全开，否则 glClear 无法清除 stencil
+        clearBits |= GL_STENCIL_BUFFER_BIT;
     }
     if (clearBits) {
         glClear(clearBits);
@@ -784,9 +804,11 @@ void OpenGLDevice::endRenderPass() {
 }
 
 void OpenGLDevice::bindPipeline(const PipelineState& state) {
-    mCurrentPipeline = state;
+    // 全量设置所有管线状态，不做 diff。
+    // 理由：GL 状态调用是轻量级内存操作，driver 内部已有冗余剔除，
+    // 应用层 diff 只增加复杂度和出错概率，没有实际性能收益。
 
-    // Shader
+    // ── Shader ──
     if (static_cast<bool>(state.program)) {
         auto it = mPrograms.find(state.program.getId());
         if (it != mPrograms.end()) {
@@ -794,7 +816,7 @@ void OpenGLDevice::bindPipeline(const PipelineState& state) {
         }
     }
 
-    // 深度
+    // ── 深度 ──
     if (state.depthTest) {
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(toGLCompareFunc(state.depthFunc));
@@ -803,7 +825,7 @@ void OpenGLDevice::bindPipeline(const PipelineState& state) {
     }
     glDepthMask(state.depthWrite ? GL_TRUE : GL_FALSE);
 
-    // 面剔除
+    // ── 面剔除 ──
     if (state.cullMode != CullMode::None) {
         glEnable(GL_CULL_FACE);
         glCullFace(toGLCullFace(state.cullMode));
@@ -811,7 +833,7 @@ void OpenGLDevice::bindPipeline(const PipelineState& state) {
         glDisable(GL_CULL_FACE);
     }
 
-    // 多边形模式（线框/填充/点）
+    // ── 多边形模式 ──
     {
         GLenum mode = GL_FILL;
         switch (state.polygonMode) {
@@ -822,7 +844,13 @@ void OpenGLDevice::bindPipeline(const PipelineState& state) {
         glPolygonMode(GL_FRONT_AND_BACK, mode);
     }
 
-    // 混合
+    // ── 多重采样 ──
+    if (state.multisample)
+        glEnable(GL_MULTISAMPLE);
+    else
+        glDisable(GL_MULTISAMPLE);
+
+    // ── 混合 ──
     if (state.blendEnable) {
         glEnable(GL_BLEND);
         glBlendFuncSeparate(
@@ -833,6 +861,33 @@ void OpenGLDevice::bindPipeline(const PipelineState& state) {
     } else {
         glDisable(GL_BLEND);
     }
+
+    // ── 模板测试 ──
+    if (state.stencilEnable) {
+        glEnable(GL_STENCIL_TEST);
+
+        // 正面
+        const auto& sf = state.stencilFront;
+        glStencilFuncSeparate(GL_FRONT, toGLCompareFunc(sf.func), sf.ref, sf.readMask);
+        glStencilOpSeparate(GL_FRONT,
+                toGLStencilOp(sf.stencilFail),
+                toGLStencilOp(sf.depthFail),
+                toGLStencilOp(sf.depthPass));
+        glStencilMaskSeparate(GL_FRONT, sf.writeMask);
+
+        // 背面
+        const auto& sb = state.stencilBack;
+        glStencilFuncSeparate(GL_BACK, toGLCompareFunc(sb.func), sb.ref, sb.readMask);
+        glStencilOpSeparate(GL_BACK,
+                toGLStencilOp(sb.stencilFail),
+                toGLStencilOp(sb.depthFail),
+                toGLStencilOp(sb.depthPass));
+        glStencilMaskSeparate(GL_BACK, sb.writeMask);
+    } else {
+        glDisable(GL_STENCIL_TEST);
+    }
+
+    mCurrentPipeline = state;
 }
 
 void OpenGLDevice::bindRenderPrimitive(RenderPrimitiveHandle rph) {

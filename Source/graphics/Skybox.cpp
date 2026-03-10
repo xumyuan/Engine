@@ -85,8 +85,6 @@ namespace engine {
 		rhi::BufferHandle vbs[] = { m_VertexBuffer };
 		m_RenderPrimitive = m_Device->createRenderPrimitive(
 			layout, vbs, 1, m_IndexBuffer, rhi::IndexType::UInt32);
-
-		m_GLCache = GLCache::getInstance();
 	}
 
 	Skybox::~Skybox() {
@@ -101,7 +99,14 @@ namespace engine {
 	}
 
 	void Skybox::Draw(ICamera* camera) {
-		m_GLCache->switchShader(m_SkyboxShader);
+		// 通过 PipelineState 设置 skybox 渲染状态
+		rhi::PipelineState pipeline;
+		pipeline.program = m_SkyboxShader->getProgramHandle();
+		pipeline.depthTest = true;
+		pipeline.depthFunc = rhi::CompareOp::LessEqual;
+		pipeline.depthWrite = false;  // skybox 不写深度
+		pipeline.cullMode = rhi::CullMode::Back;
+		m_Device->bindPipeline(pipeline);
 
 		// Pass the texture to the shader
 		m_SkyboxCubemap->bind(0);
@@ -110,10 +115,16 @@ namespace engine {
 		m_SkyboxShader->setUniform("view", camera->getViewMatrix());
 		m_SkyboxShader->setUniform("projection", camera->getProjectionMatrix());
 
-		m_GLCache->setDepthFunc(GL_LEQUAL);
 		m_Device->bindRenderPrimitive(m_RenderPrimitive);
 		m_Device->draw(36, 0);
-		m_GLCache->setDepthFunc(GL_LESS);
+
+		// 恢复深度函数和深度写入
+		rhi::PipelineState restorePipeline;
+		restorePipeline.depthTest = true;
+		restorePipeline.depthFunc = rhi::CompareOp::Less;
+		restorePipeline.depthWrite = true;
+		restorePipeline.cullMode = rhi::CullMode::Back;
+		m_Device->bindPipeline(restorePipeline);
 
 		m_SkyboxCubemap->unbind();
 	}

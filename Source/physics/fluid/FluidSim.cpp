@@ -13,7 +13,6 @@ namespace engine {
 	{
 		m_Device = getRHIDevice();
 		m_particleShader = ShaderLoader::loadShader("Shaders/fluid/particle_draw.glsl");
-		m_GLCache = GLCache::getInstance();
 
 		// ── 创建 dynamic Vertex Buffer ──
 		rhi::BufferDesc vbDesc;
@@ -150,7 +149,12 @@ namespace engine {
 		float pointScale = 1.0f * 768.f / glm::tan(glm::radians(fov) * 0.5f);
 		float pointSize = 0.5f;
 
-		m_GLCache->switchShader(m_particleShader);
+		// 通过 PipelineState 设置 shader 和渲染状态
+		rhi::PipelineState pipeline;
+		pipeline.program = m_particleShader->getProgramHandle();
+		pipeline.depthTest = true;
+		pipeline.cullMode = rhi::CullMode::Back;
+		m_Device->bindPipeline(pipeline);
 
 		m_particleShader->setUniform("pointScale", pointScale);
 		m_particleShader->setUniform("pointSize", pointSize);
@@ -162,8 +166,6 @@ namespace engine {
 		m_particleShader->setUniform("model", modelMat);
 		m_particleShader->setUniform("view", camera->getViewMatrix());
 		m_particleShader->setUniform("viewPos", cameraPos);
-
-		m_GLCache->setDepthTest(true);
 
 		glEnable(GL_PROGRAM_POINT_SIZE);
 		glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);

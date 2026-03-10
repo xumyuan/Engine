@@ -32,8 +32,15 @@ namespace engine
 		Terrain* terrain = m_ActiveScene->getTerrain();
 		DynamicLightManager* lightManager = m_ActiveScene->getDynamicLightManager();
 
+		// 通过 PipelineState 设置 shader 和渲染状态
+		rhi::PipelineState pipeline;
+		pipeline.program = m_ShadowmapShader->getProgramHandle();
+		pipeline.depthTest = true;
+		pipeline.depthWrite = true;
+		pipeline.cullMode = rhi::CullMode::Back;
+		bindPipelineState(pipeline);
+
 		// View setup
-		m_GLCache->switchShader(m_ShadowmapShader);
 		glm::vec3 dirLightShadowmapLookAtPos = camera->getPosition() + (glm::normalize(camera->getFront()) * 50.0f);
 		glm::vec3 dirLightShadowmapEyePos = dirLightShadowmapLookAtPos + (-lightManager->getDirectionalLightDirection() * 100.0f);
 		glm::mat4 directionalLightProjection = glm::ortho(-100.0f, 100.0f, -100.0f, 100.0f, SHADOWMAP_NEAR_PLANE, SHADOWMAP_FAR_PLANE);

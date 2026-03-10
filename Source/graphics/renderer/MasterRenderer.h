@@ -23,8 +23,6 @@ namespace engine
 	private:
 		Scene3D* m_ActiveScene;
 
-		GLCache* m_GLCache;
-
 		// other passes 
 		PostProcessPass m_PostProcessPass;
 		ShadowmapPass m_ShadowmapPass;

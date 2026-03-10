@@ -15,12 +15,10 @@ namespace engine
 		m_DeferredLightingPass(scene),
 		m_SSAOPass(scene)
 	{
-		m_GLCache = GLCache::getInstance();
 	}
 
 	void MasterRenderer::init() {
-		// State that should never change
-		glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+		// GL_TEXTURE_CUBE_MAP_SEAMLESS 已在 OpenGLDevice::initialize() 中设置
 		// 环境贴图预计算
 		BEGIN_EVENT("GenerateProbes");
 		m_EnvironmentProbePass.pregenerateProbes();

@@ -2,7 +2,6 @@
 
 #include "rhi/include/RHIDevice.h"
 #include "graphics/Shader.h"
-#include "graphics/renderer/GLCache.h"
 #include <mutex>
 
 namespace engine {
@@ -58,8 +57,6 @@ namespace engine {
 		void subPosData();
 		size_t getParticleNum() const { return m_particleNum; }
 	private:
-		GLCache* m_GLCache;
-
 		size_t m_maxParticleNum;
 		size_t m_particleNum;
 

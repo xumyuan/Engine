@@ -22,8 +22,6 @@ namespace engine {
 		m_Terrain(glm::vec3(-220.0f, 0.0f, 0.0f)),
 		m_ProbeManager(m_SceneProbeBlendSetting)
 	{
-		m_GLCache = GLCache::getInstance();
-
 		m_config = GlobalConfig::getInstance();
 
 		/*m_fluid = new FluidSim(8'000, { { 120.0f,120.0f,120.0f }, { 140.0f,200.0f,180.0f} });
@@ -41,7 +39,12 @@ namespace engine {
 	void Scene3D::init() {
 		using json = nlohmann::json;
 
-		m_GLCache->setMultisample(true);
+		// 通过 PipelineState 设置初始多重采样状态
+		if (auto* device = getRHIDevice()) {
+			rhi::PipelineState initPipeline;
+			initPipeline.multisample = true;
+			device->bindPipeline(initPipeline);
+		}
 
 		// parse scene json
 		try

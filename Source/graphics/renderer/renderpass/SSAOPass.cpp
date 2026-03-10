@@ -2,7 +2,6 @@
 #include "SSAOPass.h"
 
 #include <graphics/Window.h>
-#include <graphics/renderer/GLCache.h>
 #include <graphics/renderer/ModelRenderer.h>
 #include <utils/loaders/ShaderLoader.h>
 
@@ -104,10 +103,14 @@ namespace engine
 		// ========== SSAO Pass ==========
 		m_SSAORT.beginPass();
 
-		m_GLCache->setDepthTest(false);
-		m_GLCache->setBlend(false);
-		m_GLCache->setStencilTest(false);
-		m_GLCache->switchShader(m_SSAOShader);
+		// 构建 SSAO pass 的管线状态
+		rhi::PipelineState ssaoPipeline;
+		ssaoPipeline.program = m_SSAOShader->getProgramHandle();
+		ssaoPipeline.depthTest = false;
+		ssaoPipeline.blendEnable = false;
+		ssaoPipeline.stencilEnable = false;
+		ssaoPipeline.cullMode = rhi::CullMode::Back;
+		bindPipelineState(ssaoPipeline);
 
 		// 传递采样核
 		for (int i = 0; i < KERNEL_SIZE; ++i)
@@ -147,7 +150,10 @@ namespace engine
 		// ========== Blur Pass ==========
 		m_SSAOBlurRT.beginPass();
 
-		m_GLCache->switchShader(m_SSAOBlurShader);
+		// 构建 Blur pass 的管线状态（复用大部分设置，仅切换 shader）
+		rhi::PipelineState blurPipeline = ssaoPipeline;
+		blurPipeline.program = m_SSAOBlurShader->getProgramHandle();
+		bindPipelineState(blurPipeline);
 
 		m_SSAORT.getColorTexture()->bind(0);
 		m_SSAOBlurShader->setUniform("ssaoInput", 0);

@@ -34,13 +34,6 @@ namespace engine
 	LightingPassOutput ForwardLightingPass::executeRenderPass(ShadowmapPassOutput& shadowmapData, ICamera* camera, bool useIBL) {
 		m_RT->beginPass();
 
-		if (m_RT->isMultisampled()) {
-			m_GLCache->setMultisample(true);
-		}
-		else {
-			m_GLCache->setMultisample(false);
-		}
-
 		// Setup
 		ModelRenderer* modelRenderer = m_ActiveScene->getModelRenderer();
 		Terrain* terrain = m_ActiveScene->getTerrain();
@@ -48,8 +41,18 @@ namespace engine
 		DynamicLightManager* lightManager = m_ActiveScene->getDynamicLightManager();
 		Skybox* skybox = m_ActiveScene->getSkybox();
 		ProbeManager* probeManager = m_ActiveScene->getProbeManager();
+
+		// 通过 PipelineState 设置 model shader 和渲染状态
+		rhi::PipelineState pipeline;
+		pipeline.program = m_ModelShader->getProgramHandle();
+		pipeline.depthTest = true;
+		pipeline.depthWrite = true;
+		pipeline.cullMode = rhi::CullMode::Back;
+		pipeline.blendEnable = false;
+		pipeline.multisample = m_RT->isMultisampled();
+		bindPipelineState(pipeline);
+
 		// View setup + lighting setup
-		m_GLCache->switchShader(m_ModelShader);
 		lightManager->setupLightingUniforms(m_ModelShader);
 		m_ModelShader->setUniform("viewPos", camera->getPosition());
 		m_ModelShader->setUniform("view", camera->getViewMatrix());
@@ -79,7 +82,11 @@ namespace engine
 		m_ActiveScene->addModelsToRenderer();
 		modelRenderer->flushOpaque(m_ModelShader, m_RenderPassType);
 
-		m_GLCache->switchShader(m_TerrainShader);
+		// 切换 terrain shader 管线
+		rhi::PipelineState terrainPipeline = pipeline;
+		terrainPipeline.program = m_TerrainShader->getProgramHandle();
+		bindPipelineState(terrainPipeline);
+
 		lightManager->setupLightingUniforms(m_TerrainShader);
 		m_TerrainShader->setUniform("viewPos", camera->getPosition());
 		glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), terrain->getPosition());
@@ -97,7 +104,17 @@ namespace engine
 		}
 		skybox->Draw(camera);
 
-		m_GLCache->switchShader(m_ModelShader);
+		// 切换回 model shader 渲染透明物体（需要开启 blend、关闭 face cull）
+		rhi::PipelineState transparentPipeline = pipeline;
+		transparentPipeline.program = m_ModelShader->getProgramHandle();
+		transparentPipeline.blendEnable = true;
+		transparentPipeline.srcColorBlend = rhi::BlendFactor::SrcAlpha;
+		transparentPipeline.dstColorBlend = rhi::BlendFactor::OneMinusSrcAlpha;
+		transparentPipeline.srcAlphaBlend = rhi::BlendFactor::SrcAlpha;
+		transparentPipeline.dstAlphaBlend = rhi::BlendFactor::OneMinusSrcAlpha;
+		transparentPipeline.stencilEnable = false;
+		transparentPipeline.cullMode = rhi::CullMode::None;
+		bindPipelineState(transparentPipeline);
 		modelRenderer->flushTransparent(m_ModelShader, m_RenderPassType);
 
 		m_RT->endPass();

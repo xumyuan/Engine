@@ -6,7 +6,6 @@
 #include "graphics/camera/FPSCamera.h"
 #include "graphics/mesh/Model.h"
 #include "graphics/mesh/common/Quad.h"
-#include "graphics/renderer/GLCache.h"
 #include "graphics/renderer/MasterRenderer.h"
 #include "input/InputManager.h"
 #include "terrain/Terrain.h"

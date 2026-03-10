@@ -63,7 +63,14 @@ namespace engine
 		Window::bind();
 		Window::clear();
 
-		m_GLCache->switchShader(m_PassthroughShader);
+		rhi::PipelineState pipeline;
+		pipeline.program = m_PassthroughShader->getProgramHandle();
+		pipeline.depthTest = false;
+		pipeline.blendEnable = false;
+		pipeline.stencilEnable = false;
+		pipeline.cullMode = rhi::CullMode::Back;
+		bindPipelineState(pipeline);
+
 		m_PassthroughShader->setUniform("input_texture", 0);
 		currentTexture->bind(0);
 		ModelRenderer::drawNdcPlane();
@@ -73,12 +80,13 @@ namespace engine
 	void PostProcessPass::gammaCorrect(RenderTarget* target, Texture* hdrTexture) {
 		target->beginPass();
 
-		m_GLCache->switchShader(m_GammaCorrectShader);
-		m_GLCache->setDepthTest(false);
-		m_GLCache->setBlend(false);
-		m_GLCache->setFaceCull(true);
-		m_GLCache->setCullFace(GL_BACK);
-		m_GLCache->setStencilTest(false);
+		rhi::PipelineState pipeline;
+		pipeline.program = m_GammaCorrectShader->getProgramHandle();
+		pipeline.depthTest = false;
+		pipeline.blendEnable = false;
+		pipeline.stencilEnable = false;
+		pipeline.cullMode = rhi::CullMode::Back;
+		bindPipelineState(pipeline);
 
 		m_GammaCorrectShader->setUniform("gamma_inverse", 1.0f / m_GammaCorrection);
 		m_GammaCorrectShader->setUniform("exposure", m_Exposure);
@@ -94,12 +102,13 @@ namespace engine
 	void PostProcessPass::fxaa(RenderTarget* target, Texture* texture) {
 		target->beginPass();
 
-		m_GLCache->switchShader(m_FxaaShader);
-		m_GLCache->setDepthTest(false);
-		m_GLCache->setBlend(false);
-		m_GLCache->setFaceCull(true);
-		m_GLCache->setCullFace(GL_BACK);
-		m_GLCache->setStencilTest(false);
+		rhi::PipelineState pipeline;
+		pipeline.program = m_FxaaShader->getProgramHandle();
+		pipeline.depthTest = false;
+		pipeline.blendEnable = false;
+		pipeline.stencilEnable = false;
+		pipeline.cullMode = rhi::CullMode::Back;
+		bindPipelineState(pipeline);
 
 		m_FxaaShader->setUniform("texel_size", glm::vec2(1.0f / (float)Window::getWidth(), 1.0f / (float)Window::getHeight()));
 

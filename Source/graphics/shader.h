@@ -47,11 +47,6 @@ namespace rhi {
 		inline void setUniform(const std::string& name, const glm::mat4& matrix) { setUniform(name.c_str(), matrix); }
 		inline void setUniform(const std::string& name, const glm::mat3& matrix) { setUniform(name.c_str(), matrix); }
 
-		// 获取底层 GL program ID（兼容 GLCache 等过渡期使用）
-		inline GLuint getShaderID() {
-			return m_Program ? m_Program->getGLProgramId() : 0;
-		}
-
 		// 获取 RHI ProgramHandle
 		inline rhi::ProgramHandle getProgramHandle() const { return m_ProgramHandle; }
 

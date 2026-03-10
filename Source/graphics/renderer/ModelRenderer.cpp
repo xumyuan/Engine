@@ -9,10 +9,15 @@ namespace engine {
 	ModelRenderer::ModelRenderer(FPSCamera* camera) :
 		m_Camera(camera)
 	{
-		m_GLCache = GLCache::getInstance();
-		m_GLCache->setDepthTest(true);
-		m_GLCache->setBlend(false);
-		m_GLCache->setFaceCull(true);
+		// 通过 PipelineState 设置初始渲染状态
+		auto* device = getRHIDevice();
+		if (device) {
+			rhi::PipelineState initPipeline;
+			initPipeline.depthTest = true;
+			initPipeline.blendEnable = false;
+			initPipeline.cullMode = rhi::CullMode::Back;
+			device->bindPipeline(initPipeline);
+		}
 
 		NDC_Cube = new Cube();
 		NDC_Plane = new Quad();
@@ -29,16 +34,9 @@ namespace engine {
 	}
 
 	// 不透明物渲染
+	// 注意：不在此处设置 pipeline state，由调用方负责设置渲染状态（包括 shader、depth、stencil 等）
+	// 原始 GLCache 版本中此函数也只设置 depthTest/blend/faceCull，不触碰 stencil
 	void ModelRenderer::flushOpaque(Shader* shader, RenderPassType pass) {
-		m_GLCache->switchShader(shader);
-
-
-		m_GLCache->setDepthTest(true);
-		m_GLCache->setBlend(false);
-		//m_GLCache->setStencilTest(false);
-		m_GLCache->setFaceCull(true);
-		m_GLCache->setCullFace(GL_BACK);
-
 		//不透明物体渲染队列
 		while (!m_OpaqueRenderQueue.empty()) {
 			RenderableModel* current = m_OpaqueRenderQueue.front();
@@ -51,16 +49,8 @@ namespace engine {
 	}
 
 	// 透明物体渲染
+	// 注意：不在此处设置 pipeline state，由调用方负责设置渲染状态
 	void ModelRenderer::flushTransparent(Shader* shader, RenderPassType pass) {
-
-		m_GLCache->switchShader(shader);
-		m_GLCache->setDepthTest(true);
-		m_GLCache->setBlend(true);
-		m_GLCache->setStencilTest(false);
-
-		m_GLCache->setFaceCull(false);
-
-
 		//排序后从后往前渲染，没有考虑缩放和旋转
 		std::sort(m_TransparentRenderQueue.begin(), m_TransparentRenderQueue.end(),
 			[this](RenderableModel* a, RenderableModel* b)->bool {
@@ -70,10 +60,6 @@ namespace engine {
 		//透明物体渲染
 		while (!m_TransparentRenderQueue.empty()) {
 			RenderableModel* current = m_TransparentRenderQueue.front();
-
-			//开启混合
-			m_GLCache->setBlend(true);
-			m_GLCache->setBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 			setupModelMatrix(current, shader, pass);
 			current->draw(shader, pass);
