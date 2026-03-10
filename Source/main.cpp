@@ -16,6 +16,9 @@
 #include "utils/Timer.h"
 #include "utils/DebugEvent.h"
 #include "rhi/include/RHIDevice.h"
+#include "rhi/opengl/OpenGLDevice.h"
+#include "rhi/opengl/ShaderCompilerService.h"
+#include "utils/loaders/ShaderLoader.h"
 
 #include <filesystem>
 #include <string>
@@ -41,6 +44,11 @@ int main(int argc, char* argv[]) {
 	auto rhiDevice = engine::rhi::RHIDevice::create(engine::rhi::Backend::OpenGL);
 	rhiDevice->initialize();
 	engine::setDebugDevice(rhiDevice.get());
+
+	// 初始化着色器编译服务和 ShaderLoader
+	auto* glDevice = static_cast<engine::rhi::OpenGLDevice*>(rhiDevice.get());
+	engine::rhi::ShaderCompilerService shaderCompiler(*glDevice);
+	engine::ShaderLoader::initialize(*glDevice, shaderCompiler);
 
 	spdlog::info("load textures...");
 	engine::TextureLoader::initializeDefaultTextures();

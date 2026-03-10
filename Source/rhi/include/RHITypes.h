@@ -84,6 +84,9 @@ enum class PrimitiveType : uint8_t {
 enum class ShaderStage : uint8_t {
   Vertex,
   Fragment,
+  Geometry,
+  TessControl,
+  TessEvaluation,
   Compute,
 };
 

@@ -410,9 +410,12 @@ ProgramHandle OpenGLDevice::createProgram(const ProgramDesc& desc) {
     for (auto& src : desc.shaders) {
         GLenum type = GL_VERTEX_SHADER;
         switch (src.stage) {
-            case ShaderStage::Vertex:   type = GL_VERTEX_SHADER; break;
-            case ShaderStage::Fragment: type = GL_FRAGMENT_SHADER; break;
-            case ShaderStage::Compute:  type = GL_COMPUTE_SHADER; break;
+            case ShaderStage::Vertex:         type = GL_VERTEX_SHADER; break;
+            case ShaderStage::Fragment:       type = GL_FRAGMENT_SHADER; break;
+            case ShaderStage::Geometry:       type = GL_GEOMETRY_SHADER; break;
+            case ShaderStage::TessControl:    type = GL_TESS_CONTROL_SHADER; break;
+            case ShaderStage::TessEvaluation: type = GL_TESS_EVALUATION_SHADER; break;
+            case ShaderStage::Compute:        type = GL_COMPUTE_SHADER; break;
         }
 
         GLuint shader = glCreateShader(type);

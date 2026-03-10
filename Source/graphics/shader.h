@@ -1,17 +1,28 @@
 #pragma once
-#pragma once
 
-#include "utils/FileUtils.h"
+#include "rhi/include/RHIHandle.h"
+#include "rhi/opengl/OpenGLProgram.h"
+
+#include <glm/glm.hpp>
+#include <string>
+#include <memory>
 
 namespace engine {
+namespace rhi {
+    class OpenGLDevice;
+    class ShaderCompilerService;
+}
 
 	class Shader {
 	private:
-		GLuint m_ShaderID;
+		rhi::ProgramHandle m_ProgramHandle;
+		std::unique_ptr<rhi::OpenGLProgram> m_Program;
 		std::string m_ShaderFilePath;
 
 	public:
-		Shader(const std::string& path);
+		// 通过 ShaderCompilerService 编译并创建
+		Shader(const std::string& path, rhi::ShaderCompilerService& compiler,
+		       rhi::OpenGLDevice& device);
 		~Shader();
 
 		void enable() const;
@@ -36,15 +47,16 @@ namespace engine {
 		inline void setUniform(const std::string& name, const glm::mat4& matrix) { setUniform(name.c_str(), matrix); }
 		inline void setUniform(const std::string& name, const glm::mat3& matrix) { setUniform(name.c_str(), matrix); }
 
-		inline GLuint getShaderID() { return m_ShaderID; }
-	private:
+		// 获取底层 GL program ID（兼容 GLCache 等过渡期使用）
+		inline GLuint getShaderID() {
+			return m_Program ? m_Program->getGLProgramId() : 0;
+		}
 
-		static GLenum ShaderTypeFromString(const std::string& type);
-		std::unordered_map<GLenum, std::string> PreProcessShaderBinary(std::string& source);
-		void Compile(const std::unordered_map<GLenum, std::string>& shaderSources);
+		// 获取 RHI ProgramHandle
+		inline rhi::ProgramHandle getProgramHandle() const { return m_ProgramHandle; }
+
 	private:
-		GLint getUniformLocation(const char* name);
-		GLuint load();
+		rhi::OpenGLDevice* m_Device = nullptr;
 	};
 
 }
