@@ -4,9 +4,13 @@
 #include "RHIResources.h"
 #include "RHITypes.h"
 #include <memory>
+#include <string>
 
 namespace engine {
 namespace rhi {
+
+class RHIShaderCompiler;
+
 class RHIDevice {
     public:
     virtual ~RHIDevice() = default;
@@ -64,6 +68,10 @@ class RHIDevice {
     // 更新纹理采样器参数
     virtual void updateTextureSampler(TextureHandle handle,
             const TextureDesc& desc) = 0;
+
+    // ---------- Shader 工厂 ----------
+    // 创建着色器编译器（各后端提供具体实现）
+    virtual std::unique_ptr<RHIShaderCompiler> createShaderCompiler() = 0;
 
     // ---------- 渲染命令 ----------
     virtual void beginFrame(SwapChainHandle swapChain) = 0;

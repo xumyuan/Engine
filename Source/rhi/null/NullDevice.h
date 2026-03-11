@@ -1,5 +1,6 @@
 #pragma once
 #include "rhi/include/RHIDevice.h"
+#include "NullShaderCompiler.h"
 
 namespace engine {
 namespace rhi {
@@ -49,6 +50,11 @@ public:
     void updateCubemapFace(TextureHandle, uint8_t, uint32_t,
             uint32_t, uint32_t, TextureFormat, const void*, uint32_t) override {}
     void updateTextureSampler(TextureHandle, const TextureDesc&) override {}
+
+    // ---------- Shader 工厂 ----------
+    std::unique_ptr<RHIShaderCompiler> createShaderCompiler() override {
+        return std::make_unique<NullShaderCompiler>();
+    }
 
     void beginFrame(SwapChainHandle) override {}
     void endFrame() override {}

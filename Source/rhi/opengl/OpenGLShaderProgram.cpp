@@ -1,25 +1,46 @@
-#include "OpenGLProgram.h"
+#include "OpenGLShaderProgram.h"
+#include "rhi/include/RHIDevice.h"
 #include <glm/gtc/type_ptr.hpp>
 #include <spdlog/spdlog.h>
 
 namespace engine {
 namespace rhi {
 
-OpenGLProgram::OpenGLProgram(GLuint glProgramId)
-    : mGLProgramId(glProgramId) {
+OpenGLShaderProgram::OpenGLShaderProgram(ProgramHandle programHandle, GLuint glProgramId, RHIDevice& device)
+    : mProgramHandle(programHandle)
+    , mGLProgramId(glProgramId)
+    , mDevice(&device) {
 }
 
-OpenGLProgram::OpenGLProgram(OpenGLProgram&& other) noexcept
-    : mGLProgramId(other.mGLProgramId)
+OpenGLShaderProgram::~OpenGLShaderProgram() {
+    if (mDevice && static_cast<bool>(mProgramHandle)) {
+        mDevice->destroyProgram(mProgramHandle);
+    }
+}
+
+OpenGLShaderProgram::OpenGLShaderProgram(OpenGLShaderProgram&& other) noexcept
+    : mProgramHandle(other.mProgramHandle)
+    , mGLProgramId(other.mGLProgramId)
+    , mDevice(other.mDevice)
     , mUniformLocationCache(std::move(other.mUniformLocationCache)) {
+    other.mProgramHandle.clear();
     other.mGLProgramId = 0;
+    other.mDevice = nullptr;
 }
 
-OpenGLProgram& OpenGLProgram::operator=(OpenGLProgram&& other) noexcept {
+OpenGLShaderProgram& OpenGLShaderProgram::operator=(OpenGLShaderProgram&& other) noexcept {
     if (this != &other) {
+        // 先销毁自己持有的资源
+        if (mDevice && static_cast<bool>(mProgramHandle)) {
+            mDevice->destroyProgram(mProgramHandle);
+        }
+        mProgramHandle = other.mProgramHandle;
         mGLProgramId = other.mGLProgramId;
+        mDevice = other.mDevice;
         mUniformLocationCache = std::move(other.mUniformLocationCache);
+        other.mProgramHandle.clear();
         other.mGLProgramId = 0;
+        other.mDevice = nullptr;
     }
     return *this;
 }
@@ -28,11 +49,11 @@ OpenGLProgram& OpenGLProgram::operator=(OpenGLProgram&& other) noexcept {
 // Program 激活
 // ============================================================================
 
-void OpenGLProgram::use() const {
+void OpenGLShaderProgram::use() {
     glUseProgram(mGLProgramId);
 }
 
-void OpenGLProgram::unuse() {
+void OpenGLShaderProgram::unuse() {
     glUseProgram(0);
 }
 
@@ -40,7 +61,7 @@ void OpenGLProgram::unuse() {
 // Uniform Location 缓存查询
 // ============================================================================
 
-GLint OpenGLProgram::getUniformLocation(const char* name) {
+GLint OpenGLShaderProgram::getUniformLocation(const char* name) {
     auto it = mUniformLocationCache.find(name);
     if (it != mUniformLocationCache.end()) {
         return it->second;
@@ -48,13 +69,13 @@ GLint OpenGLProgram::getUniformLocation(const char* name) {
 
     GLint location = glGetUniformLocation(mGLProgramId, name);
     if (location == -1) {
-        spdlog::warn("[OpenGLProgram] Uniform '{}' not found in program {}", name, mGLProgramId);
+        spdlog::warn("[OpenGLShaderProgram] Uniform '{}' not found in program {}", name, mGLProgramId);
     }
     mUniformLocationCache[name] = location;
     return location;
 }
 
-void OpenGLProgram::invalidateUniformCache() {
+void OpenGLShaderProgram::invalidateUniformCache() {
     mUniformLocationCache.clear();
 }
 
@@ -62,42 +83,42 @@ void OpenGLProgram::invalidateUniformCache() {
 // Uniform 设置
 // ============================================================================
 
-void OpenGLProgram::setUniform(const char* name, float value) {
+void OpenGLShaderProgram::setUniform(const char* name, float value) {
     GLint loc = getUniformLocation(name);
     if (loc != -1) glUniform1f(loc, value);
 }
 
-void OpenGLProgram::setUniform(const char* name, int value) {
+void OpenGLShaderProgram::setUniform(const char* name, int value) {
     GLint loc = getUniformLocation(name);
     if (loc != -1) glUniform1i(loc, value);
 }
 
-void OpenGLProgram::setUniform(const char* name, const glm::vec2& value) {
+void OpenGLShaderProgram::setUniform(const char* name, const glm::vec2& value) {
     GLint loc = getUniformLocation(name);
     if (loc != -1) glUniform2f(loc, value.x, value.y);
 }
 
-void OpenGLProgram::setUniform(const char* name, const glm::vec3& value) {
+void OpenGLShaderProgram::setUniform(const char* name, const glm::vec3& value) {
     GLint loc = getUniformLocation(name);
     if (loc != -1) glUniform3f(loc, value.x, value.y, value.z);
 }
 
-void OpenGLProgram::setUniform(const char* name, const glm::vec4& value) {
+void OpenGLShaderProgram::setUniform(const char* name, const glm::vec4& value) {
     GLint loc = getUniformLocation(name);
     if (loc != -1) glUniform4f(loc, value.x, value.y, value.z, value.w);
 }
 
-void OpenGLProgram::setUniform(const char* name, const glm::ivec4& value) {
+void OpenGLShaderProgram::setUniform(const char* name, const glm::ivec4& value) {
     GLint loc = getUniformLocation(name);
     if (loc != -1) glUniform4i(loc, value.x, value.y, value.z, value.w);
 }
 
-void OpenGLProgram::setUniform(const char* name, const glm::mat3& value) {
+void OpenGLShaderProgram::setUniform(const char* name, const glm::mat3& value) {
     GLint loc = getUniformLocation(name);
     if (loc != -1) glUniformMatrix3fv(loc, 1, GL_FALSE, glm::value_ptr(value));
 }
 
-void OpenGLProgram::setUniform(const char* name, const glm::mat4& value) {
+void OpenGLShaderProgram::setUniform(const char* name, const glm::mat4& value) {
     GLint loc = getUniformLocation(name);
     if (loc != -1) glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(value));
 }

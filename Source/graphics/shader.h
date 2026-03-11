@@ -1,28 +1,21 @@
 #pragma once
 
-#include "rhi/include/RHIHandle.h"
-#include "rhi/opengl/OpenGLProgram.h"
+#include "rhi/include/RHIShaderProgram.h"
 
 #include <glm/glm.hpp>
-#include <string>
 #include <memory>
+#include <string>
 
 namespace engine {
-namespace rhi {
-    class OpenGLDevice;
-    class ShaderCompilerService;
-}
 
 	class Shader {
 	private:
-		rhi::ProgramHandle m_ProgramHandle;
-		std::unique_ptr<rhi::OpenGLProgram> m_Program;
+		std::unique_ptr<rhi::RHIShaderProgram> m_Program;
 		std::string m_ShaderFilePath;
 
 	public:
-		// 通过 ShaderCompilerService 编译并创建
-		Shader(const std::string& path, rhi::ShaderCompilerService& compiler,
-		       rhi::OpenGLDevice& device);
+		// 接管一个已编译的 RHIShaderProgram
+		Shader(const std::string& path, std::unique_ptr<rhi::RHIShaderProgram> program);
 		~Shader();
 
 		void enable() const;
@@ -48,10 +41,9 @@ namespace rhi {
 		inline void setUniform(const std::string& name, const glm::mat3& matrix) { setUniform(name.c_str(), matrix); }
 
 		// 获取 RHI ProgramHandle
-		inline rhi::ProgramHandle getProgramHandle() const { return m_ProgramHandle; }
-
-	private:
-		rhi::OpenGLDevice* m_Device = nullptr;
+		inline rhi::ProgramHandle getProgramHandle() const {
+			return m_Program ? m_Program->getProgramHandle() : rhi::ProgramHandle();
+		}
 	};
 
 }

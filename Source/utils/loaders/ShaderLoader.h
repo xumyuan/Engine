@@ -1,11 +1,11 @@
 #pragma once
 
 #include <graphics/Shader.h>
+#include <memory>
 
 namespace engine {
 namespace rhi {
-	class OpenGLDevice;
-	class ShaderCompilerService;
+	class RHIShaderCompiler;
 }
 
 	class ShaderLoader {
@@ -14,16 +14,15 @@ namespace rhi {
 
 		inline static void setShaderFilePath(const std::string& path) { s_ShaderFilePath = path; }
 
-		// 初始化 ShaderLoader，设置 RHI 设备和编译器服务
-		static void initialize(rhi::OpenGLDevice& device, rhi::ShaderCompilerService& compiler);
+		// 初始化 ShaderLoader，设置着色器编译器
+		static void initialize(std::unique_ptr<rhi::RHIShaderCompiler> compiler);
 
 	private:
 		static std::string s_ShaderFilePath;
 		static std::unordered_map<std::size_t, Shader*> s_ShaderCache;
 		static std::hash<std::string> s_Hasher;
 
-		static rhi::OpenGLDevice* s_Device;
-		static rhi::ShaderCompilerService* s_Compiler;
+		static std::unique_ptr<rhi::RHIShaderCompiler> s_Compiler;
 	};
 
 }

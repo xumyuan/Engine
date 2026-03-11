@@ -1,32 +1,18 @@
 #include "pch.h"
 #include "Shader.h"
-#include "rhi/opengl/OpenGLDevice.h"
-#include "rhi/opengl/ShaderCompilerService.h"
-#include "rhi/opengl/OpenGLProgram.h"
 
 namespace engine {
 
-	Shader::Shader(const std::string& path, rhi::ShaderCompilerService& compiler,
-	               rhi::OpenGLDevice& device)
-		: m_ShaderFilePath(path), m_Device(&device) {
+	Shader::Shader(const std::string& path, std::unique_ptr<rhi::RHIShaderProgram> program)
+		: m_ShaderFilePath(path), m_Program(std::move(program)) {
 
-		// 通过 ShaderCompilerService 编译着色器
-		m_ProgramHandle = compiler.loadAndCompile(m_ShaderFilePath);
-
-		if (static_cast<bool>(m_ProgramHandle)) {
-			// 从 OpenGLDevice 获取 GL program ID，构造 OpenGLProgram
-			GLuint glId = device.getGLProgramId(m_ProgramHandle);
-			m_Program = std::make_unique<rhi::OpenGLProgram>(glId);
-		} else {
-			spdlog::error("Failed to compile shader: {}", m_ShaderFilePath);
+		if (!m_Program) {
+			spdlog::error("Failed to create shader program: {}", m_ShaderFilePath);
 		}
 	}
 
 	Shader::~Shader() {
-		m_Program.reset();
-		if (m_Device && static_cast<bool>(m_ProgramHandle)) {
-			m_Device->destroyProgram(m_ProgramHandle);
-		}
+		// unique_ptr 自动析构 RHIShaderProgram
 	}
 
 	void Shader::enable() const {
@@ -36,7 +22,9 @@ namespace engine {
 	}
 
 	void Shader::disable() const {
-		rhi::OpenGLProgram::unuse();
+		if (m_Program) {
+			m_Program->unuse();
+		}
 	}
 
 	void Shader::setUniform(const char* name, float value) {

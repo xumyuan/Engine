@@ -1,5 +1,8 @@
 #include "OpenGLDevice.h"
+#include "OpenGLShaderCompiler.h"
+#include "utils/FileUtils.h"
 #include <GL/glew.h>
+#include <glm/gtc/type_ptr.hpp>
 #include <cassert>
 #include <spdlog/spdlog.h>
 
@@ -1107,6 +1110,14 @@ uint32_t OpenGLDevice::getGLBufferId(BufferHandle h) const {
 uint32_t OpenGLDevice::getGLProgramId(ProgramHandle h) const {
     auto it = mPrograms.find(h.getId());
     return it != mPrograms.end() ? it->second.glId : 0;
+}
+
+// ============================================================================
+// Shader 工厂
+// ============================================================================
+
+std::unique_ptr<RHIShaderCompiler> OpenGLDevice::createShaderCompiler() {
+    return std::make_unique<OpenGLShaderCompiler>(*this);
 }
 
 } // namespace rhi

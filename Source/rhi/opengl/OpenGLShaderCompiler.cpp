@@ -1,14 +1,14 @@
-#include "ShaderCompilerService.h"
+#include "OpenGLShaderCompiler.h"
 #include "OpenGLDevice.h"
+#include "OpenGLShaderProgram.h"
 #include "utils/FileUtils.h"
 
-#include <GL/glew.h>
 #include <spdlog/spdlog.h>
 
 namespace engine {
 namespace rhi {
 
-ShaderCompilerService::ShaderCompilerService(OpenGLDevice& device)
+OpenGLShaderCompiler::OpenGLShaderCompiler(OpenGLDevice& device)
     : mDevice(device) {
 }
 
@@ -16,15 +16,15 @@ ShaderCompilerService::ShaderCompilerService(OpenGLDevice& device)
 // 字符串 → ShaderStage
 // ============================================================================
 
-ShaderStage ShaderCompilerService::shaderStageFromString(const std::string& type) {
-    if (type == "vertex")   return ShaderStage::Vertex;
+ShaderStage OpenGLShaderCompiler::shaderStageFromString(const std::string& type) {
+    if (type == "vertex")    return ShaderStage::Vertex;
     if (type == "fragment")  return ShaderStage::Fragment;
     if (type == "geometry")  return ShaderStage::Geometry;
     if (type == "hull")      return ShaderStage::TessControl;
     if (type == "domain")    return ShaderStage::TessEvaluation;
     if (type == "compute")   return ShaderStage::Compute;
 
-    spdlog::error("[ShaderCompiler] Unknown shader type: '{}'", type);
+    spdlog::error("[OpenGLShaderCompiler] Unknown shader type: '{}'", type);
     return ShaderStage::Vertex; // fallback
 }
 
@@ -33,7 +33,7 @@ ShaderStage ShaderCompilerService::shaderStageFromString(const std::string& type
 // ============================================================================
 
 std::unordered_map<ShaderStage, std::string>
-ShaderCompilerService::preprocessShaderSource(const std::string& source) {
+OpenGLShaderCompiler::preprocessShaderSource(const std::string& source) {
     std::unordered_map<ShaderStage, std::string> shaderSources;
 
     const char* shaderTypeToken = "#shader-type";
@@ -70,17 +70,17 @@ ShaderCompilerService::preprocessShaderSource(const std::string& source) {
 // 从文件加载并编译
 // ============================================================================
 
-ProgramHandle ShaderCompilerService::loadAndCompile(const std::string& filePath) {
+std::unique_ptr<RHIShaderProgram> OpenGLShaderCompiler::loadAndCompile(const std::string& filePath) {
     std::string source = FileUtils::readFile(filePath);
     if (source.empty()) {
-        spdlog::error("[ShaderCompiler] Failed to read shader file: {}", filePath);
-        return ProgramHandle();
+        spdlog::error("[OpenGLShaderCompiler] Failed to read shader file: {}", filePath);
+        return nullptr;
     }
 
     auto shaderSources = preprocessShaderSource(source);
     if (shaderSources.empty()) {
-        spdlog::error("[ShaderCompiler] No shader stages found in: {}", filePath);
-        return ProgramHandle();
+        spdlog::error("[OpenGLShaderCompiler] No shader stages found in: {}", filePath);
+        return nullptr;
     }
 
     return compileFromSources(filePath, shaderSources);
@@ -90,7 +90,7 @@ ProgramHandle ShaderCompilerService::loadAndCompile(const std::string& filePath)
 // 从已拆分的源码编译
 // ============================================================================
 
-ProgramHandle ShaderCompilerService::compileFromSources(
+std::unique_ptr<RHIShaderProgram> OpenGLShaderCompiler::compileFromSources(
         const std::string& name,
         const std::unordered_map<ShaderStage, std::string>& shaderSources) {
 
@@ -110,19 +110,22 @@ ProgramHandle ShaderCompilerService::compileFromSources(
     }
 
     if (desc.shaders.empty()) {
-        spdlog::error("[ShaderCompiler] No valid shader sources for: {}", name);
-        return ProgramHandle();
+        spdlog::error("[OpenGLShaderCompiler] No valid shader sources for: {}", name);
+        return nullptr;
     }
 
     ProgramHandle handle = mDevice.createProgram(desc);
     if (!static_cast<bool>(handle)) {
-        spdlog::error("[ShaderCompiler] Failed to compile/link program: {}", name);
-    } else {
-        spdlog::info("[ShaderCompiler] Program '{}' compiled successfully (handle={})",
-                     name, handle.getId());
+        spdlog::error("[OpenGLShaderCompiler] Failed to compile/link program: {}", name);
+        return nullptr;
     }
 
-    return handle;
+    spdlog::info("[OpenGLShaderCompiler] Program '{}' compiled successfully (handle={})",
+                 name, handle.getId());
+
+    // 获取 GL program ID 并创建 OpenGLShaderProgram
+    GLuint glProgramId = mDevice.getGLProgramId(handle);
+    return std::make_unique<OpenGLShaderProgram>(handle, glProgramId, mDevice);
 }
 
 } // namespace rhi

@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "ShaderLoader.h"
-#include "rhi/opengl/OpenGLDevice.h"
-#include "rhi/opengl/ShaderCompilerService.h"
+#include "rhi/include/RHIShaderCompiler.h"
 
 namespace engine {
 
@@ -9,12 +8,10 @@ namespace engine {
 	std::unordered_map<std::size_t, Shader*> ShaderLoader::s_ShaderCache;
 	std::hash<std::string> ShaderLoader::s_Hasher;
 	std::string ShaderLoader::s_ShaderFilePath;
-	rhi::OpenGLDevice* ShaderLoader::s_Device = nullptr;
-	rhi::ShaderCompilerService* ShaderLoader::s_Compiler = nullptr;
+	std::unique_ptr<rhi::RHIShaderCompiler> ShaderLoader::s_Compiler = nullptr;
 
-	void ShaderLoader::initialize(rhi::OpenGLDevice& device, rhi::ShaderCompilerService& compiler) {
-		s_Device = &device;
-		s_Compiler = &compiler;
+	void ShaderLoader::initialize(std::unique_ptr<rhi::RHIShaderCompiler> compiler) {
+		s_Compiler = std::move(compiler);
 	}
 
 	Shader* ShaderLoader::loadShader(const std::string& path) {
@@ -27,9 +24,10 @@ namespace engine {
 			return iter->second;
 		}
 
-		// Load the shader via RHI path
-		assert(s_Device && s_Compiler && "ShaderLoader::initialize() must be called before loadShader()");
-		Shader* shader = new Shader(shaderPath, *s_Compiler, *s_Device);
+		// Compile shader via RHI ShaderCompiler
+		assert(s_Compiler && "ShaderLoader::initialize() must be called before loadShader()");
+		auto program = s_Compiler->loadAndCompile(shaderPath);
+		Shader* shader = new Shader(shaderPath, std::move(program));
 
 		s_ShaderCache.insert(std::pair<std::size_t, Shader*>(hash, shader));
 		return s_ShaderCache[hash];

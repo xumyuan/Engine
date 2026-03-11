@@ -1,4 +1,6 @@
 #include "rhi/null/NullDevice.h"
+#include "rhi/include/RHIShaderCompiler.h"
+#include "rhi/include/RHIShaderProgram.h"
 #include <cassert>
 #include <iostream>
 
@@ -26,6 +28,16 @@ void testNullDevice() {
     // Handle id 应该各不相同
     assert(tex.getId() != buf.getId());
     assert(buf.getId() != prog.getId());
+
+    // ShaderCompiler 测试
+    auto compiler = device.createShaderCompiler();
+    assert(compiler != nullptr);
+    auto shaderProg = compiler->loadAndCompile("test.glsl");
+    assert(shaderProg != nullptr);
+    assert(static_cast<bool>(shaderProg->getProgramHandle()));
+    shaderProg->use();
+    shaderProg->setUniform("test", 1.0f);
+    shaderProg->unuse();
 
     // 渲染流程走通（不崩即通过）
     SwapChainHandle sc = device.createSwapChain(nullptr, 800, 600);

@@ -1,6 +1,7 @@
 #pragma once
 #include "rhi/include/RHIDevice.h"
 #include <unordered_map>
+#include <string>
 
 namespace engine {
 namespace rhi {
@@ -86,6 +87,9 @@ public:
             const void* data, uint32_t dataSize) override;
     void updateTextureSampler(TextureHandle handle,
             const TextureDesc& desc) override;
+
+    // ---------- Shader 工厂 ----------
+    std::unique_ptr<RHIShaderCompiler> createShaderCompiler() override;
 
     // ---------- 渲染命令 ----------
     void beginFrame(SwapChainHandle swapChain) override;
