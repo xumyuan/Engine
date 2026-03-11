@@ -12,13 +12,36 @@ out vec2 TexCoords;
 out vec3 FragPosTangentSpace;
 out vec3 ViewPosTangentSpace;
 
-uniform bool hasDisplacement;
-uniform vec3 viewPos;
+layout (std140, binding = 0) uniform PerFrame {
+	mat4 view;
+	mat4 projection;
+	mat4 viewInverse;
+	mat4 projectionInverse;
+	vec4 viewPos;
+	vec2 screenSize;
+	vec2 texelSize;
+};
 
-uniform mat3 normalMatrix;
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
+layout (std140, binding = 1) uniform PerObject {
+	mat4 model;
+	mat3 normalMatrix;  // std140: 3 x vec4
+};
+
+layout (std140, binding = 3) uniform MaterialParams {
+	vec4 albedoColour;
+	vec4 emissionColour;             // xyz = emission, w = emissionIntensity
+	float metallicValue;
+	float roughnessValue;
+	float parallaxStrength;
+	float tilingAmount;
+	int hasAlbedoTexture;
+	int hasMetallicTexture;
+	int hasRoughnessTexture;
+	int hasEmissionTexture;
+	int hasDisplacement;
+	int hasEmission;
+	vec2 minMaxDisplacementSteps;
+};
 
 void main() {
 	// Use the normal matrix to maintain the orthogonal property of a vector when it is scaled non-uniformly
@@ -29,10 +52,10 @@ void main() {
 
 	TexCoords = texCoords;
 	vec3 fragPos = vec3(model * vec4(position, 1.0f));
-	if (hasDisplacement) {
+	if (hasDisplacement != 0) {
 		mat3 inverseTBN = transpose(TBN); // Calculate matrix to go from world -> tangent (orthogonal matrix's transpose = inverse)
 		FragPosTangentSpace = inverseTBN * fragPos;
-		ViewPosTangentSpace = inverseTBN * viewPos;
+		ViewPosTangentSpace = inverseTBN * viewPos.xyz;
 	}
 
 	gl_Position = projection * view * vec4(fragPos, 1.0);
@@ -48,33 +71,35 @@ layout (location = 0) out vec4 gb_Albedo;
 layout (location = 1) out vec3 gb_Normal;
 layout (location = 2) out vec4 gb_MaterialInfo;
 
-struct Material {
-	sampler2D texture_albedo;
-	sampler2D texture_normal;
-	sampler2D texture_metallic;
-	sampler2D texture_roughness;
-	sampler2D texture_ao;
-	sampler2D texture_displacement;
-	sampler2D texture_emission;
-
-	vec4 albedoColour;
-	float metallicValue, roughnessValue; // Used if textures aren't provided
-
-	vec3 emissionColour;
-	float emissionIntensity;
-	bool hasAlbedoTexture, hasMetallicTexture, hasRoughnessTexture, hasEmissionTexture;
-};
-
 in mat3 TBN;
 in vec2 TexCoords;
 in vec3 FragPosTangentSpace;
 in vec3 ViewPosTangentSpace;
 
-uniform bool hasDisplacement;
-uniform vec2 minMaxDisplacementSteps;
-uniform float parallaxStrength;
-uniform bool hasEmission;
-uniform Material material;
+layout (std140, binding = 3) uniform MaterialParams {
+	vec4 albedoColour;
+	vec4 emissionColour;             // xyz = emission, w = emissionIntensity
+	float metallicValue;
+	float roughnessValue;
+	float parallaxStrength;
+	float tilingAmount;
+	int hasAlbedoTexture;
+	int hasMetallicTexture;
+	int hasRoughnessTexture;
+	int hasEmissionTexture;
+	int hasDisplacement;
+	int hasEmission;
+	vec2 minMaxDisplacementSteps;
+};
+
+// Texture samplers remain as individual uniforms
+uniform sampler2D texture_albedo;
+uniform sampler2D texture_normal;
+uniform sampler2D texture_metallic;
+uniform sampler2D texture_roughness;
+uniform sampler2D texture_ao;
+uniform sampler2D texture_displacement;
+uniform sampler2D texture_emission;
 
 // Functions
 vec3 UnpackNormal(vec3 textureNormal);
@@ -83,19 +108,19 @@ vec2 ParallaxMapping(vec2 texCoords, vec3 viewDirTangentSpace);
 void main() {
 	// Parallax mapping
 	vec2 textureCoordinates = TexCoords;
-	if (hasDisplacement) {
+	if (hasDisplacement != 0) {
 		vec3 viewDirTangentSpace = normalize(ViewPosTangentSpace - FragPosTangentSpace);
 		textureCoordinates = ParallaxMapping(TexCoords, viewDirTangentSpace);
 	}
 
 	// Sample textures and build up the GBuffer
-	vec4 albedo = material.hasAlbedoTexture ? texture(material.texture_albedo, textureCoordinates).rgba * material.albedoColour : material.albedoColour;
+	vec4 albedo = (hasAlbedoTexture != 0) ? texture(texture_albedo, textureCoordinates).rgba * albedoColour : albedoColour;
 
 	// If we have emission, hijack the albedo and replace it with the emission colour. Then since we want HDR values and albedo RT is LDR, we can store the emission intensity in the alpha of the gb_MaterialInfo RT
 	bool overwriteAlbedoWithEmission = false;
-	if (hasEmission) {
-		if (material.hasEmissionTexture) {
-			vec3 emissiveSample = texture(material.texture_emission, textureCoordinates).rgb;
+	if (hasEmission != 0) {
+		if (hasEmissionTexture != 0) {
+			vec3 emissiveSample = texture(texture_emission, textureCoordinates).rgb;
 
 			// Check emission map sample, if it is black (ie. no emission) then we just skip emission for this fragment, otherwise hijack the albedo RT
 			if (!all(equal(emissiveSample, vec3(0.0)))) {
@@ -104,16 +129,16 @@ void main() {
 			}
 		}
 		else {
-			albedo = vec4(material.emissionColour, 1.0);
+			albedo = vec4(emissionColour.xyz, 1.0);
 			overwriteAlbedoWithEmission = true;
 		}
 	}
 
-	vec3 normal = texture(material.texture_normal, textureCoordinates).rgb;
-	float metallic = material.hasMetallicTexture ? texture(material.texture_metallic, textureCoordinates).r : material.metallicValue;
-	float roughness = material.hasRoughnessTexture ? texture(material.texture_roughness, textureCoordinates).r : material.roughnessValue;
-	float ao = texture(material.texture_ao, textureCoordinates).r;
-	float emissionIntensity = overwriteAlbedoWithEmission ? material.emissionIntensity / 255.0 : 0.0; // Converting u8 [0, 255] -> float [0.0, 1.0]
+	vec3 normal = texture(texture_normal, textureCoordinates).rgb;
+	float metallic = (hasMetallicTexture != 0) ? texture(texture_metallic, textureCoordinates).r : metallicValue;
+	float roughness = (hasRoughnessTexture != 0) ? texture(texture_roughness, textureCoordinates).r : roughnessValue;
+	float ao = texture(texture_ao, textureCoordinates).r;
+	float emissionIntensity = overwriteAlbedoWithEmission ? emissionColour.w / 255.0 : 0.0; // Converting u8 [0, 255] -> float [0.0, 1.0]
 
 	// Normal mapping code. Opted out of tangent space normal mapping since I would have to convert all of my lights to tangent space
 	normal = normalize(TBN * UnpackNormal(normal));
@@ -130,7 +155,7 @@ vec3 UnpackNormal(vec3 textureNormal) {
 
 vec2 ParallaxMapping(vec2 texCoords, vec3 viewDirTangentSpace) {
 	// Figure out the LoD we should sample from while raymarching the heightfield in tangent space. Required to fix an artifacting issue
-	vec2 lodInfo = textureQueryLod(material.texture_displacement, texCoords);
+	vec2 lodInfo = textureQueryLod(texture_displacement, texCoords);
 	float lodToSample = lodInfo.x;
 	float expectedLod = lodInfo.y; // Even if mip mapping isn't enabled this will still give us a mip level
 
@@ -147,19 +172,19 @@ vec2 ParallaxMapping(vec2 texCoords, vec3 viewDirTangentSpace) {
 
 	// Get the initial values
 	vec2 currentTexCoords = texCoords;
-	float currentSampledDepth = textureLod(material.texture_displacement, currentTexCoords, lodToSample).r;
+	float currentSampledDepth = textureLod(texture_displacement, currentTexCoords, lodToSample).r;
 
 	// Keep ray marching along vector p by the texture coordinate delta, until the raymarching depth catches up to the sampled depth (ie the -view vector intersects the surface)
 	while (currentLayerDepth < currentSampledDepth) {
 		currentTexCoords -= deltaTexCoords;
-		currentSampledDepth = textureLod(material.texture_displacement, currentTexCoords, lodToSample).r;
+		currentSampledDepth = textureLod(texture_displacement, currentTexCoords, lodToSample).r;
 		currentLayerDepth += layerDepth;
 	}
 
 	// Now we need to get the previous step and the current step, and interpolate between the two texture coordinates
 	vec2 prevTexCoords = currentTexCoords + deltaTexCoords;
 	float afterDepth = currentSampledDepth - currentLayerDepth;
-	float beforeDepth = textureLod(material.texture_displacement, prevTexCoords, lodToSample).r - currentLayerDepth + layerDepth;
+	float beforeDepth = textureLod(texture_displacement, prevTexCoords, lodToSample).r - currentLayerDepth + layerDepth;
 	float weight = afterDepth / (afterDepth - beforeDepth);
 	vec2 finalTexCoords = mix(currentTexCoords, prevTexCoords, weight);
 

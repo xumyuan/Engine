@@ -1,6 +1,7 @@
 #pragma once
 #include "graphics/Shader.h"
 #include "graphics/texture/Texture.h"
+#include "graphics/UniformBufferData.h"
 #include "utils/loaders/TextureLoader.h"
 #include "utils/json/JsonType.h"
 
@@ -11,7 +12,12 @@ namespace engine {
 		Material(Texture* albedoMap = nullptr, Texture* normalMap = nullptr, Texture* metallicMap = nullptr, Texture* roughnessMap = nullptr,
 			Texture* ambientOcclusionMap = nullptr, Texture* emissionMap = nullptr);
 
+		// 旧接口（per-uniform），保留兼容
 		void BindMaterialInformation(Shader* shader) const;
+		
+		// UBO 接口：填充 UBOMaterialParams 并绑定纹理，sampler uniform 仍通过 shader 设置
+		void fillMaterialUBO(UBOMaterialParams& params) const;
+		void bindMaterialTextures(Shader* shader) const;
 
 		void processMaterial(const SceneInfo::ModelInfo& modelinfo);
 

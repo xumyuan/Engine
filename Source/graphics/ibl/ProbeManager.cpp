@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "ProbeManager.h"
+#include "graphics/UniformBufferManager.h"
 
 namespace engine {
 
@@ -48,8 +49,8 @@ namespace engine {
 				m_ReflectionProbes[0]->bind(shader);
 			}
 			else {
-				// Fallback to skybox
-				shader->setUniform("reflectionProbeMipCount", REFLECTION_PROBE_MIP_COUNT);
+				// Fallback to skybox — reflectionProbeMipCount 通过 IBLParams UBO 传递
+				// （调用方会在之后通过 updateIBLParams 设置完整的 IBLParams）
 				m_Skybox->getSkyboxCubemap()->bind(2);
 				shader->setUniform("prefilterMap", 2);
 				ReflectionProbe::getBRDFLUT()->bind(3);
@@ -62,8 +63,7 @@ namespace engine {
 			m_Skybox->getSkyboxCubemap()->bind(1);
 			shader->setUniform("irradianceMap", 1);
 
-			// Reflection Probes
-			shader->setUniform("reflectionProbeMipCount", REFLECTION_PROBE_MIP_COUNT);
+			// Reflection Probes — reflectionProbeMipCount 通过 IBLParams UBO 传递
 			m_Skybox->getSkyboxCubemap()->bind(2);
 			shader->setUniform("prefilterMap", 2);
 			ReflectionProbe::getBRDFLUT()->bind(3);

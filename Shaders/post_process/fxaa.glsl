@@ -26,7 +26,11 @@ out vec4 FragColour;
 
 uniform sampler2D input_texture;
 
-uniform vec2 texel_size;
+layout (std140, binding = 4) uniform PostProcessParams {
+	float gamma_inverse;
+	float exposure;
+	vec2 texel_size;
+};
 
 void main() {
 	// 采样当前及周围四个点的像素值，并计算亮度值

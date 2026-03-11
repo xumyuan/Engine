@@ -3,6 +3,7 @@
 
 #include <gl/glew.h>
 #include <ui/RuntimePane.h>
+#include "rhi/include/RHIContext.h"
 
 namespace engine
 {
@@ -16,6 +17,14 @@ namespace engine
 		m_DeferredLightingPass(scene),
 		m_SSAOPass(scene)
 	{
+		// 初始化 UBO 管理器
+		m_UBOManager.initialize(getRHIDevice());
+		setUBOManager(&m_UBOManager);
+	}
+
+	MasterRenderer::~MasterRenderer() {
+		setUBOManager(nullptr);
+		m_UBOManager.shutdown();
 	}
 
 	void MasterRenderer::init() {

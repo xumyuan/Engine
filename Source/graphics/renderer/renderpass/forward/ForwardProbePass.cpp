@@ -5,6 +5,7 @@
 #include <graphics/ibl/ProbeManager.h>
 #include <graphics/renderer/renderpass/forward/ForwardLightingPass.h>
 #include <graphics/renderer/renderpass/ShadowmapPass.h>
+#include <graphics/UniformBufferManager.h>
 #include <utils/loaders/ShaderLoader.h>
 
 namespace engine {
@@ -153,9 +154,14 @@ namespace engine {
 		convPipeline.depthTest = false;
 		bindPipelineState(convPipeline);
 
-		m_ConvolutionShader->setUniform("projection", m_CubemapCamera.getProjectionMatrix());
 		m_SceneCaptureCubemap.bind(0);
 		m_ConvolutionShader->setUniform("sceneCaptureCubemap", 0);
+
+		// PerFrame UBO 更新 projection
+		if (auto* uboMgr = getUBOManager()) {
+			uboMgr->updatePerFrame(glm::mat4(1.0f), m_CubemapCamera.getProjectionMatrix(), glm::vec3(0.0f));
+			uboMgr->bindPerFrame();
+		}
 
 		rhi::RenderPassParams convParams;
 		convParams.viewport = { 0, 0, m_LightProbeConvolutionRT.getWidth(), m_LightProbeConvolutionRT.getHeight() };
@@ -169,7 +175,11 @@ namespace engine {
 			BEGIN_EVENT("Convolution");
 			for (int i = 0; i < 6; i++) {
 				m_CubemapCamera.switchCameraToFace(i);
-				m_ConvolutionShader->setUniform("view", m_CubemapCamera.getViewMatrix());
+				// 通过 PerFrame UBO 更新 view
+				if (auto* uboMgr = getUBOManager()) {
+					uboMgr->updatePerFrame(m_CubemapCamera.getViewMatrix(), m_CubemapCamera.getProjectionMatrix(), glm::vec3(0.0f));
+					uboMgr->bindPerFrame();
+				}
 
 				device->setRenderTargetColorAttachment(m_LightProbeConvolutionRT.getHandle(), 0,
 					lightProbe->getIrradianceMap()->getRHIHandle(), 0, static_cast<uint8_t>(i));
@@ -231,9 +241,14 @@ namespace engine {
 		samplePipeline.depthTest = false;
 		bindPipelineState(samplePipeline);
 
-		m_ImportanceSamplingShader->setUniform("projection", m_CubemapCamera.getProjectionMatrix());
 		m_SceneCaptureCubemap.bind(0);
 		m_ImportanceSamplingShader->setUniform("sceneCaptureCubemap", 0);
+
+		// PerFrame UBO 更新
+		if (auto* uboMgr = getUBOManager()) {
+			uboMgr->updatePerFrame(glm::mat4(1.0f), m_CubemapCamera.getProjectionMatrix(), glm::vec3(0.0f));
+			uboMgr->bindPerFrame();
+		}
 
 		rhi::RenderPassParams sampleParams;
 		sampleParams.clearColorFlag = false;
@@ -251,10 +266,20 @@ namespace engine {
 				device->setViewport(0, 0, mipWidth, mipHeight);
 
 				float mipRoughnessLevel = (float)mip / (float)(REFLECTION_PROBE_MIP_COUNT - 1);
-				m_ImportanceSamplingShader->setUniform("roughness", mipRoughnessLevel);
+				// ProbeParams UBO
+				if (auto* uboMgr = getUBOManager()) {
+					UBOProbeParams probeParams{};
+					probeParams.roughness = mipRoughnessLevel;
+					uboMgr->updateProbeParams(probeParams);
+					uboMgr->bindCustom(sizeof(UBOProbeParams));
+				}
 				for (int i = 0; i < 6; i++) {
 					m_CubemapCamera.switchCameraToFace(i);
-					m_ImportanceSamplingShader->setUniform("view", m_CubemapCamera.getViewMatrix());
+					// 通过 PerFrame UBO 更新 view
+					if (auto* uboMgr = getUBOManager()) {
+						uboMgr->updatePerFrame(m_CubemapCamera.getViewMatrix(), m_CubemapCamera.getProjectionMatrix(), glm::vec3(0.0f));
+						uboMgr->bindPerFrame();
+					}
 					device->setRenderTargetColorAttachment(m_ReflectionProbeSamplingRT.getHandle(), 0,
 						reflectionProbe->getPrefilterMap()->getRHIHandle(),
 						static_cast<uint8_t>(mip), static_cast<uint8_t>(i));

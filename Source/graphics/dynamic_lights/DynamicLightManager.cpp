@@ -56,4 +56,39 @@ namespace engine {
 		pointLight.isActive = true;
 		m_PointLights.push_back(pointLight);
 	}
+
+	void DynamicLightManager::fillLightingUBO(UBOLighting& ubo) {
+		// 清零
+		memset(&ubo, 0, sizeof(UBOLighting));
+
+		int numDir = 0, numPoint = 0, numSpot = 0;
+
+		// 方向光
+		if (m_DirectionalLight.isActive && numDir < MAX_DIR_LIGHTS) {
+			ubo.dirLights[numDir].direction = glm::vec4(m_DirectionalLight.direction, m_DirectionalLight.intensity);
+			ubo.dirLights[numDir].lightColour = glm::vec4(m_DirectionalLight.lightColor, 0.0f);
+			numDir++;
+		}
+
+		// 点光源
+		for (size_t i = 0; i < m_PointLights.size() && numPoint < MAX_POINT_LIGHTS; ++i) {
+			auto& pl = m_PointLights[i];
+			if (pl.isActive) {
+				ubo.pointLights[numPoint].position = glm::vec4(pl.position, pl.intensity);
+				ubo.pointLights[numPoint].lightColour = glm::vec4(pl.lightColor, pl.attenuationRadius);
+				numPoint++;
+			}
+		}
+
+		// 聚光灯
+		if (m_SpotLight.isActive && numSpot < MAX_SPOT_LIGHTS) {
+			ubo.spotLights[numSpot].position = glm::vec4(m_SpotLight.position, m_SpotLight.intensity);
+			ubo.spotLights[numSpot].direction = glm::vec4(m_SpotLight.direction, m_SpotLight.attenuationRadius);
+			ubo.spotLights[numSpot].lightColour = glm::vec4(m_SpotLight.lightColor, m_SpotLight.cutOff);
+			ubo.spotLights[numSpot].params = glm::vec4(m_SpotLight.outerCutOff, 0.0f, 0.0f, 0.0f);
+			numSpot++;
+		}
+
+		ubo.numDirPointSpotLights = glm::ivec4(numDir, numPoint, numSpot, 0);
+	}
 }

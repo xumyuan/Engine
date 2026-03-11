@@ -6,6 +6,7 @@
 #include <graphics/texture/Cubemap.h>
 #include <graphics/camera/ICamera.h>
 #include <graphics/renderer/renderpass/deferred/DeferredGeometryPass.h>
+#include <graphics/UniformBufferManager.h>
 #include <scene/Scene3D.h>
 #include <utils/loaders/ShaderLoader.h>
 
@@ -70,10 +71,17 @@ namespace engine
 		pipeline.stencilBack = stencilReadOnly;
 		bindPipelineState(pipeline);
 
-		lightManager->setupLightingUniforms(m_LightingShader);
-		m_LightingShader->setUniform("viewPos", camera->getPosition());
-		m_LightingShader->setUniform("viewInverse", glm::inverse(camera->getViewMatrix()));
-		m_LightingShader->setUniform("projectionInverse", glm::inverse(camera->getProjectionMatrix()));
+		// UBO 方式：PerFrame + Lighting
+		if (auto* uboMgr = getUBOManager()) {
+			uboMgr->updatePerFrame(camera->getViewMatrix(), camera->getProjectionMatrix(),
+				camera->getPosition());
+			uboMgr->bindPerFrame();
+
+			auto& lightingUBO = uboMgr->getLightingData();
+			lightManager->fillLightingUBO(lightingUBO);
+			uboMgr->updateLighting();
+			uboMgr->bindLighting();
+		}
 
 		// Bind GBuffer data
 		inputGbuffer.albedoTexture->bind(6);
@@ -86,13 +94,15 @@ namespace engine
 		m_LightingShader->setUniform("materialInfoTexture", 8);
 
 		// Bind SSAO texture
+		UBOIBLParams iblParams{};
+		iblParams.reflectionProbeMipCount = REFLECTION_PROBE_MIP_COUNT;
 		if (preLightingOutput.ssaoTexture != nullptr) {
 			preLightingOutput.ssaoTexture->bind(9);
 			m_LightingShader->setUniform("ssaoTexture", 9);
-			m_LightingShader->setUniform("useSSAO", 1);
+			iblParams.useSSAO = 1;
 		}
 		else {
-			m_LightingShader->setUniform("useSSAO", 0);
+			iblParams.useSSAO = 0;
 		}
 
 		inputGbuffer.depthStencilTexture->bind(10);
@@ -110,7 +120,11 @@ namespace engine
 		m_LightingShader->setUniform("pointLightShadowCubemap", 1); 
 
 		// Perform lighting on the terrain (turn IBL off)
-		m_LightingShader->setUniform("computeIBL", 0);
+		iblParams.computeIBL = 0;
+		if (auto* uboMgr = getUBOManager()) {
+			uboMgr->updateIBLParams(iblParams);
+			uboMgr->bindCustom(sizeof(UBOIBLParams));
+		}
 		// stencil: 匹配 terrain 值
 		rhi::StencilState terrainStencil = stencilReadOnly;
 		terrainStencil.ref = StencilValue::TerrainStencilValue;
@@ -122,11 +136,15 @@ namespace engine
 		// Perform lighting on the models in the scene
 		if (useIBL)
 		{
-			m_LightingShader->setUniform("computeIBL", 1);
+			iblParams.computeIBL = 1;
 		}
 		else
 		{
-			m_LightingShader->setUniform("computeIBL", 0);
+			iblParams.computeIBL = 0;
+		}
+		if (auto* uboMgr = getUBOManager()) {
+			uboMgr->updateIBLParams(iblParams);
+			uboMgr->bindCustom(sizeof(UBOIBLParams));
 		}
 		// stencil: 匹配 model 值
 		rhi::StencilState modelStencil = stencilReadOnly;
@@ -162,8 +180,14 @@ namespace engine
 	{
 		shadowmapData.depthTexture->bind(0);
 		shader->setUniform("dirLightShadowmap", 0);
-		shader->setUniform("dirLightShadowData.shadowBias", 0.01f);
-		shader->setUniform("dirLightShadowData.lightSpaceViewProjectionMatrix", shadowmapData.directionalLightViewProjMatrix);
-		shader->setUniform("dirLightShadowData.lightShadowIndex", 1);
+		
+		// 阴影数据通过 Lighting UBO 传递
+		if (auto* uboMgr = getUBOManager()) {
+			auto& lightingUBO = uboMgr->getLightingData();
+			lightingUBO.dirLightShadowData.shadowBias = 0.01f;
+			lightingUBO.dirLightShadowData.lightSpaceViewProjectionMatrix = shadowmapData.directionalLightViewProjMatrix;
+			lightingUBO.dirLightShadowData.lightShadowIndex = 1;
+			uboMgr->updateLighting();
+		}
 	}
 }

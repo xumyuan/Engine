@@ -11,13 +11,29 @@ out mat3 TBN;
 out vec2 TexCoords;
 out vec3 FragPos;
 
-uniform bool usesClipPlane;
-uniform vec4 clipPlane;
+// ===== UBO blocks =====
+layout (std140, binding = 0) uniform PerFrame {
+	mat4 view;
+	mat4 projection;
+	mat4 viewInverse;
+	mat4 projectionInverse;
+	vec4 viewPos;
+	vec2 screenSize;
+	vec2 texelSize;
+};
 
-uniform mat3 normalMatrix;
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
+layout (std140, binding = 1) uniform PerObject {
+	mat4 model;
+	mat3 normalMatrix;  // std140: 3 x vec4
+};
+
+layout (std140, binding = 4) uniform ClipPlaneParams {
+	vec4 clipPlane;
+	int usesClipPlane;
+	float _clipPad0;
+	float _clipPad1;
+	float _clipPad2;
+};
 
 void main() {
 	// Use the normal matrix to maintain the orthogonal property of a vector when it is scaled non-uniformly
@@ -29,7 +45,7 @@ void main() {
 	FragPos = vec3(model * vec4(position, 1.0f));
 	TexCoords = texCoords;
 
-	if (usesClipPlane) {
+	if (usesClipPlane != 0) {
 		gl_ClipDistance[0] = dot(vec4(FragPos, 1.0), clipPlane);
 	}
 	gl_Position = projection * view * vec4(FragPos, 1.0);
@@ -41,73 +57,36 @@ void main() {
 #shader-type fragment
 #version 450 core
 
-struct Material {
-	sampler2D texture_albedo1; // background texture
-	sampler2D texture_albedo2; // r texture
-	sampler2D texture_albedo3; // g texture
-	sampler2D texture_albedo4; // b texture
-
-	sampler2D texture_normal1; // background texture
-	sampler2D texture_normal2; // r texture
-	sampler2D texture_normal3; // g texture
-	sampler2D texture_normal4; // b texture
-
-	sampler2D texture_roughness1; // background texture
-	sampler2D texture_roughness2; // r texture
-	sampler2D texture_roughness3; // g texture
-	sampler2D texture_roughness4; // b texture
-
-	sampler2D texture_metallic1; // background texture
-	sampler2D texture_metallic2; // r texture
-	sampler2D texture_metallic3; // g texture
-	sampler2D texture_metallic4; // b texture
-
-	sampler2D texture_AO1; // background texture
-	sampler2D texture_AO2; // r texture
-	sampler2D texture_AO3; // g texture
-	sampler2D texture_AO4; // b texture
-
-	sampler2D blendmap;
-	float tilingAmount;
-};
-
 struct DirLight {
-	vec3 direction;
-
-	float intensity;
-	vec3 lightColour;
+	vec4 direction;        // xyz = direction, w = intensity
+	vec4 lightColour;      // xyz = colour, w = padding
 };
 
 struct PointLight {
-	vec3 position;
-
-	float intensity;
-	vec3 lightColour;
-	float attenuationRadius;
+	vec4 position;         // xyz = position, w = intensity
+	vec4 lightColour;      // xyz = colour, w = attenuationRadius
 };
 
 struct SpotLight {
-	vec3 position;
-	vec3 direction;
-
-	float intensity;
-	vec3 lightColour;
-	float attenuationRadius;
-
-	float cutOff;
-	float outerCutOff;
+	vec4 position;         // xyz = position, w = intensity
+	vec4 direction;        // xyz = direction, w = attenuationRadius
+	vec4 lightColour;      // xyz = colour, w = cutOff
+	vec4 params;           // x = outerCutOff, yzw = padding
 };
 
 struct ShadowData {
 	mat4 lightSpaceViewProjectionMatrix;
 	float shadowBias;
 	int lightShadowIndex;
+	float _pad0;
+	float _pad1;
 };
 
 struct ShadowDataPointLight {
 	float farPlane;
 	float shadowBias;
 	int lightShadowIndex;
+	float _pad0;
 };
 
 #define MAX_DIR_LIGHTS 3
@@ -121,21 +100,76 @@ in vec3 FragPos;
 
 out vec4 color;
 
-// Shadow Data
+// ===== UBO blocks =====
+layout (std140, binding = 0) uniform PerFrame {
+	mat4 view;
+	mat4 projection;
+	mat4 viewInverse;
+	mat4 projectionInverse;
+	vec4 viewPos;
+	vec2 screenSize;
+	vec2 texelSize;
+};
+
+layout (std140, binding = 2) uniform Lighting {
+	ivec4 numDirPointSpotLights;
+	DirLight dirLights[MAX_DIR_LIGHTS];
+	PointLight pointLights[MAX_POINT_LIGHTS];
+	SpotLight spotLights[MAX_SPOT_LIGHTS];
+	ShadowData dirLightShadowData;
+	ShadowData spotLightShadowData;
+	ShadowDataPointLight pointLightShadowData;
+};
+
+layout (std140, binding = 3) uniform MaterialParams {
+	vec4 albedoColour;
+	vec4 emissionColour;             // xyz = emission, w = emissionIntensity
+	float metallicValue;
+	float roughnessValue;
+	float parallaxStrength;
+	float tilingAmount;
+	int hasAlbedoTexture;
+	int hasMetallicTexture;
+	int hasRoughnessTexture;
+	int hasEmissionTexture;
+	int hasDisplacement;
+	int hasEmission;
+	vec2 minMaxDisplacementSteps;
+};
+
+// ===== Texture samplers (remain as individual uniforms) =====
+// Shadow
 uniform sampler2D dirLightShadowmap;
-uniform ShadowData dirLightShadowData;
 uniform sampler2D spotLightShadowmap;
-uniform ShadowData spotLightShadowData;
 uniform samplerCube pointLightShadowCubemap;
-uniform ShadowDataPointLight pointLightShadowData;
 
-uniform ivec4 numDirPointSpotLights;
-uniform DirLight dirLights[MAX_DIR_LIGHTS];
-uniform PointLight pointLights[MAX_POINT_LIGHTS];
-uniform SpotLight spotLights[MAX_SPOT_LIGHTS];
+// Terrain material textures
+uniform sampler2D texture_albedo1;   // background texture
+uniform sampler2D texture_albedo2;   // r texture
+uniform sampler2D texture_albedo3;   // g texture
+uniform sampler2D texture_albedo4;   // b texture
 
-uniform Material material;
-uniform vec3 viewPos;
+uniform sampler2D texture_normal1;   // background texture
+uniform sampler2D texture_normal2;   // r texture
+uniform sampler2D texture_normal3;   // g texture
+uniform sampler2D texture_normal4;   // b texture
+
+uniform sampler2D texture_roughness1; // background texture
+uniform sampler2D texture_roughness2; // r texture
+uniform sampler2D texture_roughness3; // g texture
+uniform sampler2D texture_roughness4; // b texture
+
+uniform sampler2D texture_metallic1; // background texture
+uniform sampler2D texture_metallic2; // r texture
+uniform sampler2D texture_metallic3; // g texture
+uniform sampler2D texture_metallic4; // b texture
+
+uniform sampler2D texture_AO1;      // background texture
+uniform sampler2D texture_AO2;      // r texture
+uniform sampler2D texture_AO3;      // g texture
+uniform sampler2D texture_AO4;      // b texture
+
+uniform sampler2D blendmap;
 
 // Light radiance calculations
 vec3 CalculateDirectionalLightRadiance(vec3 albedo, vec3 normal, float metallic, float roughness, vec3 fragToViewNorm, vec3 baseReflectivity);
@@ -155,45 +189,45 @@ float CalculateSpotLightShadow();
 float CalculatePointLightShadow(vec3 lightToFrag);
 
 void main() {
-	vec4 blendMapColour = texture(material.blendmap, TexCoords);
+	vec4 blendMapColour = texture(blendmap, TexCoords);
 	float backTextureWeight = 1 - (blendMapColour.r + blendMapColour.g + blendMapColour.b);
-	vec2 tiledCoords = TexCoords * material.tilingAmount;
+	vec2 tiledCoords = TexCoords * tilingAmount;
 
-	vec3 backgroundTextureAlbedo = texture(material.texture_albedo1, tiledCoords).rgb * backTextureWeight;
-	vec3 rTextureAlbedo = texture(material.texture_albedo2, tiledCoords).rgb * blendMapColour.r;
-	vec3 gTextureAlbedo = texture(material.texture_albedo3, tiledCoords).rgb * blendMapColour.g;
-	vec3 bTextureAlbedo = texture(material.texture_albedo4, tiledCoords).rgb * blendMapColour.b;
+	vec3 backgroundTextureAlbedo = texture(texture_albedo1, tiledCoords).rgb * backTextureWeight;
+	vec3 rTextureAlbedo = texture(texture_albedo2, tiledCoords).rgb * blendMapColour.r;
+	vec3 gTextureAlbedo = texture(texture_albedo3, tiledCoords).rgb * blendMapColour.g;
+	vec3 bTextureAlbedo = texture(texture_albedo4, tiledCoords).rgb * blendMapColour.b;
 	vec3 albedo = backgroundTextureAlbedo + rTextureAlbedo + gTextureAlbedo + bTextureAlbedo;
 
-	vec3 backgroundTextureNormal = UnpackNormal(texture(material.texture_normal1, tiledCoords).rgb) * backTextureWeight;
-	vec3 rTextureNormal = UnpackNormal(texture(material.texture_normal2, tiledCoords).rgb) * blendMapColour.r;
-	vec3 gTextureNormal = UnpackNormal(texture(material.texture_normal3, tiledCoords).rgb) * blendMapColour.g;
-	vec3 bTextureNormal = UnpackNormal(texture(material.texture_normal4, tiledCoords).rgb) * blendMapColour.b;
+	vec3 backgroundTextureNormal = UnpackNormal(texture(texture_normal1, tiledCoords).rgb) * backTextureWeight;
+	vec3 rTextureNormal = UnpackNormal(texture(texture_normal2, tiledCoords).rgb) * blendMapColour.r;
+	vec3 gTextureNormal = UnpackNormal(texture(texture_normal3, tiledCoords).rgb) * blendMapColour.g;
+	vec3 bTextureNormal = UnpackNormal(texture(texture_normal4, tiledCoords).rgb) * blendMapColour.b;
 	vec3 normal = normalize(backgroundTextureNormal + rTextureNormal + gTextureNormal + bTextureNormal);
 
-	float backgroundTextureRoughness = texture(material.texture_roughness1, tiledCoords).r * backTextureWeight;
-	float rTextureRoughness = texture(material.texture_roughness2, tiledCoords).r * blendMapColour.r;
-	float gTextureRoughness = texture(material.texture_roughness3, tiledCoords).r * blendMapColour.g;
-	float bTextureRoughness = texture(material.texture_roughness4, tiledCoords).r * blendMapColour.b;
+	float backgroundTextureRoughness = texture(texture_roughness1, tiledCoords).r * backTextureWeight;
+	float rTextureRoughness = texture(texture_roughness2, tiledCoords).r * blendMapColour.r;
+	float gTextureRoughness = texture(texture_roughness3, tiledCoords).r * blendMapColour.g;
+	float bTextureRoughness = texture(texture_roughness4, tiledCoords).r * blendMapColour.b;
 	float roughness = max(max(backgroundTextureRoughness, rTextureRoughness), max(gTextureRoughness, bTextureRoughness));
 	roughness = max(roughness, 0.04); // Used for calculations since specular highlights will be too fine, and will cause flicker
 
-	float backgroundTextureMetallic = texture(material.texture_metallic1, tiledCoords).r * backTextureWeight;
-	float rTextureMetallic = texture(material.texture_metallic2, tiledCoords).r * blendMapColour.r;
-	float gTextureMetallic = texture(material.texture_metallic3, tiledCoords).r * blendMapColour.g;
-	float bTextureMetallic = texture(material.texture_metallic4, tiledCoords).r * blendMapColour.b;
+	float backgroundTextureMetallic = texture(texture_metallic1, tiledCoords).r * backTextureWeight;
+	float rTextureMetallic = texture(texture_metallic2, tiledCoords).r * blendMapColour.r;
+	float gTextureMetallic = texture(texture_metallic3, tiledCoords).r * blendMapColour.g;
+	float bTextureMetallic = texture(texture_metallic4, tiledCoords).r * blendMapColour.b;
 	float metallic = max(max(backgroundTextureMetallic, rTextureMetallic), max(gTextureMetallic, bTextureMetallic));
 
-	float backgroundTextureAO = texture(material.texture_AO1, tiledCoords).r * backTextureWeight;
-	float rTextureAO = texture(material.texture_AO2, tiledCoords).r * blendMapColour.r;
-	float gTextureAO = texture(material.texture_AO3, tiledCoords).r * blendMapColour.g;
-	float bTextureAO = texture(material.texture_AO4, tiledCoords).r * blendMapColour.b;
+	float backgroundTextureAO = texture(texture_AO1, tiledCoords).r * backTextureWeight;
+	float rTextureAO = texture(texture_AO2, tiledCoords).r * blendMapColour.r;
+	float gTextureAO = texture(texture_AO3, tiledCoords).r * blendMapColour.g;
+	float bTextureAO = texture(texture_AO4, tiledCoords).r * blendMapColour.b;
 	float ao = max(max(backgroundTextureAO, rTextureAO), max(gTextureAO, bTextureAO));
 
 	// Normal mapping code. Opted out of tangent space normal mapping since I would have to convert all of my lights to tangent space
 	normal = normalize(TBN * UnpackNormal(normal));
 
-	vec3 fragToViewNorm = normalize(viewPos - FragPos);
+	vec3 fragToViewNorm = normalize(viewPos.xyz - FragPos);
 
 	// Dielectrics have an average base specular reflectivity around 0.04, and metals absorb all of their diffuse (refraction) lighting so their albedo is used instead for their specular lighting (reflection)
 	vec3 baseReflectivity = vec3(0.04);
@@ -216,9 +250,9 @@ vec3 CalculateDirectionalLightRadiance(vec3 albedo, vec3 normal, float metallic,
 	vec3 directLightIrradiance = vec3(0.0);
 
 	for (int i = 0; i < numDirPointSpotLights.x; ++i) {
-		vec3 lightDirNorm = normalize(-dirLights[i].direction);
+		vec3 lightDirNorm = normalize(-dirLights[i].direction.xyz);
 		vec3 halfwayNorm = normalize(lightDirNorm + fragToViewNorm);
-		vec3 radiance = dirLights[i].intensity * dirLights[i].lightColour;
+		vec3 radiance = dirLights[i].direction.w * dirLights[i].lightColour.xyz;
 
 		// Cook-Torrance Specular BRDF calculations
 		float normalDistribution = NormalDistributionGGX(normal, halfwayNorm, roughness);
@@ -240,7 +274,6 @@ vec3 CalculateDirectionalLightRadiance(vec3 albedo, vec3 normal, float metallic,
 
 		// Calculate shadows, but first check to make sure the current light index is the shadow caster
 		float shadowAmount = 0.0f;
-		//if (i == dirLightShadowData.lightShadowIndex)
 		shadowAmount = CalculateDirLightShadow();
 
 		// Add the light's radiance to the irradiance sum
@@ -255,18 +288,18 @@ vec3 CalculatePointLightRadiance(vec3 albedo, vec3 normal, float metallic, float
 	vec3 pointLightIrradiance = vec3(0.0);
 
 	for (int i = 0; i < numDirPointSpotLights.y; ++i) {
-		vec3 fragToLightNorm = normalize(pointLights[i].position - FragPos);
+		vec3 fragToLightNorm = normalize(pointLights[i].position.xyz - FragPos);
 		vec3 halfwayNorm = normalize(fragToViewNorm + fragToLightNorm);
-		vec3 lightToFrag = FragPos - pointLights[i].position;
+		vec3 lightToFrag = FragPos - pointLights[i].position.xyz;
 		float fragToLightDistance = length(lightToFrag);
 
 		// Attenuation calculation (based on Epic's UE4 falloff model)
-		float d = fragToLightDistance / pointLights[i].attenuationRadius;
+		float d = fragToLightDistance / pointLights[i].lightColour.w;  // attenuationRadius
 		float d2 = d * d;
 		float d4 = d2 * d2;
 		float falloffNumerator = clamp(1.0 - d4, 0.0, 1.0);
 		float attenuation = (falloffNumerator * falloffNumerator) / ((fragToLightDistance * fragToLightDistance) + 1.0);
-		vec3 radiance = pointLights[i].intensity * pointLights[i].lightColour * attenuation;
+		vec3 radiance = pointLights[i].position.w * pointLights[i].lightColour.xyz * attenuation;
 
 		// Cook-Torrance Specular BRDF calculations
 		float normalDistribution = NormalDistributionGGX(normal, halfwayNorm, roughness);
@@ -303,22 +336,22 @@ vec3 CalculateSpotLightRadiance(vec3 albedo, vec3 normal, float metallic, float 
 	vec3 spotLightIrradiance = vec3(0.0);
 
 	for (int i = 0; i < numDirPointSpotLights.z; ++i) {
-		vec3 fragToLightNorm = normalize(spotLights[i].position - FragPos);
+		vec3 fragToLightNorm = normalize(spotLights[i].position.xyz - FragPos);
 		vec3 halfwayNorm = normalize(fragToViewNorm + fragToLightNorm);
-		float fragToLightDistance = length(spotLights[i].position - FragPos);
+		float fragToLightDistance = length(spotLights[i].position.xyz - FragPos);
 
 		// Attenuation calculation (based on Epic's UE4 falloff model)
-		float d = fragToLightDistance / spotLights[i].attenuationRadius;
+		float d = fragToLightDistance / spotLights[i].direction.w;  // attenuationRadius
 		float d2 = d * d;
 		float d4 = d2 * d2;
 		float falloffNumerator = clamp(1.0 - d4, 0.0, 1.0);
 
 		// Check if it is in the spotlight's circle
-		float theta = dot(normalize(spotLights[i].direction), -fragToLightNorm);
-		float difference = spotLights[i].cutOff - spotLights[i].outerCutOff;
-		float intensity = clamp((theta - spotLights[i].outerCutOff) / difference, 0.0, 1.0);
+		float theta = dot(normalize(spotLights[i].direction.xyz), -fragToLightNorm);
+		float difference = spotLights[i].lightColour.w - spotLights[i].params.x;  // cutOff - outerCutOff
+		float intensity = clamp((theta - spotLights[i].params.x) / difference, 0.0, 1.0);
 		float attenuation = intensity * (falloffNumerator * falloffNumerator) / ((fragToLightDistance * fragToLightDistance) + 1.0);
-		vec3 radiance = spotLights[i].intensity * spotLights[i].lightColour * attenuation;
+		vec3 radiance = spotLights[i].position.w * spotLights[i].lightColour.xyz * attenuation;
 
 		// Cook-Torrance Specular BRDF calculations
 		float normalDistribution = NormalDistributionGGX(normal, halfwayNorm, roughness);
@@ -409,10 +442,10 @@ float CalculateDirLightShadow() {
 
 	// Perform Percentage Closer Filtering (PCF) in order to produce soft shadows - Use bilinear filtering to get some free samples (4 bilinear samples, 4 samples -> 16 values actually processed)
 	float shadow = 0.0;
-	vec2 texelSize = 1.0 / textureSize(dirLightShadowmap, 0);
+	vec2 shadowTexelSize = 1.0 / textureSize(dirLightShadowmap, 0);
 	for (float y = -1.5; y < 1.0; y += 2.0) {
 		for (float x = -1.5; x < 1.0; x += 2.0) {
-			float sampledDepthPCF = texture(dirLightShadowmap, depthmapCoords.xy + (texelSize * vec2(x, y))).r;
+			float sampledDepthPCF = texture(dirLightShadowmap, depthmapCoords.xy + (shadowTexelSize * vec2(x, y))).r;
 			shadow += (currentDepth > sampledDepthPCF + dirLightShadowData.shadowBias) ? 1.0 : 0.0; // Add shadow bias to avoid shadow acne. However too much bias can cause peter panning
 		}
 	}
@@ -435,10 +468,10 @@ float CalculateSpotLightShadow() {
 
 	// Perform Percentage Closer Filtering (PCF) in order to produce soft shadows - Use bilinear filtering to get some free samples (4 bilinear samples, 4 samples -> 16 values actually processed)
 	float shadow = 0.0;
-	vec2 texelSize = 1.0 / textureSize(spotLightShadowmap, 0);
+	vec2 shadowTexelSize = 1.0 / textureSize(spotLightShadowmap, 0);
 	for (float y = -1.5; y < 1.0; y += 2.0) {
 		for (float x = -1.5; x < 1.0; x += 2.0) {
-			float sampledDepthPCF = texture(spotLightShadowmap, depthmapCoords.xy + (texelSize * vec2(x, y))).r;
+			float sampledDepthPCF = texture(spotLightShadowmap, depthmapCoords.xy + (shadowTexelSize * vec2(x, y))).r;
 			shadow += currentDepth > sampledDepthPCF + spotLightShadowData.shadowBias ? 1.0 : 0.0; // Add shadow bias to avoid shadow acne. However too much bias can cause peter panning
 		}
 	}

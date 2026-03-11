@@ -3,6 +3,7 @@
 
 #include <graphics/Window.h>
 #include <graphics/renderer/ModelRenderer.h>
+#include <graphics/UniformBufferManager.h>
 #include <utils/loaders/ShaderLoader.h>
 
 namespace engine
@@ -112,23 +113,25 @@ namespace engine
 		ssaoPipeline.cullMode = rhi::CullMode::Back;
 		bindPipelineState(ssaoPipeline);
 
-		// 传递采样核
-		for (int i = 0; i < KERNEL_SIZE; ++i)
-		{
-			m_SSAOShader->setUniform("samples[" + std::to_string(i) + "]", m_SSAOKernel[i]);
+		// 传递采样核 + 参数 通过 UBO
+		if (auto* uboMgr = getUBOManager()) {
+			// PerFrame UBO
+			uboMgr->updatePerFrame(camera->getViewMatrix(), camera->getProjectionMatrix(),
+				glm::vec3(0.0f), glm::vec2(Window::getWidth(), Window::getHeight()));
+			uboMgr->bindPerFrame();
+
+			// SSAO Params UBO
+			UBOSSAOParams ssaoParams{};
+			for (int i = 0; i < KERNEL_SIZE; ++i) {
+				ssaoParams.samples[i] = glm::vec4(m_SSAOKernel[i], 0.0f);
+			}
+			ssaoParams.kernelSize = KERNEL_SIZE;
+			ssaoParams.radius = m_Radius;
+			ssaoParams.bias = m_Bias;
+			ssaoParams.power = m_Power;
+			uboMgr->updateSSAOParams(ssaoParams);
+			uboMgr->bindCustom(sizeof(UBOSSAOParams));
 		}
-
-		// 传递矩阵
-		m_SSAOShader->setUniform("projection", camera->getProjectionMatrix());
-		m_SSAOShader->setUniform("projectionInverse", glm::inverse(camera->getProjectionMatrix()));
-		m_SSAOShader->setUniform("view", camera->getViewMatrix());
-
-		// 传递参数
-		m_SSAOShader->setUniform("screenSize", glm::vec2(Window::getWidth(), Window::getHeight()));
-		m_SSAOShader->setUniform("radius", m_Radius);
-		m_SSAOShader->setUniform("bias", m_Bias);
-		m_SSAOShader->setUniform("power", m_Power);
-		m_SSAOShader->setUniform("kernelSize", KERNEL_SIZE);
 
 		// 绑定 GBuffer 纹理
 		gBufferOutput.normalTexture->bind(0);

@@ -3,6 +3,7 @@
 
 #include <utils/DebugEvent.h>
 #include <utils/loaders/ShaderLoader.h>
+#include <graphics/UniformBufferManager.h>
 
 namespace engine
 {
@@ -88,10 +89,17 @@ namespace engine
 		pipeline.cullMode = rhi::CullMode::Back;
 		bindPipelineState(pipeline);
 
-		m_GammaCorrectShader->setUniform("gamma_inverse", 1.0f / m_GammaCorrection);
-		m_GammaCorrectShader->setUniform("exposure", m_Exposure);
-		m_GammaCorrectShader->setUniform("screen_texture", 0);
+		// PostProcess 参数通过 Custom UBO (binding 4) 传递
+		if (auto* uboMgr = getUBOManager()) {
+			UBOPostProcessParams ppParams{};
+			ppParams.gamma_inverse = 1.0f / m_GammaCorrection;
+			ppParams.exposure = m_Exposure;
+			ppParams.texel_size = glm::vec2(0.0f); // gammaCorrect 不需要 texel_size
+			uboMgr->updatePostProcessParams(ppParams);
+			uboMgr->bindCustom(sizeof(UBOPostProcessParams));
+		}
 
+		m_GammaCorrectShader->setUniform("screen_texture", 0);
 		hdrTexture->bind(0);
 
 		ModelRenderer::drawNdcPlane();
@@ -110,7 +118,12 @@ namespace engine
 		pipeline.cullMode = rhi::CullMode::Back;
 		bindPipelineState(pipeline);
 
-		m_FxaaShader->setUniform("texel_size", glm::vec2(1.0f / (float)Window::getWidth(), 1.0f / (float)Window::getHeight()));
+		// FXAA 使用 PerFrame UBO 的 texelSize
+		if (auto* uboMgr = getUBOManager()) {
+			uboMgr->updatePerFrame(glm::mat4(1.0f), glm::mat4(1.0f), glm::vec3(0.0f),
+				glm::vec2(Window::getWidth(), Window::getHeight()));
+			uboMgr->bindPerFrame();
+		}
 
 		m_FxaaShader->setUniform("input_texture", 0);
 		texture->bind(0);

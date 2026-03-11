@@ -23,16 +23,23 @@ uniform sampler2D gNormal;
 uniform sampler2D gDepth;
 uniform sampler2D texNoise;
 
-uniform vec3 samples[64];
-uniform int kernelSize;
-uniform float radius;
-uniform float bias;
-uniform float power;
-uniform vec2 screenSize;
+layout (std140, binding = 0) uniform PerFrame {
+	mat4 view;
+	mat4 projection;
+	mat4 viewInverse;
+	mat4 projectionInverse;
+	vec4 viewPos;
+	vec2 screenSize;
+	vec2 texelSize;
+};
 
-uniform mat4 projection;
-uniform mat4 projectionInverse;
-uniform mat4 view;
+layout (std140, binding = 4) uniform SSAOParams {
+	vec4 samples[64];
+	int kernelSize;
+	float radius;
+	float bias;
+	float power;
+};
 
 // 从深度重建视图空间位置
 vec3 reconstructViewPosition(vec2 uv, float depth)
@@ -40,8 +47,8 @@ vec3 reconstructViewPosition(vec2 uv, float depth)
     // NDC 坐标
     vec4 clipPos = vec4(uv * 2.0 - 1.0, depth * 2.0 - 1.0, 1.0);
     // 视图空间坐标
-    vec4 viewPos = projectionInverse * clipPos;
-    return viewPos.xyz / viewPos.w;
+    vec4 viewPosRecon = projectionInverse * clipPos;
+    return viewPosRecon.xyz / viewPosRecon.w;
 }
 
 void main()
@@ -79,7 +86,7 @@ void main()
     for (int i = 0; i < kernelSize; ++i)
     {
         // 获取采样点位置（切线空间 -> 视图空间）
-        vec3 samplePos = TBN * samples[i];
+        vec3 samplePos = TBN * samples[i].xyz;
         samplePos = fragPos + samplePos * radius;
         
         // 投影采样点到屏幕空间

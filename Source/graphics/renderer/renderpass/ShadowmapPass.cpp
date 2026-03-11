@@ -2,6 +2,7 @@
 #include "ShadowmapPass.h"
 
 #include <utils/loaders/ShaderLoader.h>
+#include <graphics/UniformBufferManager.h>
 
 namespace engine
 {
@@ -46,7 +47,13 @@ namespace engine
 		glm::mat4 directionalLightProjection = glm::ortho(-100.0f, 100.0f, -100.0f, 100.0f, SHADOWMAP_NEAR_PLANE, SHADOWMAP_FAR_PLANE);
 		glm::mat4 directionalLightView = glm::lookAt(dirLightShadowmapEyePos, dirLightShadowmapLookAtPos, glm::vec3(0.0f, 1.0f, 0.0f));
 		glm::mat4 directionalLightViewProjMatrix = directionalLightProjection * directionalLightView;
-		m_ShadowmapShader->setUniform("lightSpaceViewProjectionMatrix", directionalLightViewProjMatrix);
+		// Shadowmap 参数通过 Custom UBO (binding 4) 传递
+		if (auto* uboMgr = getUBOManager()) {
+			UBOShadowmapPass shadowParams{};
+			shadowParams.lightSpaceViewProjectionMatrix = directionalLightViewProjMatrix;
+			uboMgr->updateShadowmapPass(shadowParams);
+			uboMgr->bindCustom(sizeof(UBOShadowmapPass));
+		}
 
 		// Render models
 		m_ActiveScene->addModelsToRenderer();

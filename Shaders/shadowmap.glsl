@@ -4,8 +4,14 @@
 
 layout (location = 0) in vec3 position;
 
-uniform mat4 lightSpaceViewProjectionMatrix;
-uniform mat4 model;
+layout (std140, binding = 1) uniform PerObject {
+	mat4 model;
+	mat3 normalMatrix;  // std140: 3 x vec4
+};
+
+layout (std140, binding = 4) uniform ShadowmapParams {
+	mat4 lightSpaceViewProjectionMatrix;
+};
 
 void main() {
 	gl_Position = lightSpaceViewProjectionMatrix * model * vec4(position, 1.0f);

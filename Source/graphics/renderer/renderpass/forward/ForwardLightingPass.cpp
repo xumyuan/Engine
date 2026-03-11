@@ -4,6 +4,7 @@
 #include "physics/fluid/FluidSim.h"
 
 #include <utils/loaders/ShaderLoader.h>
+#include <graphics/UniformBufferManager.h>
 
 namespace engine
 {
@@ -52,21 +53,32 @@ namespace engine
 		pipeline.multisample = m_RT->isMultisampled();
 		bindPipelineState(pipeline);
 
-		// View setup + lighting setup
-		lightManager->setupLightingUniforms(m_ModelShader);
-		m_ModelShader->setUniform("viewPos", camera->getPosition());
-		m_ModelShader->setUniform("view", camera->getViewMatrix());
-		m_ModelShader->setUniform("projection", camera->getProjectionMatrix());
+		// View setup + lighting setup via UBO
+		auto* uboMgr = getUBOManager();
+		if (uboMgr) {
+			// PerFrame UBO
+			uboMgr->updatePerFrame(camera->getViewMatrix(), camera->getProjectionMatrix(),
+				camera->getPosition());
+			uboMgr->bindPerFrame();
+
+			// Lighting UBO
+			auto& lightingUBO = uboMgr->getLightingData();
+			lightManager->fillLightingUBO(lightingUBO);
+			uboMgr->updateLighting();
+			uboMgr->bindLighting();
+		}
 		// Shadowmap code
 		bindShadowmap(m_ModelShader, shadowmapData);
 		// IBL code
+		UBOIBLParams iblParams{};
+		iblParams.reflectionProbeMipCount = REFLECTION_PROBE_MIP_COUNT;
 		if (useIBL) {
-			m_ModelShader->setUniform("computeIBL", 1);
+			iblParams.computeIBL = 1;
 			glm::vec3 renderPos(0.0f, 0.0f, 0.0f);
 			probeManager->bindProbe(renderPos, m_ModelShader);
 		}
 		else {
-			m_ModelShader->setUniform("computeIBL", 0);
+			iblParams.computeIBL = 0;
 			// 即使不使用 IBL，也必须绑定正确类型的纹理到 samplerCube uniform 对应的纹理单元，
 			// 否则 samplerCube 默认指向 unit 0（绑定的是 GL_TEXTURE_2D shadowmap），
 			// 导致 GL_INVALID_OPERATION: program texture usage
@@ -78,6 +90,10 @@ namespace engine
 				m_ModelShader->setUniform("prefilterMap", 2);
 			}
 		}
+		if (uboMgr) {
+			uboMgr->updateIBLParams(iblParams);
+			uboMgr->bindCustom(sizeof(UBOIBLParams));
+		}
 		// Render the scene
 		m_ActiveScene->addModelsToRenderer();
 		modelRenderer->flushOpaque(m_ModelShader, m_RenderPassType);
@@ -87,14 +103,18 @@ namespace engine
 		terrainPipeline.program = m_TerrainShader->getProgramHandle();
 		bindPipelineState(terrainPipeline);
 
-		lightManager->setupLightingUniforms(m_TerrainShader);
-		m_TerrainShader->setUniform("viewPos", camera->getPosition());
+		// Terrain PerObject UBO
 		glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), terrain->getPosition());
-		glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(modelMatrix)));
-		m_TerrainShader->setUniform("normalMatrix", normalMatrix);
-		m_TerrainShader->setUniform("model", modelMatrix);
-		m_TerrainShader->setUniform("view", camera->getViewMatrix());
-		m_TerrainShader->setUniform("projection", camera->getProjectionMatrix());
+		if (uboMgr) {
+			uboMgr->updatePerObject(modelMatrix);
+			uboMgr->bindPerObject();
+			// PerFrame UBO 已绑定，Lighting UBO 已绑定
+			// Terrain shader vertex 中有 ClipPlane UBO (binding=4)，需要正确绑定
+			UBOClipPlane clipPlane{};
+			clipPlane.usesClipPlane = 0;
+			uboMgr->updateClipPlane(clipPlane);
+			uboMgr->bindCustom(sizeof(UBOClipPlane));
+		}
 		bindShadowmap(m_TerrainShader, shadowmapData);
 		terrain->Draw(m_TerrainShader, m_RenderPassType);
 
@@ -132,10 +152,15 @@ namespace engine
 	void ForwardLightingPass::bindShadowmap(Shader* shader, ShadowmapPassOutput& shadowmapData) {
 		shadowmapData.depthTexture->bind(0);
 		shader->setUniform("dirLightShadowmap", 0);
-		shader->setUniform("lightSpaceViewProjectionMatrix", shadowmapData.directionalLightViewProjMatrix);
-		shader->setUniform("dirLightShadowData.shadowBias", 0.01f);
-		shader->setUniform("dirLightShadowData.lightSpaceViewProjectionMatrix", shadowmapData.directionalLightViewProjMatrix);
-		shader->setUniform("dirLightShadowData.lightShadowIndex", 1);
+		
+		// 阴影数据通过 Lighting UBO 传递
+		if (auto* uboMgr = getUBOManager()) {
+			auto& lightingUBO = uboMgr->getLightingData();
+			lightingUBO.dirLightShadowData.shadowBias = 0.01f;
+			lightingUBO.dirLightShadowData.lightSpaceViewProjectionMatrix = shadowmapData.directionalLightViewProjMatrix;
+			lightingUBO.dirLightShadowData.lightShadowIndex = 1;
+			uboMgr->updateLighting();
+		}
 	}
 
 }

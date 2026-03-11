@@ -3,6 +3,7 @@
 
 #include <utils/loaders/ShaderLoader.h>
 #include "rhi/include/RHIContext.h"
+#include "graphics/UniformBufferManager.h"
 
 namespace engine {
 
@@ -112,8 +113,12 @@ namespace engine {
 		m_SkyboxCubemap->bind(0);
 		m_SkyboxShader->setUniform("skyboxCubemap", 0);
 
-		m_SkyboxShader->setUniform("view", camera->getViewMatrix());
-		m_SkyboxShader->setUniform("projection", camera->getProjectionMatrix());
+		// PerFrame UBO 更新（skybox 只需 view + projection）
+		if (auto* uboMgr = getUBOManager()) {
+			uboMgr->updatePerFrame(camera->getViewMatrix(), camera->getProjectionMatrix(),
+				glm::vec3(0.0f));
+			uboMgr->bindPerFrame();
+		}
 
 		m_Device->bindRenderPrimitive(m_RenderPrimitive);
 		m_Device->draw(36, 0);

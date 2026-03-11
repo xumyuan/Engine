@@ -3,6 +3,7 @@
 #include "DirectionalLight.h"
 #include "PointLight.h"
 #include "SpotLight.h"
+#include "graphics/UniformBufferData.h"
 
 namespace engine {
 
@@ -11,6 +12,10 @@ namespace engine {
 		DynamicLightManager();
 
 		void setupLightingUniforms(Shader* shader);
+		
+		// UBO 方式：将灯光数据填充到 UBOLighting 结构体
+		void fillLightingUBO(UBOLighting& uboLighting);
+		
 		void addPointLight(PointLight& pointLight);
 		void addPointLight(const glm::vec3& position, const glm::vec3& lightColor);
 

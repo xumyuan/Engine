@@ -9,6 +9,7 @@
 #include <graphics/renderer/renderpass/SSAOPass.h>
 #include <scene/Scene3D.h>
 #include <utils/Timer.h>
+#include <graphics/UniformBufferManager.h>
 
 namespace engine
 {
@@ -17,11 +18,15 @@ namespace engine
 	{
 	public:
 		MasterRenderer(Scene3D* scene);
+		~MasterRenderer();
 
 		void init();
 		void render();
 	private:
 		Scene3D* m_ActiveScene;
+
+		// UBO 管理器
+		UniformBufferManager m_UBOManager;
 
 		// other passes 
 		PostProcessPass m_PostProcessPass;

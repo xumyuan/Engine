@@ -19,10 +19,13 @@ out vec4 FragColor;
 
 in vec2 TexCoords;
 
-
 uniform sampler2D screen_texture;
-uniform float gamma_inverse;
-uniform float exposure;
+
+layout (std140, binding = 4) uniform PostProcessParams {
+	float gamma_inverse;
+	float exposure;
+	vec2 texel_size;
+};
 
 void main() {
 

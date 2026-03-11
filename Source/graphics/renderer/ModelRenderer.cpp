@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "ModelRenderer.h"
+#include "graphics/UniformBufferManager.h"
 
 namespace engine {
 
@@ -85,11 +86,21 @@ namespace engine {
 
 		}
 
-		shader->setUniform("model", model);
-
-		if (pass != RenderPassType::ShadowmapPassType) {
-			glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
-			shader->setUniform("normalMatrix", normalMatrix);
+		auto* uboMgr = getUBOManager();
+		if (uboMgr) {
+			if (pass != RenderPassType::ShadowmapPassType) {
+				glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
+				uboMgr->updatePerObject(model, normalMatrix);
+			} else {
+				uboMgr->updatePerObject(model);
+			}
+			uboMgr->bindPerObject();
+		} else {
+			shader->setUniform("model", model);
+			if (pass != RenderPassType::ShadowmapPassType) {
+				glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
+				shader->setUniform("normalMatrix", normalMatrix);
+			}
 		}
 	}
 

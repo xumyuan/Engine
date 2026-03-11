@@ -90,6 +90,74 @@ namespace engine {
 		}
 	}
 
+	// ===== UBO 新接口 =====
+	void Material::fillMaterialUBO(UBOMaterialParams& params) const {
+		params.albedoColour = m_AlbedoColour;
+		params.emissionColour = glm::vec4(m_EmissionColour, m_EmissionIntensity);
+		params.metallicValue = m_MetallicValue;
+		params.roughnessValue = m_RoughnessValue;
+		params.parallaxStrength = m_ParallaxStrength;
+		params.tilingAmount = 1.0f;  // default
+		params.hasAlbedoTexture = m_AlbedoMap ? 1 : 0;
+		params.hasMetallicTexture = m_MetallicMap ? 1 : 0;
+		params.hasRoughnessTexture = m_RoughnessMap ? 1 : 0;
+		params.hasEmissionTexture = m_EmissionMap ? 1 : 0;
+		params.hasDisplacement = 0;
+		params.hasEmission = (m_EmissionMap || glm::length(m_EmissionColour) > 0.001f) ? 1 : 0;
+		params.minMaxDisplacementSteps = glm::vec2(8.0f, 32.0f);
+	}
+
+	void Material::bindMaterialTextures(Shader* shader) const {
+		// 纹理单元分配与旧接口一致
+		// 0: shadowmap, 1: irradianceMap, 2: prefilterMap, 3: brdfLUT
+		int currentTextureUnit = 4;
+
+		shader->setUniform("texture_albedo", currentTextureUnit);
+		if (m_AlbedoMap) {
+			m_AlbedoMap->bind(currentTextureUnit++);
+		} else {
+			TextureLoader::getDefaultAlbedo()->bind(currentTextureUnit++);
+		}
+
+		shader->setUniform("texture_normal", currentTextureUnit);
+		if (m_NormalMap) {
+			m_NormalMap->bind(currentTextureUnit++);
+		} else {
+			TextureLoader::getDefaultNormal()->bind(currentTextureUnit++);
+		}
+
+		shader->setUniform("texture_metallic", currentTextureUnit);
+		if (m_MetallicMap) {
+			m_MetallicMap->bind(currentTextureUnit++);
+		} else {
+			TextureLoader::getDefaultMetallic()->bind(currentTextureUnit++);
+		}
+
+		shader->setUniform("texture_roughness", currentTextureUnit);
+		if (m_RoughnessMap) {
+			m_RoughnessMap->bind(currentTextureUnit++);
+		} else {
+			TextureLoader::getDefaultRoughness()->bind(currentTextureUnit++);
+		}
+
+		shader->setUniform("texture_ao", currentTextureUnit);
+		if (m_AmbientOcclusionMap) {
+			m_AmbientOcclusionMap->bind(currentTextureUnit++);
+		} else {
+			TextureLoader::getDefaultAO()->bind(currentTextureUnit++);
+		}
+
+		shader->setUniform("texture_displacement", currentTextureUnit);
+		TextureLoader::getDefaultNormal()->bind(currentTextureUnit++);
+
+		shader->setUniform("texture_emission", currentTextureUnit);
+		if (m_EmissionMap) {
+			m_EmissionMap->bind(currentTextureUnit++);
+		} else {
+			TextureLoader::getDefaultEmission()->bind(currentTextureUnit++);
+		}
+	}
+
 	void Material::processMaterial(const SceneInfo::ModelInfo& modelinfo) {
 		const std::unordered_map<
 			std::string,

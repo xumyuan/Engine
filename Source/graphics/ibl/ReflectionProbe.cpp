@@ -31,8 +31,7 @@ namespace engine {
 	}
 
 	void ReflectionProbe::bind(Shader* shader) {
-		shader->setUniform("reflectionProbeMipCount", REFLECTION_PROBE_MIP_COUNT);
-
+		// reflectionProbeMipCount 通过 IBLParams UBO 由调用方设置
 		m_PrefilterMap->bind(2);
 		shader->setUniform("prefilterMap", 2);
 		s_BRDF_LUT->bind(3);

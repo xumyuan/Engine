@@ -5,6 +5,7 @@
 #include <utils/loaders/ShaderLoader.h>
 #include <graphics/renderer/renderpass/RenderPassType.h>
 #include <graphics/Window.h>
+#include <graphics/UniformBufferManager.h>
 
 namespace engine {
 
@@ -86,9 +87,12 @@ namespace engine {
 		pipeline.stencilBack = baseStencil;
 		bindPipelineState(pipeline);
 
-		m_ModelShader->setUniform("viewPos", camera->getPosition());
-		m_ModelShader->setUniform("view", camera->getViewMatrix());
-		m_ModelShader->setUniform("projection", camera->getProjectionMatrix());
+		// 更新并绑定 PerFrame UBO（view/projection/viewPos 现在通过 UBO block 传递）
+		if (auto* uboMgr = getUBOManager()) {
+			uboMgr->updatePerFrame(camera->getViewMatrix(), camera->getProjectionMatrix(),
+				camera->getPosition());
+			uboMgr->bindPerFrame();
+		}
 	
 		// Render opaque objects: 开启 stencil 写入，model stencil value
 		pipeline.stencilFront.writeMask = 0xFF;
@@ -116,8 +120,7 @@ namespace engine {
 			pipeline.program = m_TerrainShader->getProgramHandle();
 			bindPipelineState(pipeline);
 
-			m_TerrainShader->setUniform("view", camera->getViewMatrix());
-			m_TerrainShader->setUniform("projection", camera->getProjectionMatrix());
+			// PerFrame UBO 已在上面更新绑定，terrain shader 共享同一 binding point
 
 			// 开启 stencil 写入，terrain stencil value
 			pipeline.stencilFront.writeMask = 0xFF;
