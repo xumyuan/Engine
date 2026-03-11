@@ -1,18 +1,6 @@
 #pragma once
 
-#include "rhi/include/RHIDevice.h"
-
-namespace engine {
-
-// 设置/获取全局 RHI 设备（在初始化时调用一次）
-void setRHIDevice(rhi::RHIDevice* device);
-rhi::RHIDevice* getRHIDevice();
-
-// 兼容旧接口
-inline void setDebugDevice(rhi::RHIDevice* device) { setRHIDevice(device); }
-inline rhi::RHIDevice* getDebugDevice() { return getRHIDevice(); }
-
-} // namespace engine
+#include "rhi/include/RHIContext.h"
 
 #if _DEBUG
 #define BEGIN_EVENT(eventname) \

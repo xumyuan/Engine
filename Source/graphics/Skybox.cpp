@@ -2,7 +2,7 @@
 #include "Skybox.h"
 
 #include <utils/loaders/ShaderLoader.h>
-#include "utils/DebugEvent.h"
+#include "rhi/include/RHIContext.h"
 
 namespace engine {
 

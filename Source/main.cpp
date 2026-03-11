@@ -16,7 +16,7 @@
 #include "ui/RuntimePane.h"
 #include "utils/Time.h"
 #include "utils/Timer.h"
-#include "utils/DebugEvent.h"
+#include "rhi/include/RHIContext.h"
 #include "rhi/include/RHIDevice.h"
 #include "rhi/include/RHIShaderCompiler.h"
 #include "utils/loaders/ShaderLoader.h"
@@ -44,7 +44,7 @@ int main(int argc, char* argv[]) {
 	// 初始化 RHI 设备（窗口创建后 GL 上下文已就绪）
 	auto rhiDevice = engine::rhi::RHIDevice::create(engine::rhi::Backend::OpenGL);
 	rhiDevice->initialize();
-	engine::setDebugDevice(rhiDevice.get());
+	engine::setRHIDevice(rhiDevice.get());
 
 	// 初始化 ShaderLoader（通过 RHI 创建着色器编译器）
 	engine::ShaderLoader::initialize(rhiDevice->createShaderCompiler());

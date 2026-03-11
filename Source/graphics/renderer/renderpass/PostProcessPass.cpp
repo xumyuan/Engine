@@ -44,7 +44,7 @@ namespace engine
 
 #if DEBUG_ENABLED
 		if (DebugPane::getWireframeMode()) {
-			if (auto* dev = engine::getDebugDevice())
+			if (auto* dev = engine::getRHIDevice())
 				dev->setPolygonMode(rhi::PolygonMode::Fill);
 		}
 #endif

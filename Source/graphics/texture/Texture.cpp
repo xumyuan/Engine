@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "Texture.h"
-#include "utils/DebugEvent.h"
+#include "rhi/include/RHIContext.h"
 
 namespace engine {
 

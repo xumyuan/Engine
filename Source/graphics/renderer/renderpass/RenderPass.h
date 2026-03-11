@@ -2,7 +2,7 @@
 
 #include "RenderPassType.h"
 #include "scene/Scene3D.h"
-#include "rhi/include/RHIDevice.h"
+#include "rhi/include/RHIContext.h"
 #include "rhi/include/RHIResources.h"
 
 namespace engine {

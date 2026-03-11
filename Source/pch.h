@@ -32,6 +32,7 @@
 #include <spdlog/spdlog.h>
 #include <nlohmann/json.hpp>
 
+#include "rhi/include/RHIContext.h"
 #include "utils/DebugEvent.h"
 
 #include "Defs.h"

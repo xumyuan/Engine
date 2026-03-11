@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "Cubemap.h"
-#include "utils/DebugEvent.h"
+#include "rhi/include/RHIContext.h"
 
 namespace engine {
 
