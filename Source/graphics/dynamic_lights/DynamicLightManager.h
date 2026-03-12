@@ -11,8 +11,6 @@ namespace engine {
 	public:
 		DynamicLightManager();
 
-		void setupLightingUniforms(Shader* shader);
-		
 		// UBO 方式：将灯光数据填充到 UBOLighting 结构体
 		void fillLightingUBO(UBOLighting& uboLighting);
 		

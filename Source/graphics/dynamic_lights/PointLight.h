@@ -8,9 +8,6 @@ namespace engine {
 	public:
 		PointLight(const glm::vec3& lightColor, const glm::vec3& pos);
 
-		virtual void setupUniforms(Shader* shader, int currentLightIndex) override;
-
-
 		glm::vec3 position;
 		float constant, linear, quadratic;
 		float attenuationRadius = 30.0f;
