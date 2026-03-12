@@ -46,10 +46,10 @@ namespace engine {
 
 		// Scene Specific Data
 		FPSCamera m_SceneCamera;
-		Skybox* m_Skybox;
+		Skybox* m_Skybox = nullptr;
 		ModelRenderer m_ModelRenderer;
 		Terrain m_Terrain;
-		FluidSim* m_fluid;
+		FluidSim* m_fluid = nullptr;
 		DynamicLightManager m_DynamicLightManager;
 		ProbeManager m_ProbeManager;
 		std::vector<RenderableModel*> m_RenderableModels;

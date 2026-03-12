@@ -33,7 +33,23 @@ namespace engine {
 	}
 
 	Scene3D::~Scene3D() {
+		// 释放所有渲染模型（RenderableModel 析构会释放内部的 Model 和子节点）
+		for (auto* model : m_RenderableModels) {
+			delete model;
+		}
+		m_RenderableModels.clear();
 
+		// 释放天空盒
+		if (m_Skybox) {
+			delete m_Skybox;
+			m_Skybox = nullptr;
+		}
+
+		// 释放流体模拟
+		if (m_fluid) {
+			delete m_fluid;
+			m_fluid = nullptr;
+		}
 	}
 
 	void Scene3D::init() {

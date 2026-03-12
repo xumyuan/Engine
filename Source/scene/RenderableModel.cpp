@@ -23,10 +23,17 @@ namespace engine {
 	}
 
 	RenderableModel::~RenderableModel() {
-		// Recursive delete on children
+		// 释放持有的 Model 资源
+		if (m_Model) {
+			delete m_Model;
+			m_Model = nullptr;
+		}
+
+		// 递归释放子节点
 		for (unsigned int i = 0; i < m_Children.size(); i++) {
 			delete m_Children[i];
 		}
+		m_Children.clear();
 	}
 
 	void RenderableModel::draw(Shader *shader, RenderPassType pass) const {
