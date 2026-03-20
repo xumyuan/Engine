@@ -7,12 +7,11 @@
 namespace engine
 {
 	class Shader;
-	class Scene3D;
 	class ICamera;
 
 	class DeferredLightingPass : public RenderPass {
 	public:
-		DeferredLightingPass(Scene3D* scene);
+		DeferredLightingPass(const RenderScene& renderScene);
 		virtual ~DeferredLightingPass() override;
 
 		LightingPassOutput ExecuteLightingPass(ShadowmapPassOutput& inputShadowmapData, GeometryPassOutput& inputGbuffer, PreLightingPassOutput& preLightingOutput, ICamera* camera, bool useIBL);

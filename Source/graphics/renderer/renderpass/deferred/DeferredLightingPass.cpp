@@ -7,12 +7,11 @@
 #include <graphics/camera/ICamera.h>
 #include <graphics/renderer/renderpass/deferred/DeferredGeometryPass.h>
 #include <graphics/UniformBufferManager.h>
-#include <scene/Scene3D.h>
 #include <utils/loaders/ShaderLoader.h>
 
 namespace engine
 {
-	DeferredLightingPass::DeferredLightingPass(Scene3D* scene) : RenderPass(scene,RenderPassType::LightingPassType)
+	DeferredLightingPass::DeferredLightingPass(const RenderScene& renderScene) : RenderPass(renderScene,RenderPassType::LightingPassType)
 	{
 		m_LightingShader = ShaderLoader::loadShader("Shaders/deferred/PBR_LightingPass.glsl");
 
@@ -62,8 +61,8 @@ namespace engine
 		stencilReadOnly.depthFail = rhi::StencilOp::Keep;
 		stencilReadOnly.depthPass = rhi::StencilOp::Keep;
 
-		DynamicLightManager* lightManager = m_ActiveScene->getDynamicLightManager();
-		ProbeManager* probeManager = m_ActiveScene->getProbeManager();
+		DynamicLightManager* lightManager = m_RenderScene.lightManager;
+		ProbeManager* probeManager = m_RenderScene.probeManager;
 
 		// 重新绑定 shader pipeline（blit 后 shader 状态可能需要恢复）
 		pipeline.stencilEnable = true;
@@ -160,7 +159,7 @@ namespace engine
 		bindPipelineState(pipeline);
 
 		BEGIN_EVENT("Render Skybox");
-		Skybox* skybox = m_ActiveScene->getSkybox();
+		Skybox* skybox = m_RenderScene.skybox;
 		skybox->Draw(camera);
 		END_EVENT();
 

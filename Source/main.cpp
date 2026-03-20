@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "scene/SceneManager.h"
 #include "scene/Scene3D.h"
 
 #include <gl/glew.h>
@@ -55,11 +56,12 @@ int main(int argc, char* argv[]) {
 
 	//创建场景
 	spdlog::info("create scene...");
-	engine::Scene3D scene(&window);
+	engine::SceneManager sceneManager;
+	auto* scene = sceneManager.createScene("main", &window);
 	spdlog::info("create scene over.");
 
 
-	engine::MasterRenderer renderer(&scene);
+	engine::MasterRenderer renderer(scene);
 
 	// 准备ui
 	engine::RuntimePane runtimePane(glm::vec2(256.0f, 90.0f));
@@ -100,12 +102,12 @@ int main(int argc, char* argv[]) {
 			window.close();
 
 		if (engine::InputManager::isKeyPressed(GLFW_KEY_C)) {
-			auto* camera = scene.getCamera();
+			auto* camera = scene->getCamera();
 			glm::vec3 pos = camera->getPosition();
 			spdlog::info("Camera Position: ({}, {}, {})", pos.x, pos.y, pos.z);
 		}
 
-		scene.onUpdate(deltaTime.getDeltaTime());
+		scene->onUpdate(deltaTime.getDeltaTime());
 		renderer.render();
 
 

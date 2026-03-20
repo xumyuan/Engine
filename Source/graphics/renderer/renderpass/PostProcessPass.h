@@ -2,8 +2,8 @@
 
 #include <graphics/renderer/renderpass/RenderPass.h>
 #include <graphics/renderer/RenderTarget.h>
+#include <graphics/mesh/common/Quad.h>
 #include <graphics/Shader.h>
-#include <scene/Scene3D.h>
 
 namespace engine
 {
@@ -11,7 +11,7 @@ namespace engine
 	class PostProcessPass : public RenderPass
 	{
 	public:
-		PostProcessPass(Scene3D* scene);
+		PostProcessPass(const RenderScene& renderScene);
 		virtual ~PostProcessPass() override;
 
 		void executeRenderPass(LightingPassOutput& lightingOutput);

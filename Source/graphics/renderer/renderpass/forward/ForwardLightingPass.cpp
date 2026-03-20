@@ -2,6 +2,8 @@
 #include "ForwardLightingPass.h"
 
 #include "physics/fluid/FluidSim.h"
+#include "graphics/Window.h"
+#include "graphics/camera/FPSCamera.h"
 
 #include <utils/loaders/ShaderLoader.h>
 #include <graphics/UniformBufferManager.h>
@@ -9,7 +11,7 @@
 namespace engine
 {
 
-	ForwardLightingPass::ForwardLightingPass(Scene3D* scene) : RenderPass(scene, RenderPassType::LightingPassType), m_OwnsRT(true)
+	ForwardLightingPass::ForwardLightingPass(const RenderScene& renderScene) : RenderPass(renderScene, RenderPassType::LightingPassType), m_OwnsRT(true)
 	{
 		m_ModelShader = ShaderLoader::loadShader("Shaders/forward/pbr_model.glsl");
 		m_TerrainShader = ShaderLoader::loadShader("Shaders/forward/pbr_terrain.glsl");
@@ -20,7 +22,7 @@ namespace engine
 			.addDepthStencilTexture(DepthStencilFormat::DepthStencil, false).build();
 	}
 
-	ForwardLightingPass::ForwardLightingPass(Scene3D* scene, RenderTarget* customRT) : RenderPass(scene, RenderPassType::LightingPassType), m_RT(customRT), m_OwnsRT(false)
+	ForwardLightingPass::ForwardLightingPass(const RenderScene& renderScene, RenderTarget* customRT) : RenderPass(renderScene, RenderPassType::LightingPassType), m_RT(customRT), m_OwnsRT(false)
 	{
 		m_ModelShader = ShaderLoader::loadShader("Shaders/forward/pbr_model.glsl");
 		m_TerrainShader = ShaderLoader::loadShader("Shaders/forward/pbr_terrain.glsl");
@@ -36,12 +38,12 @@ namespace engine
 		m_RT->beginPass();
 
 		// Setup
-		ModelRenderer* modelRenderer = m_ActiveScene->getModelRenderer();
-		Terrain* terrain = m_ActiveScene->getTerrain();
-		FluidSim* fluid = m_ActiveScene->getFluid();
-		DynamicLightManager* lightManager = m_ActiveScene->getDynamicLightManager();
-		Skybox* skybox = m_ActiveScene->getSkybox();
-		ProbeManager* probeManager = m_ActiveScene->getProbeManager();
+		ModelRenderer* modelRenderer = m_RenderScene.modelRenderer;
+		Terrain* terrain = m_RenderScene.terrain;
+		FluidSim* fluid = m_RenderScene.fluid;
+		DynamicLightManager* lightManager = m_RenderScene.lightManager;
+		Skybox* skybox = m_RenderScene.skybox;
+		ProbeManager* probeManager = m_RenderScene.probeManager;
 
 		// 通过 PipelineState 设置 model shader 和渲染状态
 		rhi::PipelineState pipeline;
@@ -82,7 +84,7 @@ namespace engine
 			// 即使不使用 IBL，也必须绑定正确类型的纹理到 samplerCube uniform 对应的纹理单元，
 			// 否则 samplerCube 默认指向 unit 0（绑定的是 GL_TEXTURE_2D shadowmap），
 			// 导致 GL_INVALID_OPERATION: program texture usage
-			Skybox* skyboxForBind = m_ActiveScene->getSkybox();
+			Skybox* skyboxForBind = m_RenderScene.skybox;
 			if (skyboxForBind && skyboxForBind->getSkyboxCubemap()) {
 				skyboxForBind->getSkyboxCubemap()->bind(1);
 				m_ModelShader->setUniform("irradianceMap", 1);
@@ -95,7 +97,7 @@ namespace engine
 			uboMgr->bindCustom(sizeof(UBOIBLParams));
 		}
 		// Render the scene
-		m_ActiveScene->addModelsToRenderer();
+		m_RenderScene.submitModelsToRenderer();
 		modelRenderer->flushOpaque(m_ModelShader, m_RenderPassType);
 
 		// 切换 terrain shader 管线

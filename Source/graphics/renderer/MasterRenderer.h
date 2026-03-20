@@ -24,6 +24,7 @@ namespace engine
 		void render();
 	private:
 		Scene3D* m_ActiveScene;
+		RenderScene m_RenderScene;
 
 		// UBO 管理器
 		UniformBufferManager m_UBOManager;

@@ -10,7 +10,7 @@
 
 namespace engine {
 
-	ForwardProbePass::ForwardProbePass(Scene3D* scene) : RenderPass(scene, RenderPassType::ProbePassType),
+	ForwardProbePass::ForwardProbePass(const RenderScene& renderScene) : RenderPass(renderScene, RenderPassType::ProbePassType),
 		m_SceneCaptureShadowRT(IBL_CAPTURE_RESOLUTION, IBL_CAPTURE_RESOLUTION),
 		m_SceneCaptureLightingRT(IBL_CAPTURE_RESOLUTION, IBL_CAPTURE_RESOLUTION),
 		m_LightProbeConvolutionRT(LIGHT_PROBE_RESOLUTION, LIGHT_PROBE_RESOLUTION),
@@ -119,8 +119,8 @@ namespace engine {
 
 		// Initialize step before rendering to the probe's cubemap
 		m_CubemapCamera.setCenterPosition(probePosition);
-		ShadowmapPass shadowPass(m_ActiveScene, &m_SceneCaptureShadowRT);
-		ForwardLightingPass lightingPass(m_ActiveScene, &m_SceneCaptureLightingRT);
+		ShadowmapPass shadowPass(m_RenderScene, &m_SceneCaptureShadowRT);
+		ForwardLightingPass lightingPass(m_RenderScene, &m_SceneCaptureLightingRT);
 
 		// Render the scene to the probe's cubemap
 		for (int i = 0; i < 6; i++) {
@@ -198,7 +198,7 @@ namespace engine {
 		restorePipeline.depthTest = true;
 		bindPipelineState(restorePipeline);
 
-		ProbeManager* probeManager = m_ActiveScene->getProbeManager();
+		ProbeManager* probeManager = m_RenderScene.probeManager;
 		probeManager->addProbe(lightProbe);
 	}
 
@@ -208,8 +208,8 @@ namespace engine {
 		reflectionProbe->generate();
 
 		m_CubemapCamera.setCenterPosition(probePosition);
-		ShadowmapPass shadowPass(m_ActiveScene, &m_SceneCaptureShadowRT);
-		ForwardLightingPass lightingPass(m_ActiveScene, &m_SceneCaptureLightingRT);
+		ShadowmapPass shadowPass(m_RenderScene, &m_SceneCaptureShadowRT);
+		ForwardLightingPass lightingPass(m_RenderScene, &m_SceneCaptureLightingRT);
 
 		// 将场景渲染到探针的立方体贴图
 		for (int i = 0; i < 6; ++i) {
@@ -299,7 +299,7 @@ namespace engine {
 		restorePipeline.depthTest = true;
 		bindPipelineState(restorePipeline);
 
-		ProbeManager* probeManager = m_ActiveScene->getProbeManager();
+		ProbeManager* probeManager = m_RenderScene.probeManager;
 		probeManager->addProbe(reflectionProbe);
 	}
 

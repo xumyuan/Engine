@@ -1,17 +1,17 @@
 #pragma once
 
 #include <graphics/camera/CubemapCamera.h>
+#include <graphics/texture/Cubemap.h>
 #include <graphics/renderer/renderpass/RenderPass.h>
 #include <graphics/renderer/renderpass/ShadowmapPass.h>
 #include <graphics/renderer/RenderTarget.h>
 #include <graphics/Shader.h>
-#include <scene/Scene3D.h>
 
 namespace engine {
 
 	class ForwardProbePass : public RenderPass {
 	public:
-		ForwardProbePass(Scene3D* scene);
+		ForwardProbePass(const RenderScene& renderScene);
 		virtual ~ForwardProbePass() override;
 
 		void pregenerateProbes();

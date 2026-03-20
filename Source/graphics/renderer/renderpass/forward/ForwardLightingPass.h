@@ -3,7 +3,6 @@
 #include <graphics/renderer/renderpass/RenderPass.h>
 #include <graphics/renderer/RenderTarget.h>
 #include <graphics/Shader.h>
-#include <scene/Scene3D.h>
 
 namespace engine
 {
@@ -11,8 +10,8 @@ namespace engine
 	class ForwardLightingPass : public RenderPass
 	{
 	public:
-		ForwardLightingPass(Scene3D* scene);
-		ForwardLightingPass(Scene3D* scene, RenderTarget* customRT);
+		ForwardLightingPass(const RenderScene& renderScene);
+		ForwardLightingPass(const RenderScene& renderScene, RenderTarget* customRT);
 		virtual ~ForwardLightingPass() override;
 
 		LightingPassOutput executeRenderPass(ShadowmapPassOutput& shadowmapData, ICamera* camera, bool useIBL);

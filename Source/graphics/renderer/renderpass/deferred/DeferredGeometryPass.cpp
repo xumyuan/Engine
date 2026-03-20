@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "DeferredGeometryPass.h"
 
-#include <scene/Scene3D.h>
 #include <utils/loaders/ShaderLoader.h>
 #include <graphics/renderer/renderpass/RenderPassType.h>
 #include <graphics/Window.h>
@@ -9,7 +8,7 @@
 
 namespace engine {
 
-	DeferredGeometryPass::DeferredGeometryPass(Scene3D* scene) : RenderPass(scene, RenderPassType::GeometryPassType),
+	DeferredGeometryPass::DeferredGeometryPass(const RenderScene& renderScene) : RenderPass(renderScene, RenderPassType::GeometryPassType),
 		m_GBufferRT(Window::getWidth(), Window::getHeight())
 	{
 		m_ModelShader = ShaderLoader::loadShader("Shaders/deferred/PBR_Model_GeometryPass.glsl");
@@ -101,9 +100,9 @@ namespace engine {
 		pipeline.stencilBack = pipeline.stencilFront;
 		bindPipelineState(pipeline);
 
-		ModelRenderer* modelRenderer = m_ActiveScene->getModelRenderer();
+		ModelRenderer* modelRenderer = m_RenderScene.modelRenderer;
 		
-		m_ActiveScene->addModelsToRenderer();
+		m_RenderScene.submitModelsToRenderer();
 
 		modelRenderer->flushOpaque(m_ModelShader, m_RenderPassType);
 
@@ -112,7 +111,7 @@ namespace engine {
 		pipeline.stencilBack.writeMask = 0x00;
 		bindPipelineState(pipeline);
 
-		Terrain* terrain = m_ActiveScene->getTerrain();
+		Terrain* terrain = m_RenderScene.terrain;
 		if (terrain)
 		{
 			BEGIN_EVENT("Render Terrain");

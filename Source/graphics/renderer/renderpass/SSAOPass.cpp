@@ -9,8 +9,8 @@
 namespace engine
 {
 
-	SSAOPass::SSAOPass(Scene3D* scene)
-		: RenderPass(scene, RenderPassType::SSAOPassType),
+	SSAOPass::SSAOPass(const RenderScene& renderScene)
+		: RenderPass(renderScene, RenderPassType::SSAOPassType),
 		m_SSAORT(Window::getWidth(), Window::getHeight()),
 		m_SSAOBlurRT(Window::getWidth(), Window::getHeight())
 	{

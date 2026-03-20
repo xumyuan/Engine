@@ -1,7 +1,7 @@
 #pragma once
 
 #include "RenderPassType.h"
-#include "scene/Scene3D.h"
+#include "scene/RenderScene.h"
 #include "rhi/include/RHIContext.h"
 #include "rhi/include/RHIResources.h"
 
@@ -10,7 +10,7 @@ namespace engine {
 	class RenderPass
 	{
 	public:
-		RenderPass(Scene3D* scene, RenderPassType passType);
+		RenderPass(const RenderScene& renderScene, RenderPassType passType);
 		virtual ~RenderPass();
 	protected:
 		// 获取 RHI 设备（便捷方法）
@@ -23,7 +23,7 @@ namespace engine {
 			}
 		}
 
-		Scene3D* m_ActiveScene;
+		RenderScene m_RenderScene;
 		RenderPassType m_RenderPassType;
 	};
 

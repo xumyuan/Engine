@@ -7,14 +7,14 @@
 namespace engine
 {
 
-	ShadowmapPass::ShadowmapPass(Scene3D* scene) : RenderPass(scene, RenderPassType::ShadowmapPassType), m_OwnsRT(true)
+	ShadowmapPass::ShadowmapPass(const RenderScene& renderScene) : RenderPass(renderScene, RenderPassType::ShadowmapPassType), m_OwnsRT(true)
 	{
 		m_ShadowmapShader = ShaderLoader::loadShader("Shaders/shadowmap.glsl");
 		m_RT = new RenderTarget(SHADOWMAP_RESOLUTION_X, SHADOWMAP_RESOLUTION_Y);
 		m_RT->addDepthStencilTexture(DepthStencilFormat::DepthOnly).build();
 	}
 
-	ShadowmapPass::ShadowmapPass(Scene3D* scene, RenderTarget* customRT) : RenderPass(scene, RenderPassType::ShadowmapPassType), m_RT(customRT), m_OwnsRT(false)
+	ShadowmapPass::ShadowmapPass(const RenderScene& renderScene, RenderTarget* customRT) : RenderPass(renderScene, RenderPassType::ShadowmapPassType), m_RT(customRT), m_OwnsRT(false)
 	{
 		m_ShadowmapShader = ShaderLoader::loadShader("Shaders/shadowmap.glsl");
 	}
@@ -29,9 +29,9 @@ namespace engine
 		m_RT->beginPass();
 
 		// Setup
-		ModelRenderer* modelRenderer = m_ActiveScene->getModelRenderer();
-		Terrain* terrain = m_ActiveScene->getTerrain();
-		DynamicLightManager* lightManager = m_ActiveScene->getDynamicLightManager();
+		ModelRenderer* modelRenderer = m_RenderScene.modelRenderer;
+		Terrain* terrain = m_RenderScene.terrain;
+		DynamicLightManager* lightManager = m_RenderScene.lightManager;
 
 		// 通过 PipelineState 设置 shader 和渲染状态
 		rhi::PipelineState pipeline;
@@ -56,7 +56,7 @@ namespace engine
 		}
 
 		// Render models
-		m_ActiveScene->addModelsToRenderer();
+		m_RenderScene.submitModelsToRenderer();
 		modelRenderer->flushOpaque(m_ShadowmapShader, m_RenderPassType);
 		modelRenderer->flushTransparent(m_ShadowmapShader, m_RenderPassType);
 

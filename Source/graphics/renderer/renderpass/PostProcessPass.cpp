@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "PostProcessPass.h"
 
+#include <graphics/Window.h>
+#include <ui/DebugPane.h>
 #include <utils/DebugEvent.h>
 #include <utils/loaders/ShaderLoader.h>
 #include <graphics/UniformBufferManager.h>
@@ -8,7 +10,7 @@
 namespace engine
 {
 
-	PostProcessPass::PostProcessPass(Scene3D* scene) : RenderPass(scene, RenderPassType::PostProcessPassType),
+	PostProcessPass::PostProcessPass(const RenderScene& renderScene) : RenderPass(renderScene, RenderPassType::PostProcessPassType),
 		m_ResolveRT(Window::getWidth(), Window::getHeight()),
 		m_GammaCorrectTarget(Window::getWidth(), Window::getHeight()),
 		m_FullRenderTarget(Window::getWidth(), Window::getHeight())

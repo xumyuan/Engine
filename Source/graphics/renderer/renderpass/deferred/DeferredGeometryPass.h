@@ -2,18 +2,16 @@
 #include <graphics/renderer/renderpass/RenderPass.h>
 #include <graphics/renderer/RenderTarget.h>
 #include <graphics/Shader.h>
-#include <scene/Scene3D.h>
 
 namespace engine
 {
 	class Shader;
-	class Scene3D;
 	class ICamera;
 
 	class DeferredGeometryPass :public RenderPass
 	{
 	public:
-		DeferredGeometryPass(Scene3D* scene);
+		DeferredGeometryPass(const RenderScene& renderScene);
 		virtual ~DeferredGeometryPass() override;
 		GeometryPassOutput ExecuteGeometryPass(ICamera* camera, bool renderOnlyStatic);
 	private:

@@ -3,7 +3,6 @@
 #include <graphics/renderer/renderpass/RenderPass.h>
 #include <graphics/renderer/RenderTarget.h>
 #include <graphics/Shader.h>
-#include <scene/Scene3D.h>
 
 namespace engine
 {
@@ -11,8 +10,8 @@ namespace engine
 	class ShadowmapPass : public RenderPass
 	{
 	public:
-		ShadowmapPass(Scene3D* scene);
-		ShadowmapPass(Scene3D* scene, RenderTarget* customRT);
+		ShadowmapPass(const RenderScene& renderScene);
+		ShadowmapPass(const RenderScene& renderScene, RenderTarget* customRT);
 		virtual ~ShadowmapPass() override;
 
 		ShadowmapPassOutput generateShadowmaps(ICamera* camera);

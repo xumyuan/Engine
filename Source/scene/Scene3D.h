@@ -9,16 +9,25 @@
 #include "scene/RenderableModel.h"
 #include "terrain/Terrain.h"
 #include "utils/loaders/TextureLoader.h"
+#include "scene/RenderScene.h"
 
 namespace engine {
 
 	class GlobalConfig;
 	class FluidSim;
+	class SceneLoader;
 
 	class Scene3D {
 
+		friend class SceneLoader;
+
 	public:
+		/// @brief 从 GlobalConfig 获取场景路径自动加载（兼容旧代码）
 		Scene3D(Window* window);
+
+		/// @brief 从指定路径加载场景（供 SceneManager 使用）
+		Scene3D(Window* window, const std::string& scenePath);
+
 		~Scene3D();
 
 
@@ -27,6 +36,13 @@ namespace engine {
 
 		void addModelsToRenderer();
 
+		/// @brief 提取渲染场景数据快照，供 MasterRenderer 和 RenderPass 使用
+		RenderScene extractRenderScene();
+
+		// 数据注入接口（供 SceneLoader 等外部模块使用）
+		void addRenderableModel(RenderableModel* model);
+		void setSkybox(Skybox* skybox);
+
 		inline ModelRenderer* getModelRenderer() { return &m_ModelRenderer; }
 		inline Terrain* getTerrain() { return &m_Terrain; }
 		inline FluidSim* getFluid() { return m_fluid; }
@@ -34,8 +50,6 @@ namespace engine {
 		inline ProbeManager* getProbeManager() { return &m_ProbeManager; }
 		inline FPSCamera* getCamera() { return &m_SceneCamera; }
 		inline Skybox* getSkybox() { return m_Skybox; }
-	private:
-		void init();
 
 	private:
 		// Global Config

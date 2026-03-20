@@ -3,7 +3,6 @@
 #include <graphics/renderer/renderpass/RenderPass.h>
 #include <graphics/renderer/RenderTarget.h>
 #include <graphics/Shader.h>
-#include <scene/Scene3D.h>
 
 namespace engine
 {
@@ -11,7 +10,7 @@ namespace engine
 	class SSAOPass : public RenderPass
 	{
 	public:
-		SSAOPass(Scene3D* scene);
+		SSAOPass(const RenderScene& renderScene);
 		virtual ~SSAOPass() override;
 
 		PreLightingPassOutput executeSSAOPass(ICamera* camera, GeometryPassOutput& gBufferOutput);

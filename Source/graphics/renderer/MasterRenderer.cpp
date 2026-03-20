@@ -9,13 +9,14 @@ namespace engine
 {
 
 	MasterRenderer::MasterRenderer(Scene3D* scene) : m_ActiveScene(scene),
-		m_ShadowmapPass(scene),
-		m_LightingPass(scene),
-		m_PostProcessPass(scene),
-		m_EnvironmentProbePass(scene),
-		m_DeferredGeometryPass(scene),
-		m_DeferredLightingPass(scene),
-		m_SSAOPass(scene)
+		m_RenderScene(scene->extractRenderScene()),
+		m_ShadowmapPass(m_RenderScene),
+		m_LightingPass(m_RenderScene),
+		m_PostProcessPass(m_RenderScene),
+		m_EnvironmentProbePass(m_RenderScene),
+		m_DeferredGeometryPass(m_RenderScene),
+		m_DeferredLightingPass(m_RenderScene),
+		m_SSAOPass(m_RenderScene)
 	{
 		// 初始化 UBO 管理器
 		m_UBOManager.initialize(getRHIDevice());
@@ -36,6 +37,8 @@ namespace engine
 	}
 
 	void MasterRenderer::render() {
+		// 每帧更新渲染场景快照（场景数据可能在帧间变化）
+		m_RenderScene = m_ActiveScene->extractRenderScene();
 
 #if FORWARD_RENDER
 		BEGIN_EVENT("Forward render");
@@ -45,7 +48,7 @@ namespace engine
 #endif
 		BEGIN_EVENT("Shadowmap");
 		// Shadow map pass
-		ShadowmapPassOutput shadowmapOutput = m_ShadowmapPass.generateShadowmaps(m_ActiveScene->getCamera());
+		ShadowmapPassOutput shadowmapOutput = m_ShadowmapPass.generateShadowmaps(m_RenderScene.camera);
 		END_EVENT();
 #if DEBUG_ENABLED
 		glFinish();
@@ -53,7 +56,7 @@ namespace engine
 #endif
 		BEGIN_EVENT("Light");
 		// Lighting Pass
-		LightingPassOutput lightingOutput = m_LightingPass.executeRenderPass(shadowmapOutput, m_ActiveScene->getCamera(), true);
+		LightingPassOutput lightingOutput = m_LightingPass.executeRenderPass(shadowmapOutput, m_RenderScene.camera, true);
 		END_EVENT();
 		// 后处理 Pass
 #if DEBUG_ENABLED
@@ -70,16 +73,16 @@ namespace engine
 #endif
 #else
 		BEGIN_EVENT("Shadowmap");
-		ShadowmapPassOutput shadowmapOutput = m_ShadowmapPass.generateShadowmaps(m_ActiveScene->getCamera());
+		ShadowmapPassOutput shadowmapOutput = m_ShadowmapPass.generateShadowmaps(m_RenderScene.camera);
 		END_EVENT();
 		BEGIN_EVENT("GeometryPass");
-		GeometryPassOutput geometryOutput = m_DeferredGeometryPass.ExecuteGeometryPass(m_ActiveScene->getCamera(), false);
+		GeometryPassOutput geometryOutput = m_DeferredGeometryPass.ExecuteGeometryPass(m_RenderScene.camera, false);
 		END_EVENT();
 		BEGIN_EVENT("SSAOPass");
-		PreLightingPassOutput ssaoOutput = m_SSAOPass.executeSSAOPass(m_ActiveScene->getCamera(), geometryOutput);
+		PreLightingPassOutput ssaoOutput = m_SSAOPass.executeSSAOPass(m_RenderScene.camera, geometryOutput);
 		END_EVENT();
 		BEGIN_EVENT("LightingPass");
-		LightingPassOutput deferredLightingOutput = m_DeferredLightingPass.ExecuteLightingPass(shadowmapOutput, geometryOutput, ssaoOutput, m_ActiveScene->getCamera(), true);
+		LightingPassOutput deferredLightingOutput = m_DeferredLightingPass.ExecuteLightingPass(shadowmapOutput, geometryOutput, ssaoOutput, m_RenderScene.camera, true);
 		END_EVENT();
 		m_PostProcessPass.executeRenderPass(deferredLightingOutput);
 
