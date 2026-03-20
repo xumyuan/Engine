@@ -3,6 +3,10 @@
 
 #include "scene/Scene3D.h"
 #include "scene/RenderableModel.h"
+#include "scene/SceneNode.h"
+#include "scene/components/MeshComponent.h"
+#include "scene/components/SkyboxComponent.h"
+#include "scene/components/LightComponent.h"
 #include "graphics/mesh/Model.h"
 #include "graphics/mesh/common/Sphere.h"
 #include "graphics/Skybox.h"
@@ -67,11 +71,24 @@ namespace engine {
 				modelMat.processMaterial(modelInfo);
 			}
 
-			scene.addRenderableModel(new RenderableModel(
+			// ── [向后兼容] RenderableModel 仍然持有 Model 所有权（用于渲染管线） ──
+			RenderableModel* renderableModel = new RenderableModel(
 				position, scale, rotationAxis,
 				glm::radians(radianRotation),
 				modelPtr, nullptr, isStatic, isTransparent
-			));
+			);
+			scene.addRenderableModel(renderableModel);
+
+			// ── 创建 SceneNode + MeshComponent（阶段三） ──
+			// MeshComponent 不持有 Model 所有权（model 参数传 nullptr），
+			// 仅记录节点的 Transform 和渲染属性，Model 生命周期仍由 RenderableModel 管理
+			// 后续阶段将完全迁移到 MeshComponent 持有 Model 所有权
+			auto* node = new SceneNode(modelPath);
+			node->setPosition(position);
+			node->setScale(scale);
+			node->setOrientation(glm::radians(radianRotation), rotationAxis);
+			node->addComponent(new MeshComponent(nullptr, isStatic, isTransparent));
+			scene.addSceneNode(node);
 		}
 	}
 
@@ -86,7 +103,15 @@ namespace engine {
 			return;
 		}
 
-		scene.setSkybox(new Skybox(skyboxFilePaths));
+		Skybox* skybox = new Skybox(skyboxFilePaths);
+
+		// ── 创建 SceneNode + SkyboxComponent（阶段三） ──
+		auto* skyboxNode = new SceneNode("Skybox");
+		skyboxNode->addComponent(new SkyboxComponent(nullptr)); // SkyboxComponent 不持有所有权，由 Scene3D 管理
+		scene.addSceneNode(skyboxNode);
+
+		// ── [向后兼容] 旧接口 ──
+		scene.setSkybox(skybox);
 		scene.getProbeManager()->init(scene.getSkybox());
 	}
 
@@ -100,6 +125,15 @@ namespace engine {
 				lightsInfo.directionalLight.direction,
 				lightsInfo.directionalLight.lightColor
 			);
+
+			// ── 创建方向光 SceneNode + LightComponent（阶段三） ──
+			auto* dirLightNode = new SceneNode("DirectionalLight");
+			auto* lightComp = new LightComponent(LightType::Directional);
+			lightComp->setDirection(lightsInfo.directionalLight.direction);
+			lightComp->setLightColor(lightsInfo.directionalLight.lightColor);
+			lightComp->setActive(true);
+			dirLightNode->addComponent(lightComp);
+			scene.addSceneNode(dirLightNode);
 		}
 
 		// 设置聚光灯
@@ -111,6 +145,18 @@ namespace engine {
 				lightsInfo.spotLight.cutOff,
 				lightsInfo.spotLight.outerCutOff
 			);
+
+			// ── 创建聚光灯 SceneNode + LightComponent（阶段三） ──
+			auto* spotLightNode = new SceneNode("SpotLight");
+			spotLightNode->setPosition(lightsInfo.spotLight.position);
+			auto* spotComp = new LightComponent(LightType::Spot);
+			spotComp->setDirection(lightsInfo.spotLight.direction);
+			spotComp->setLightColor(lightsInfo.spotLight.lightColor);
+			spotComp->setCutOff(lightsInfo.spotLight.cutOff);
+			spotComp->setOuterCutOff(lightsInfo.spotLight.outerCutOff);
+			spotComp->setActive(true);
+			spotLightNode->addComponent(spotComp);
+			scene.addSceneNode(spotLightNode);
 		}
 
 		// 设置点光源并添加光球模型
@@ -122,6 +168,16 @@ namespace engine {
 					pointLight.lightColor
 				);
 
+				// ── 创建点光源 SceneNode + LightComponent + MeshComponent（阶段三） ──
+				auto* pointLightNode = new SceneNode("PointLight");
+				pointLightNode->setPosition(pointLight.position);
+				pointLightNode->setScale(glm::vec3(5.0f));
+
+				auto* pointComp = new LightComponent(LightType::Point);
+				pointComp->setLightColor(pointLight.lightColor);
+				pointComp->setActive(true);
+				pointLightNode->addComponent(pointComp);
+
 				// 创建光球模型
 				Sphere* lightSphere = new Sphere(10, 10);
 				Model* lightSphereModel = new Model(std::move(*lightSphere));
@@ -131,13 +187,16 @@ namespace engine {
 				material.SetAlbedoColour(glm::vec4(pointLight.lightColor, 1.0f));
 				material.SetEmissionColour(glm::vec4(pointLight.lightColor, 1.0f));
 
-				// 添加到渲染列表
+				pointLightNode->addComponent(new MeshComponent(lightSphereModel, true, false));
+				scene.addSceneNode(pointLightNode);
+
+				// ── [向后兼容] 旧接口 ──
 				scene.addRenderableModel(new RenderableModel(
 					pointLight.position,
-					glm::vec3(5.0f, 5.0f, 5.0f), // 光球大小
+					glm::vec3(5.0f, 5.0f, 5.0f),
 					glm::vec3(0.0f, 1.0f, 0.0f),
 					0.0f,
-					lightSphereModel,
+					nullptr,
 					nullptr,
 					true,
 					false

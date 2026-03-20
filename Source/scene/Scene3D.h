@@ -7,6 +7,7 @@
 #include "graphics/ibl/ProbeManager.h"
 #include "graphics/renderer/ModelRenderer.h"
 #include "scene/RenderableModel.h"
+#include "scene/SceneNode.h"
 #include "terrain/Terrain.h"
 #include "utils/loaders/TextureLoader.h"
 #include "scene/RenderScene.h"
@@ -39,7 +40,17 @@ namespace engine {
 		/// @brief 提取渲染场景数据快照，供 MasterRenderer 和 RenderPass 使用
 		RenderScene extractRenderScene();
 
-		// 数据注入接口（供 SceneLoader 等外部模块使用）
+		// ── 节点树接口（阶段三新增） ──
+
+		/// @brief 获取场景根节点
+		SceneNode* getRoot() { return &m_RootNode; }
+
+		/// @brief 向场景根节点添加子节点
+		void addSceneNode(SceneNode* node);
+
+		// ── 向后兼容接口（逐步废弃） ──
+
+		/// @brief [已废弃] 添加渲染模型 —— 内部转换为 SceneNode + MeshComponent
 		void addRenderableModel(RenderableModel* model);
 		void setSkybox(Skybox* skybox);
 
@@ -58,6 +69,9 @@ namespace engine {
 		// Scene parameters
 		ProbeBlendSetting m_SceneProbeBlendSetting = PROBES_SIMPLE;
 
+		// ── 场景节点树（阶段三核心） ──
+		SceneNode m_RootNode{"SceneRoot"};
+
 		// Scene Specific Data
 		FPSCamera m_SceneCamera;
 		Skybox* m_Skybox = nullptr;
@@ -66,6 +80,8 @@ namespace engine {
 		FluidSim* m_fluid = nullptr;
 		DynamicLightManager m_DynamicLightManager;
 		ProbeManager m_ProbeManager;
+
+		// [向后兼容] 旧的渲染模型列表 —— 逐步迁移到节点树
 		std::vector<RenderableModel*> m_RenderableModels;
 
 	};

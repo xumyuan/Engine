@@ -8,6 +8,12 @@
 #include "graphics/mesh/common/Quad.h"
 #include "physics/fluid/FluidSim.h"
 
+#include "scene/SceneNode.h"
+#include "scene/components/MeshComponent.h"
+#include "scene/components/SkyboxComponent.h"
+#include "scene/components/LightComponent.h"
+#include "scene/components/TerrainComponent.h"
+
 #include "utils/global_config/GlobalConfig.h"
 
 namespace engine {
@@ -26,6 +32,11 @@ namespace engine {
 			initPipeline.multisample = true;
 			device->bindPipeline(initPipeline);
 		}
+
+		// 将 Terrain 添加到节点树（作为地形组件）
+		auto* terrainNode = new SceneNode("Terrain");
+		terrainNode->addComponent(new TerrainComponent(&m_Terrain));
+		m_RootNode.addChild(terrainNode);
 
 		// 通过 SceneLoader 加载场景数据（从 JSON 解析模型、天空盒、灯光等）
 		BEGIN_EVENT("Scene Init");
@@ -47,6 +58,11 @@ namespace engine {
 			initPipeline.multisample = true;
 			device->bindPipeline(initPipeline);
 		}
+
+		// 将 Terrain 添加到节点树（作为地形组件）
+		auto* terrainNode = new SceneNode("Terrain");
+		terrainNode->addComponent(new TerrainComponent(&m_Terrain));
+		m_RootNode.addChild(terrainNode);
 
 		// 通过 SceneLoader 从指定路径加载场景数据
 		BEGIN_EVENT("Scene Init");
@@ -71,6 +87,15 @@ namespace engine {
 		if (m_fluid) {
 			delete m_fluid;
 			m_fluid = nullptr;
+		}
+
+		// 注意：m_RootNode 是栈对象，其析构会递归释放子节点和组件
+		// 但 TerrainComponent 不持有 Terrain 所有权，m_Terrain 由 Scene3D 管理
+	}
+
+	void Scene3D::addSceneNode(SceneNode* node) {
+		if (node) {
+			m_RootNode.addChild(node);
 		}
 	}
 
@@ -110,6 +135,7 @@ namespace engine {
 		rs.probeManager = &m_ProbeManager;
 		rs.fluid = m_fluid;
 		rs.renderableModels = &m_RenderableModels;
+		rs.rootNode = &m_RootNode;
 		return rs;
 	}
 

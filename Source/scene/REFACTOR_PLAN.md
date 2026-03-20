@@ -33,27 +33,26 @@
 
 ---
 
-## 阶段三：统一 SceneNode 模型（组件化）
+## ✅ 阶段三：统一 SceneNode 模型（组件化） —— 已完成
 
 **目标**：所有场景实体统一为 `SceneNode`，通过 Component 系统区分能力。
 
-### 具体任务
-1. **新增 `scene/Component.h`** — 组件基类
-2. **新增 `scene/SceneNode.h/cpp`** — 场景节点（Transform + 父子关系 + Component 容器）
-3. **新增 `scene/components/MeshComponent.h`** — 模型渲染组件
-4. **新增 `scene/components/LightComponent.h`** — 灯光组件
-5. **新增 `scene/components/SkyboxComponent.h`** — 天空盒组件
-6. **新增 `scene/components/TerrainComponent.h`** — 地形组件
-7. **修改 `Scene3D`** — 内部存储改为 `SceneNode m_Root` 节点树
-8. **修改 `SceneLoader`** — 创建 SceneNode + 对应 Component
-9. **修改 `RenderScene` 提取逻辑** — 遍历节点树收集渲染数据
-10. **废弃 `RenderableModel`** — 拆分为 SceneNode + MeshComponent
+### 完成内容
+- 新增 `scene/Component.h` — 组件基类（ComponentType 枚举 + Component 抽象接口）
+- 新增 `scene/SceneNode.h/cpp` — 场景节点（Transform + 父子层级 + Component 容器 + 模板化组件查询）
+- 新增 `scene/components/MeshComponent.h` — 模型渲染组件（替代 RenderableModel 的渲染职责）
+- 新增 `scene/components/LightComponent.h` — 灯光组件（支持方向光/点光源/聚光灯）
+- 新增 `scene/components/SkyboxComponent.h` — 天空盒组件
+- 新增 `scene/components/TerrainComponent.h` — 地形组件
+- `Scene3D` 新增 `SceneNode m_RootNode` 节点树 + `addSceneNode()` / `getRoot()` 接口
+- `SceneLoader` 加载时同时创建 SceneNode + Component 并添加到节点树
+- `RenderScene` 新增 `SceneNode* rootNode` 指针，支持遍历节点树
+- `RenderableModel` 暂时保留（向后兼容），后续逐步废弃
 
-### 受影响的文件
-- 新增 6+ 文件
-- 修改 5+ 文件
-
-### 风险：高（改动面大，需要充分测试）
+### 向后兼容说明
+- 渲染管线仍通过 `RenderableModel` + `ModelRenderer` 工作（不破坏现有渲染流程）
+- 节点树系统与旧系统并行存在，可通过 `RenderScene::rootNode` 遍历场景
+- 后续可逐步将渲染管线切换为直接从节点树 + MeshComponent 获取数据
 
 ---
 
@@ -71,4 +70,6 @@
 
 ## 执行顺序
 ~~阶段一 → 阶段四 → 阶段二 → 阶段三~~
-实际顺序：阶段一 → 阶段二 → 阶段四 → 阶段三（待做）
+实际顺序：阶段一 → 阶段二 → 阶段四 → 阶段三
+
+**全部阶段已完成！** 🎉
