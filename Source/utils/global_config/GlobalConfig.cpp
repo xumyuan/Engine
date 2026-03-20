@@ -14,9 +14,4 @@ namespace engine {
 	GlobalConfig::~GlobalConfig() {
 
 	}
-
-	GlobalConfig* GlobalConfig::getInstance() {
-		static GlobalConfig config;
-		return &config;
-	}
 }

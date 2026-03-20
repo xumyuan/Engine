@@ -1,15 +1,15 @@
 #pragma once
 #include "utils/Singleton.h"
 namespace engine {
-	class GlobalConfig : Singleton
+	class GlobalConfig : public Singleton<GlobalConfig>
 	{
+		friend class Singleton<GlobalConfig>;
 	public:
-		GlobalConfig();
 		~GlobalConfig();
-		static GlobalConfig* getInstance();
 
 		std::string getScenePath() { return m_scenePath; }
 	private:
+		GlobalConfig();
 		std::string m_scenePath;
 	};
 }
