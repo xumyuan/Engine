@@ -64,7 +64,7 @@ namespace engine {
 
 	private:
 		// Global Config
-		GlobalConfig* m_config;
+		GlobalConfig& m_config;
 
 		// Scene parameters
 		ProbeBlendSetting m_SceneProbeBlendSetting = PROBES_SIMPLE;

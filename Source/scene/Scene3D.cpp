@@ -22,9 +22,13 @@ namespace engine {
 		:m_SceneCamera(glm::vec3(105.716f, 136.20f, 98.0f), glm::vec3(0.0f, 1.0f, 0.0f), 0.0f, 0.0f),
 		m_ModelRenderer(getCamera()),
 		m_Terrain(glm::vec3(-220.0f, 0.0f, 0.0f)),
-		m_ProbeManager(m_SceneProbeBlendSetting)
+		m_ProbeManager(m_SceneProbeBlendSetting),
+		m_config(GlobalConfig::getInstance())
 	{
-		m_config = GlobalConfig::getInstance();
+		// 确保配置已加载
+		if (!m_config.isLoaded()) {
+			m_config.loadFromFile();
+		}
 
 		// 初始化 RHI 管线状态
 		if (auto* device = getRHIDevice()) {
@@ -40,7 +44,7 @@ namespace engine {
 
 		// 通过 SceneLoader 加载场景数据（从 JSON 解析模型、天空盒、灯光等）
 		BEGIN_EVENT("Scene Init");
-		SceneLoader::loadFromFile(m_config->getScenePath(), *this);
+		SceneLoader::loadFromFile(m_config.getScenePath(), *this);
 		END_EVENT();
 	}
 
@@ -48,9 +52,9 @@ namespace engine {
 		:m_SceneCamera(glm::vec3(105.716f, 136.20f, 98.0f), glm::vec3(0.0f, 1.0f, 0.0f), 0.0f, 0.0f),
 		m_ModelRenderer(getCamera()),
 		m_Terrain(glm::vec3(-220.0f, 0.0f, 0.0f)),
-		m_ProbeManager(m_SceneProbeBlendSetting)
+		m_ProbeManager(m_SceneProbeBlendSetting),
+		m_config(GlobalConfig::getInstance())
 	{
-		m_config = GlobalConfig::getInstance();
 
 		// 初始化 RHI 管线状态
 		if (auto* device = getRHIDevice()) {
