@@ -10,6 +10,7 @@ namespace engine
 
 	MasterRenderer::MasterRenderer(Scene3D* scene) : m_ActiveScene(scene),
 		m_RenderScene(scene->extractRenderScene()),
+		m_CommandQueue(getRHIDevice()),
 		m_ShadowmapPass(m_RenderScene),
 		m_LightingPass(m_RenderScene),
 		m_PostProcessPass(m_RenderScene),
@@ -34,6 +35,9 @@ namespace engine
 		BEGIN_EVENT("GenerateProbes");
 		m_EnvironmentProbePass.pregenerateProbes();
 		END_EVENT();
+
+		// 即时执行模式下命令已在录制时执行，只需重置缓冲
+		m_EnvironmentProbePass.resetCommandBuffer();
 	}
 
 	void MasterRenderer::render() {
@@ -88,7 +92,16 @@ namespace engine
 
 #endif // FORWARD_RENDER
 
-
+		// ===== 命令缓冲重置 =====
+		// 当前阶段（即时执行模式）：命令在录制时已立即分发到 RHIDevice 执行。
+		// 这里只需重置各 pass 的命令缓冲，为下一帧做准备。
+		// 后续迁移完所有高层操作后，切换为延迟模式时需要恢复 submit/flush 逻辑。
+		m_ShadowmapPass.resetCommandBuffer();
+		m_LightingPass.resetCommandBuffer();
+		m_PostProcessPass.resetCommandBuffer();
+		m_SSAOPass.resetCommandBuffer();
+		m_DeferredGeometryPass.resetCommandBuffer();
+		m_DeferredLightingPass.resetCommandBuffer();
 	}
 
 }

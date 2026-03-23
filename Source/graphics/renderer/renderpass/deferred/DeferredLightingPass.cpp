@@ -27,7 +27,12 @@ namespace engine
 
 	LightingPassOutput DeferredLightingPass::ExecuteLightingPass(ShadowmapPassOutput& inputShadowmapData, GeometryPassOutput& inputGbuffer, PreLightingPassOutput& preLightingOutput, ICamera* camera, bool useIBL)
 	{
-		m_RT->beginPass();
+		// 通过命令缓冲录制 beginRenderPass
+		rhi::RenderPassParams passParams;
+		passParams.viewport = { 0, 0, m_RT->getWidth(), m_RT->getHeight() };
+		passParams.clearColorFlag = true;
+		passParams.clearDepthFlag = true;
+		cmd().beginRenderPass(m_RT->getHandle(), passParams);
 
 		// 初始管线状态：关闭深度测试和多重采样
 		rhi::PipelineState pipeline;
@@ -35,11 +40,10 @@ namespace engine
 		pipeline.depthTest = false;
 		pipeline.multisample = false;
 		pipeline.cullMode = rhi::CullMode::Back;
-		bindPipelineState(pipeline);
+		cmd().bindPipeline(pipeline);
 
 		// Move the depth + stencil of the GBuffer to our render target
-		auto* device = getRHIDevice();
-		device->blit(inputGbuffer.renderTarget, m_RT->getHandle(),
+		cmd().blit(inputGbuffer.renderTarget, m_RT->getHandle(),
 			0, 0, inputGbuffer.width, inputGbuffer.height,
 			0, 0, m_RT->getWidth(), m_RT->getHeight(),
 			rhi::RHIDevice::BlitDepth | rhi::RHIDevice::BlitStencil);
@@ -50,7 +54,7 @@ namespace engine
 		rebindParams.clearColorFlag = false;
 		rebindParams.clearDepthFlag = false;
 		rebindParams.clearStencilFlag = false;
-		m_RT->beginPass(rebindParams);
+		cmd().beginRenderPass(m_RT->getHandle(), rebindParams);
 
 		// Setup stencil state: 开启 stencil 测试，写 mask 设为 0x00（只读不写）
 		rhi::StencilState stencilReadOnly;
@@ -68,9 +72,9 @@ namespace engine
 		pipeline.stencilEnable = true;
 		pipeline.stencilFront = stencilReadOnly;
 		pipeline.stencilBack = stencilReadOnly;
-		bindPipelineState(pipeline);
+		cmd().bindPipeline(pipeline);
 
-		// UBO 方式：PerFrame + Lighting
+		// UBO 方式：PerFrame + Lighting（高层操作仍直接调用）
 		if (auto* uboMgr = getUBOManager()) {
 			uboMgr->updatePerFrame(camera->getViewMatrix(), camera->getProjectionMatrix(),
 				camera->getPosition());
@@ -82,7 +86,7 @@ namespace engine
 			uboMgr->bindLighting();
 		}
 
-		// Bind GBuffer data
+		// Bind GBuffer data（高层纹理绑定仍直接调用）
 		inputGbuffer.albedoTexture->bind(6);
 		m_LightingShader->setUniform("albedoTexture", 6);
 
@@ -114,8 +118,6 @@ namespace engine
 		glm::vec3 cameraPosition = camera->getPosition();
 		probeManager->bindProbe(cameraPosition, m_LightingShader);
 
-		// 将未使用的 samplerCube uniform (pointLightShadowCubemap) 指向已绑定 cubemap 的纹理单元，
-		// 避免其默认值 0 指向只有 GL_TEXTURE_2D 的 unit 导致 GL_INVALID_OPERATION: program texture usage
 		m_LightingShader->setUniform("pointLightShadowCubemap", 1); 
 
 		// Perform lighting on the terrain (turn IBL off)
@@ -129,7 +131,7 @@ namespace engine
 		terrainStencil.ref = StencilValue::TerrainStencilValue;
 		pipeline.stencilFront = terrainStencil;
 		pipeline.stencilBack = terrainStencil;
-		bindPipelineState(pipeline);
+		cmd().bindPipeline(pipeline);
 		ModelRenderer::drawNdcPlane();
 
 		// Perform lighting on the models in the scene
@@ -150,20 +152,21 @@ namespace engine
 		modelStencil.ref = StencilValue::ModelStencilValue;
 		pipeline.stencilFront = modelStencil;
 		pipeline.stencilBack = modelStencil;
-		bindPipelineState(pipeline);
+		cmd().bindPipeline(pipeline);
 		ModelRenderer::drawNdcPlane();
 
 		// Reset state: 恢复深度测试
 		pipeline.depthTest = true;
 		pipeline.stencilEnable = false;
-		bindPipelineState(pipeline);
+		cmd().bindPipeline(pipeline);
 
-		BEGIN_EVENT("Render Skybox");
+		cmd().pushDebugGroup("Render Skybox");
 		Skybox* skybox = m_RenderScene.skybox;
 		skybox->Draw(camera);
-		END_EVENT();
+		cmd().popDebugGroup();
 
-		m_RT->endPass();
+		// 通过命令缓冲录制 endRenderPass
+		cmd().endRenderPass();
 
 		// Render pass output
 		LightingPassOutput passOutput;

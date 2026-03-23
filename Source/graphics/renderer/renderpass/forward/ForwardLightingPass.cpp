@@ -35,7 +35,12 @@ namespace engine
 	}
 
 	LightingPassOutput ForwardLightingPass::executeRenderPass(ShadowmapPassOutput& shadowmapData, ICamera* camera, bool useIBL) {
-		m_RT->beginPass();
+		// 通过命令缓冲录制 beginRenderPass
+		rhi::RenderPassParams passParams;
+		passParams.viewport = { 0, 0, m_RT->getWidth(), m_RT->getHeight() };
+		passParams.clearColorFlag = true;
+		passParams.clearDepthFlag = true;
+		cmd().beginRenderPass(m_RT->getHandle(), passParams);
 
 		// Setup
 		ModelRenderer* modelRenderer = m_RenderScene.modelRenderer;
@@ -45,7 +50,7 @@ namespace engine
 		Skybox* skybox = m_RenderScene.skybox;
 		ProbeManager* probeManager = m_RenderScene.probeManager;
 
-		// 通过 PipelineState 设置 model shader 和渲染状态
+		// 通过命令缓冲录制管线绑定
 		rhi::PipelineState pipeline;
 		pipeline.program = m_ModelShader->getProgramHandle();
 		pipeline.depthTest = true;
@@ -53,9 +58,9 @@ namespace engine
 		pipeline.cullMode = rhi::CullMode::Back;
 		pipeline.blendEnable = false;
 		pipeline.multisample = m_RT->isMultisampled();
-		bindPipelineState(pipeline);
+		cmd().bindPipeline(pipeline);
 
-		// View setup + lighting setup via UBO
+		// View setup + lighting setup via UBO（高层操作仍直接调用）
 		auto* uboMgr = getUBOManager();
 		if (uboMgr) {
 			// PerFrame UBO
@@ -81,9 +86,6 @@ namespace engine
 		}
 		else {
 			iblParams.computeIBL = 0;
-			// 即使不使用 IBL，也必须绑定正确类型的纹理到 samplerCube uniform 对应的纹理单元，
-			// 否则 samplerCube 默认指向 unit 0（绑定的是 GL_TEXTURE_2D shadowmap），
-			// 导致 GL_INVALID_OPERATION: program texture usage
 			Skybox* skyboxForBind = m_RenderScene.skybox;
 			if (skyboxForBind && skyboxForBind->getSkyboxCubemap()) {
 				skyboxForBind->getSkyboxCubemap()->bind(1);
@@ -103,15 +105,13 @@ namespace engine
 		// 切换 terrain shader 管线
 		rhi::PipelineState terrainPipeline = pipeline;
 		terrainPipeline.program = m_TerrainShader->getProgramHandle();
-		bindPipelineState(terrainPipeline);
+		cmd().bindPipeline(terrainPipeline);
 
 		// Terrain PerObject UBO
 		glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), terrain->getPosition());
 		if (uboMgr) {
 			uboMgr->updatePerObject(modelMatrix);
 			uboMgr->bindPerObject();
-			// PerFrame UBO 已绑定，Lighting UBO 已绑定
-			// Terrain shader vertex 中有 ClipPlane UBO (binding=4)，需要正确绑定
 			UBOClipPlane clipPlane{};
 			clipPlane.usesClipPlane = 0;
 			uboMgr->updateClipPlane(clipPlane);
@@ -136,10 +136,11 @@ namespace engine
 		transparentPipeline.dstAlphaBlend = rhi::BlendFactor::OneMinusSrcAlpha;
 		transparentPipeline.stencilEnable = false;
 		transparentPipeline.cullMode = rhi::CullMode::None;
-		bindPipelineState(transparentPipeline);
+		cmd().bindPipeline(transparentPipeline);
 		modelRenderer->flushTransparent(m_ModelShader, m_RenderPassType);
 
-		m_RT->endPass();
+		// 通过命令缓冲录制 endRenderPass
+		cmd().endRenderPass();
 
 		// Render pass output
 		LightingPassOutput passOutput;

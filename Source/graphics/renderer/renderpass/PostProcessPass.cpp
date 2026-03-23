@@ -33,12 +33,10 @@ namespace engine
 	PostProcessPass::~PostProcessPass() {}
 
 	void PostProcessPass::executeRenderPass(LightingPassOutput& lightingOutput) {
-		auto* device = getRHIDevice();
-
-		// 如果输入是多重采样的，通过 blit 到非多采样 RT 解析
+		// 如果输入是多重采样的，通过 blit 解析
 		Texture* sourceColorTexture = lightingOutput.colorTexture;
 		if (lightingOutput.isMultisampled) {
-			device->blit(lightingOutput.renderTarget, m_ResolveRT.getHandle(),
+			cmd().blit(lightingOutput.renderTarget, m_ResolveRT.getHandle(),
 				0, 0, lightingOutput.width, lightingOutput.height,
 				0, 0, m_ResolveRT.getWidth(), m_ResolveRT.getHeight(),
 				rhi::RHIDevice::BlitColor);
@@ -47,8 +45,7 @@ namespace engine
 
 #if DEBUG_ENABLED
 		if (DebugPane::getWireframeMode()) {
-			if (auto* dev = engine::getRHIDevice())
-				dev->setPolygonMode(rhi::PolygonMode::Fill);
+			cmd().setPolygonMode(rhi::PolygonMode::Fill);
 		}
 #endif
 
@@ -72,7 +69,7 @@ namespace engine
 		pipeline.blendEnable = false;
 		pipeline.stencilEnable = false;
 		pipeline.cullMode = rhi::CullMode::Back;
-		bindPipelineState(pipeline);
+		cmd().bindPipeline(pipeline);
 
 		m_PassthroughShader->setUniform("input_texture", 0);
 		currentTexture->bind(0);
@@ -81,7 +78,12 @@ namespace engine
 
 
 	void PostProcessPass::gammaCorrect(RenderTarget* target, Texture* hdrTexture) {
-		target->beginPass();
+		// 通过命令缓冲录制 beginRenderPass
+		rhi::RenderPassParams params;
+		params.viewport = { 0, 0, target->getWidth(), target->getHeight() };
+		params.clearColorFlag = true;
+		params.clearDepthFlag = true;
+		cmd().beginRenderPass(target->getHandle(), params);
 
 		rhi::PipelineState pipeline;
 		pipeline.program = m_GammaCorrectShader->getProgramHandle();
@@ -89,7 +91,7 @@ namespace engine
 		pipeline.blendEnable = false;
 		pipeline.stencilEnable = false;
 		pipeline.cullMode = rhi::CullMode::Back;
-		bindPipelineState(pipeline);
+		cmd().bindPipeline(pipeline);
 
 		// PostProcess 参数通过 Custom UBO (binding 4) 传递
 		if (auto* uboMgr = getUBOManager()) {
@@ -106,11 +108,17 @@ namespace engine
 
 		ModelRenderer::drawNdcPlane();
 
-		target->endPass();
+		// 通过命令缓冲录制 endRenderPass
+		cmd().endRenderPass();
 	}
 
 	void PostProcessPass::fxaa(RenderTarget* target, Texture* texture) {
-		target->beginPass();
+		// 通过命令缓冲录制 beginRenderPass
+		rhi::RenderPassParams params;
+		params.viewport = { 0, 0, target->getWidth(), target->getHeight() };
+		params.clearColorFlag = true;
+		params.clearDepthFlag = true;
+		cmd().beginRenderPass(target->getHandle(), params);
 
 		rhi::PipelineState pipeline;
 		pipeline.program = m_FxaaShader->getProgramHandle();
@@ -118,7 +126,7 @@ namespace engine
 		pipeline.blendEnable = false;
 		pipeline.stencilEnable = false;
 		pipeline.cullMode = rhi::CullMode::Back;
-		bindPipelineState(pipeline);
+		cmd().bindPipeline(pipeline);
 
 		// FXAA 使用 PerFrame UBO 的 texelSize
 		if (auto* uboMgr = getUBOManager()) {
@@ -132,7 +140,8 @@ namespace engine
 
 		ModelRenderer::drawNdcPlane();
 
-		target->endPass();
+		// 通过命令缓冲录制 endRenderPass
+		cmd().endRenderPass();
 	}
 
 }

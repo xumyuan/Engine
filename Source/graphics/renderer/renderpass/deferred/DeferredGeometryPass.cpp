@@ -60,7 +60,12 @@ namespace engine {
 
 	GeometryPassOutput DeferredGeometryPass::ExecuteGeometryPass(ICamera* camera, bool renderOnlyStatic)
 	{
-		m_GBufferRT.beginPass();
+		// 通过命令缓冲录制 beginRenderPass
+		rhi::RenderPassParams passParams;
+		passParams.viewport = { 0, 0, m_GBufferRT.getWidth(), m_GBufferRT.getHeight() };
+		passParams.clearColorFlag = true;
+		passParams.clearDepthFlag = true;
+		cmd().beginRenderPass(m_GBufferRT.getHandle(), passParams);
 
 		// 构建基础管线状态
 		rhi::PipelineState pipeline;
@@ -84,9 +89,9 @@ namespace engine {
 		pipeline.stencilEnable = true;
 		pipeline.stencilFront = baseStencil;
 		pipeline.stencilBack = baseStencil;
-		bindPipelineState(pipeline);
+		cmd().bindPipeline(pipeline);
 
-		// 更新并绑定 PerFrame UBO（view/projection/viewPos 现在通过 UBO block 传递）
+		// 更新并绑定 PerFrame UBO（高层操作仍直接调用）
 		if (auto* uboMgr = getUBOManager()) {
 			uboMgr->updatePerFrame(camera->getViewMatrix(), camera->getProjectionMatrix(),
 				camera->getPosition());
@@ -98,7 +103,7 @@ namespace engine {
 		pipeline.stencilFront.func = rhi::CompareOp::Always;
 		pipeline.stencilFront.ref = StencilValue::ModelStencilValue;
 		pipeline.stencilBack = pipeline.stencilFront;
-		bindPipelineState(pipeline);
+		cmd().bindPipeline(pipeline);
 
 		ModelRenderer* modelRenderer = m_RenderScene.modelRenderer;
 		
@@ -109,15 +114,15 @@ namespace engine {
 		// 关闭 stencil 写入
 		pipeline.stencilFront.writeMask = 0x00;
 		pipeline.stencilBack.writeMask = 0x00;
-		bindPipelineState(pipeline);
+		cmd().bindPipeline(pipeline);
 
 		Terrain* terrain = m_RenderScene.terrain;
 		if (terrain)
 		{
-			BEGIN_EVENT("Render Terrain");
+			cmd().pushDebugGroup("Render Terrain");
 			// 切换 terrain shader
 			pipeline.program = m_TerrainShader->getProgramHandle();
-			bindPipelineState(pipeline);
+			cmd().bindPipeline(pipeline);
 
 			// PerFrame UBO 已在上面更新绑定，terrain shader 共享同一 binding point
 
@@ -126,22 +131,23 @@ namespace engine {
 			pipeline.stencilFront.func = rhi::CompareOp::Always;
 			pipeline.stencilFront.ref = StencilValue::TerrainStencilValue;
 			pipeline.stencilBack = pipeline.stencilFront;
-			bindPipelineState(pipeline);
+			cmd().bindPipeline(pipeline);
 
 			terrain->Draw(m_TerrainShader, m_RenderPassType);
 
 			// 关闭 stencil 写入
 			pipeline.stencilFront.writeMask = 0x00;
 			pipeline.stencilBack.writeMask = 0x00;
-			bindPipelineState(pipeline);
-			END_EVENT();
+			cmd().bindPipeline(pipeline);
+			cmd().popDebugGroup();
 		}
 
 		// 关闭 stencil 测试
 		pipeline.stencilEnable = false;
-		bindPipelineState(pipeline);
+		cmd().bindPipeline(pipeline);
 
-		m_GBufferRT.endPass();
+		// 通过命令缓冲录制 endRenderPass
+		cmd().endRenderPass();
 
 		// Render pass output
 		GeometryPassOutput passOutput;

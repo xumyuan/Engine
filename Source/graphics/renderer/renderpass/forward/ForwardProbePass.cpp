@@ -30,7 +30,7 @@ namespace engine {
 		m_ReflectionProbeSamplingRT.addColorTexture(rhi::TextureFormat::RGBA16F)
 			.build();
 
-		BEGIN_EVENT("Generate Cubemap Face");
+		cmd().pushDebugGroup("Generate Cubemap Face");
 		for (int i = 0; i < 6; i++) {
 			m_SceneCaptureCubemap.generateCubemapFace(
 				static_cast<uint8_t>(i), 
@@ -38,7 +38,7 @@ namespace engine {
 				IBL_CAPTURE_RESOLUTION, 
 				ChannelLayout::RGBA, nullptr);
 		}
-		END_EVENT();
+		cmd().popDebugGroup();
 
 		m_ConvolutionShader = ShaderLoader::loadShader("Shaders/lightprobe_convolution.glsl");
 
@@ -48,22 +48,22 @@ namespace engine {
 	ForwardProbePass::~ForwardProbePass() {}
 
 	void ForwardProbePass::pregenerateProbes() {
-		BEGIN_EVENT("GenerateBRDFLUT");
+		cmd().pushDebugGroup("GenerateBRDFLUT");
 		generateBRDFLUT();
-		END_EVENT();
+		cmd().popDebugGroup();
 		glm::vec3 probePosition = glm::vec3(112.3f, 139.4f, 97.2f);
-		BEGIN_EVENT("GenerateLightProbe");
+		cmd().pushDebugGroup("GenerateLightProbe");
 		generateLightProbe(probePosition);
-		END_EVENT();
-		BEGIN_EVENT("GenerateReflectionProbe");
+		cmd().popDebugGroup();
+		cmd().pushDebugGroup("GenerateReflectionProbe");
 		generateReflectionProbe(probePosition);
-		END_EVENT();
+		cmd().popDebugGroup();
 	}
 
 	void ForwardProbePass::generateBRDFLUT() {
 		Shader* brdfIntegrationShader = ShaderLoader::loadShader("Shaders/prebrdf.glsl");
 
-		// brdf 的纹理设置 —— 必须使用浮点格式以保留 BRDF 积分精度
+		// brdf 的纹理设置
 		TextureSettings textureSettings;
 		textureSettings.format = rhi::TextureFormat::RG16F;
 		textureSettings.formatExplicitlySet = true;
@@ -77,37 +77,38 @@ namespace engine {
 		Texture* brdfLUT = new Texture(textureSettings);
 		brdfLUT->generate2DTexture(BRDF_LUT_RESOLUTION, BRDF_LUT_RESOLUTION, ChannelLayout::RG);
 
-		// 设置 LUT 的渲染目标（颜色格式与 LUT 一致）
+		// 设置 LUT 的渲染目标
 		RenderTarget brdfRT(BRDF_LUT_RESOLUTION, BRDF_LUT_RESOLUTION);
 		brdfRT.addColorTexture(rhi::TextureFormat::RG16F).build();
 
-		// 临时将 brdfLUT 挂到 RT 的颜色附件
-		auto* device = getRHIDevice();
+		// 通过命令缓冲录制 beginRenderPass
 		rhi::RenderPassParams params;
 		params.viewport = { 0, 0, BRDF_LUT_RESOLUTION, BRDF_LUT_RESOLUTION };
 		params.clearColorFlag = true;
 		params.clearDepthFlag = false;
 		params.clearStencilFlag = false;
-		brdfRT.beginPass(params);
-		brdfRT.setColorAttachment(0, brdfLUT->getRHIHandle());
+		cmd().beginRenderPass(brdfRT.getHandle(), params);
+
+		// 动态附件管理
+		cmd().setRenderTargetColorAttachment(brdfRT.getHandle(), 0, brdfLUT->getRHIHandle());
 
 		rhi::PipelineState pipeline;
 		pipeline.program = brdfIntegrationShader->getProgramHandle();
 		pipeline.depthTest = false;
 		pipeline.cullMode = rhi::CullMode::Back;
-		bindPipelineState(pipeline);
+		cmd().bindPipeline(pipeline);
 
 		ModelRenderer::drawNdcPlane();
 
 		// 恢复原始附件
-		brdfRT.setColorAttachment(0, rhi::TextureHandle());
-		brdfRT.endPass();
+		cmd().setRenderTargetColorAttachment(brdfRT.getHandle(), 0, rhi::TextureHandle());
+		cmd().endRenderPass();
 
 		// 恢复深度测试
 		rhi::PipelineState restorePipeline;
 		restorePipeline.depthTest = true;
 		restorePipeline.cullMode = rhi::CullMode::Back;
-		bindPipelineState(restorePipeline);
+		cmd().bindPipeline(restorePipeline);
 
 		ReflectionProbe::setBRDFLUT(brdfLUT);
 	}
@@ -124,27 +125,25 @@ namespace engine {
 
 		// Render the scene to the probe's cubemap
 		for (int i = 0; i < 6; i++) {
-			BEGIN_EVENT("Lighting Probe Cubemap[" + std::to_string(i) + "]");
+			cmd().pushDebugGroup(("Lighting Probe Cubemap[" + std::to_string(i) + "]").c_str());
 			m_CubemapCamera.switchCameraToFace(i);
 
-			BEGIN_EVENT("ShadowmapPass");
+			cmd().pushDebugGroup("ShadowmapPass");
 			ShadowmapPassOutput shadowpassOutput = shadowPass.generateShadowmaps(&m_CubemapCamera);
-			END_EVENT();
+			cmd().popDebugGroup();
 
-			// 先将 cubemap 面挂到 lighting RT 的颜色附件（FBO 状态持久化）
-			// 然后让 lighting pass 的 beginPass 绑定同一 FBO 并清除
-			auto* device = getRHIDevice();
-			device->setRenderTargetColorAttachment(m_SceneCaptureLightingRT.getHandle(), 0,
+			// 先将 cubemap 面挂到 lighting RT 的颜色附件
+			cmd().setRenderTargetColorAttachment(m_SceneCaptureLightingRT.getHandle(), 0,
 				m_SceneCaptureCubemap.getRHIHandle(), 0, static_cast<uint8_t>(i));
 
-			BEGIN_EVENT("LightingPass");
+			cmd().pushDebugGroup("LightingPass");
 			lightingPass.executeRenderPass(shadowpassOutput, &m_CubemapCamera, false);
-			END_EVENT();
+			cmd().popDebugGroup();
 
 			// 恢复原始颜色附件
-			device->setRenderTargetColorAttachment(m_SceneCaptureLightingRT.getHandle(), 0,
+			cmd().setRenderTargetColorAttachment(m_SceneCaptureLightingRT.getHandle(), 0,
 				m_SceneCaptureLightingRT.getColorTexture()->getRHIHandle());
-			END_EVENT();
+			cmd().popDebugGroup();
 		}
 
 		// 捕获并应用辐照度图的卷积（间接漫反射）
@@ -152,7 +151,7 @@ namespace engine {
 		convPipeline.program = m_ConvolutionShader->getProgramHandle();
 		convPipeline.cullMode = rhi::CullMode::None;
 		convPipeline.depthTest = false;
-		bindPipelineState(convPipeline);
+		cmd().bindPipeline(convPipeline);
 
 		m_SceneCaptureCubemap.bind(0);
 		m_ConvolutionShader->setUniform("sceneCaptureCubemap", 0);
@@ -168,11 +167,10 @@ namespace engine {
 		convParams.clearColorFlag = false;
 		convParams.clearDepthFlag = false;
 		convParams.clearStencilFlag = false;
-		m_LightProbeConvolutionRT.beginPass(convParams);
+		cmd().beginRenderPass(m_LightProbeConvolutionRT.getHandle(), convParams);
 
 		{
-			auto* device = getRHIDevice();
-			BEGIN_EVENT("Convolution");
+			cmd().pushDebugGroup("Convolution");
 			for (int i = 0; i < 6; i++) {
 				m_CubemapCamera.switchCameraToFace(i);
 				// 通过 PerFrame UBO 更新 view
@@ -181,22 +179,22 @@ namespace engine {
 					uboMgr->bindPerFrame();
 				}
 
-				device->setRenderTargetColorAttachment(m_LightProbeConvolutionRT.getHandle(), 0,
+				cmd().setRenderTargetColorAttachment(m_LightProbeConvolutionRT.getHandle(), 0,
 					lightProbe->getIrradianceMap()->getRHIHandle(), 0, static_cast<uint8_t>(i));
 				ModelRenderer::drawNdcCube();
 			}
 			// 恢复原始附件
-			device->setRenderTargetColorAttachment(m_LightProbeConvolutionRT.getHandle(), 0,
+			cmd().setRenderTargetColorAttachment(m_LightProbeConvolutionRT.getHandle(), 0,
 				m_LightProbeConvolutionRT.getColorTexture()->getRHIHandle());
-			END_EVENT();
+			cmd().popDebugGroup();
 		}
-		m_LightProbeConvolutionRT.endPass();
+		cmd().endRenderPass();
 
 		// 恢复状态
 		rhi::PipelineState restorePipeline;
 		restorePipeline.cullMode = rhi::CullMode::Back;
 		restorePipeline.depthTest = true;
-		bindPipelineState(restorePipeline);
+		cmd().bindPipeline(restorePipeline);
 
 		ProbeManager* probeManager = m_RenderScene.probeManager;
 		probeManager->addProbe(lightProbe);
@@ -213,25 +211,24 @@ namespace engine {
 
 		// 将场景渲染到探针的立方体贴图
 		for (int i = 0; i < 6; ++i) {
-			BEGIN_EVENT("Reflection Probe[" + std::to_string(i) + "]");
+			cmd().pushDebugGroup(("Reflection Probe[" + std::to_string(i) + "]").c_str());
 			m_CubemapCamera.switchCameraToFace(i);
-			BEGIN_EVENT("ShadowmapPass");
+			cmd().pushDebugGroup("ShadowmapPass");
 			ShadowmapPassOutput shadowpassOutput = shadowPass.generateShadowmaps(&m_CubemapCamera);
-			END_EVENT();
+			cmd().popDebugGroup();
 
 			// 先将 cubemap 面挂到 lighting RT 的颜色附件
-			auto* device = getRHIDevice();
-			device->setRenderTargetColorAttachment(m_SceneCaptureLightingRT.getHandle(), 0,
+			cmd().setRenderTargetColorAttachment(m_SceneCaptureLightingRT.getHandle(), 0,
 				m_SceneCaptureCubemap.getRHIHandle(), 0, static_cast<uint8_t>(i));
 
-			BEGIN_EVENT("LightingPass");
+			cmd().pushDebugGroup("LightingPass");
 			lightingPass.executeRenderPass(shadowpassOutput, &m_CubemapCamera, false);
-			END_EVENT();
+			cmd().popDebugGroup();
 
 			// 恢复原始颜色附件
-			device->setRenderTargetColorAttachment(m_SceneCaptureLightingRT.getHandle(), 0,
+			cmd().setRenderTargetColorAttachment(m_SceneCaptureLightingRT.getHandle(), 0,
 				m_SceneCaptureLightingRT.getColorTexture()->getRHIHandle());
-			END_EVENT();
+			cmd().popDebugGroup();
 		}
 
 		// 对代表增加的粗糙度级别的立方体贴图 mip 进行重要性采样
@@ -239,7 +236,7 @@ namespace engine {
 		samplePipeline.program = m_ImportanceSamplingShader->getProgramHandle();
 		samplePipeline.cullMode = rhi::CullMode::None;
 		samplePipeline.depthTest = false;
-		bindPipelineState(samplePipeline);
+		cmd().bindPipeline(samplePipeline);
 
 		m_SceneCaptureCubemap.bind(0);
 		m_ImportanceSamplingShader->setUniform("sceneCaptureCubemap", 0);
@@ -254,16 +251,15 @@ namespace engine {
 		sampleParams.clearColorFlag = false;
 		sampleParams.clearDepthFlag = false;
 		sampleParams.clearStencilFlag = false;
-		m_ReflectionProbeSamplingRT.beginPass(sampleParams);
+		cmd().beginRenderPass(m_ReflectionProbeSamplingRT.getHandle(), sampleParams);
 
-		BEGIN_EVENT("Generate mip");
+		cmd().pushDebugGroup("Generate mip");
 		{
-			auto* device = getRHIDevice();
 			for (int mip = 0; mip < REFLECTION_PROBE_MIP_COUNT; mip++) {
 				unsigned int mipWidth = m_ReflectionProbeSamplingRT.getWidth() >> mip;
 				unsigned int mipHeight = m_ReflectionProbeSamplingRT.getHeight() >> mip;
 
-				device->setViewport(0, 0, mipWidth, mipHeight);
+				cmd().setViewport(0, 0, mipWidth, mipHeight);
 
 				float mipRoughnessLevel = (float)mip / (float)(REFLECTION_PROBE_MIP_COUNT - 1);
 				// ProbeParams UBO
@@ -280,24 +276,24 @@ namespace engine {
 						uboMgr->updatePerFrame(m_CubemapCamera.getViewMatrix(), m_CubemapCamera.getProjectionMatrix(), glm::vec3(0.0f));
 						uboMgr->bindPerFrame();
 					}
-					device->setRenderTargetColorAttachment(m_ReflectionProbeSamplingRT.getHandle(), 0,
+					cmd().setRenderTargetColorAttachment(m_ReflectionProbeSamplingRT.getHandle(), 0,
 						reflectionProbe->getPrefilterMap()->getRHIHandle(),
 						static_cast<uint8_t>(mip), static_cast<uint8_t>(i));
 					ModelRenderer::drawNdcCube();
 				}
 			}
 			// 恢复原始附件
-			device->setRenderTargetColorAttachment(m_ReflectionProbeSamplingRT.getHandle(), 0,
+			cmd().setRenderTargetColorAttachment(m_ReflectionProbeSamplingRT.getHandle(), 0,
 				m_ReflectionProbeSamplingRT.getColorTexture()->getRHIHandle());
 		}
-		END_EVENT();
-		m_ReflectionProbeSamplingRT.endPass();
+		cmd().popDebugGroup();
+		cmd().endRenderPass();
 
 		// 恢复状态
 		rhi::PipelineState restorePipeline;
 		restorePipeline.cullMode = rhi::CullMode::Back;
 		restorePipeline.depthTest = true;
-		bindPipelineState(restorePipeline);
+		cmd().bindPipeline(restorePipeline);
 
 		ProbeManager* probeManager = m_RenderScene.probeManager;
 		probeManager->addProbe(reflectionProbe);

@@ -10,6 +10,7 @@
 #include <scene/Scene3D.h>
 #include <utils/Timer.h>
 #include <graphics/UniformBufferManager.h>
+#include <rhi/include/RHICommandQueue.h>
 
 namespace engine
 {
@@ -22,12 +23,19 @@ namespace engine
 
 		void init();
 		void render();
+
+		// 获取命令队列（供外部查询调试信息等）
+		rhi::CommandQueue& getCommandQueue() { return m_CommandQueue; }
+
 	private:
 		Scene3D* m_ActiveScene;
 		RenderScene m_RenderScene;
 
 		// UBO 管理器
 		UniformBufferManager m_UBOManager;
+
+		// 命令队列（统一管理所有 pass 录制的命令）
+		rhi::CommandQueue m_CommandQueue;
 
 		// other passes 
 		PostProcessPass m_PostProcessPass;

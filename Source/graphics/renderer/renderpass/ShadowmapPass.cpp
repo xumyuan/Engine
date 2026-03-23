@@ -26,20 +26,25 @@ namespace engine
 	}
 
 	ShadowmapPassOutput ShadowmapPass::generateShadowmaps(ICamera* camera) {
-		m_RT->beginPass();
+		// 通过命令缓冲录制 beginRenderPass
+		rhi::RenderPassParams params;
+		params.viewport = { 0, 0, m_RT->getWidth(), m_RT->getHeight() };
+		params.clearColorFlag = true;
+		params.clearDepthFlag = true;
+		cmd().beginRenderPass(m_RT->getHandle(), params);
 
 		// Setup
 		ModelRenderer* modelRenderer = m_RenderScene.modelRenderer;
 		Terrain* terrain = m_RenderScene.terrain;
 		LightCollector* lightCollector = m_RenderScene.lightCollector;
 
-		// 通过 PipelineState 设置 shader 和渲染状态
+		// 通过命令缓冲录制管线绑定
 		rhi::PipelineState pipeline;
 		pipeline.program = m_ShadowmapShader->getProgramHandle();
 		pipeline.depthTest = true;
 		pipeline.depthWrite = true;
 		pipeline.cullMode = rhi::CullMode::Back;
-		bindPipelineState(pipeline);
+		cmd().bindPipeline(pipeline);
 
 		// View setup
 		glm::vec3 dirLightShadowmapLookAtPos = camera->getPosition() + (glm::normalize(camera->getFront()) * 50.0f);
@@ -55,7 +60,7 @@ namespace engine
 			uboMgr->bindCustom(sizeof(UBOShadowmapPass));
 		}
 
-		// Render models
+		// Render models（高层绘制仍保持直接调用）
 		m_RenderScene.submitModelsToRenderer();
 		modelRenderer->flushOpaque(m_ShadowmapShader, m_RenderPassType);
 		modelRenderer->flushTransparent(m_ShadowmapShader, m_RenderPassType);
@@ -63,7 +68,8 @@ namespace engine
 		// Render terrain
 		terrain->Draw(m_ShadowmapShader, m_RenderPassType);
 
-		m_RT->endPass();
+		// 通过命令缓冲录制 endRenderPass
+		cmd().endRenderPass();
 
 		// Render pass output
 		ShadowmapPassOutput passOutput;

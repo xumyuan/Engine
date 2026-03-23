@@ -100,9 +100,15 @@ namespace engine
 
 	PreLightingPassOutput SSAOPass::executeSSAOPass(ICamera* camera, GeometryPassOutput& gBufferOutput)
 	{
-		BEGIN_EVENT("SSAO");
 		// ========== SSAO Pass ==========
-		m_SSAORT.beginPass();
+		cmd().pushDebugGroup("SSAO");
+
+		// 通过命令缓冲录制 beginRenderPass
+		rhi::RenderPassParams ssaoParams;
+		ssaoParams.viewport = { 0, 0, m_SSAORT.getWidth(), m_SSAORT.getHeight() };
+		ssaoParams.clearColorFlag = true;
+		ssaoParams.clearDepthFlag = true;
+		cmd().beginRenderPass(m_SSAORT.getHandle(), ssaoParams);
 
 		// 构建 SSAO pass 的管线状态
 		rhi::PipelineState ssaoPipeline;
@@ -111,7 +117,7 @@ namespace engine
 		ssaoPipeline.blendEnable = false;
 		ssaoPipeline.stencilEnable = false;
 		ssaoPipeline.cullMode = rhi::CullMode::Back;
-		bindPipelineState(ssaoPipeline);
+		cmd().bindPipeline(ssaoPipeline);
 
 		// 传递采样核 + 参数 通过 UBO
 		if (auto* uboMgr = getUBOManager()) {
@@ -121,19 +127,19 @@ namespace engine
 			uboMgr->bindPerFrame();
 
 			// SSAO Params UBO
-			UBOSSAOParams ssaoParams{};
+			UBOSSAOParams ssaoUBOParams{};
 			for (int i = 0; i < KERNEL_SIZE; ++i) {
-				ssaoParams.samples[i] = glm::vec4(m_SSAOKernel[i], 0.0f);
+				ssaoUBOParams.samples[i] = glm::vec4(m_SSAOKernel[i], 0.0f);
 			}
-			ssaoParams.kernelSize = KERNEL_SIZE;
-			ssaoParams.radius = m_Radius;
-			ssaoParams.bias = m_Bias;
-			ssaoParams.power = m_Power;
-			uboMgr->updateSSAOParams(ssaoParams);
+			ssaoUBOParams.kernelSize = KERNEL_SIZE;
+			ssaoUBOParams.radius = m_Radius;
+			ssaoUBOParams.bias = m_Bias;
+			ssaoUBOParams.power = m_Power;
+			uboMgr->updateSSAOParams(ssaoUBOParams);
 			uboMgr->bindCustom(sizeof(UBOSSAOParams));
 		}
 
-		// 绑定 GBuffer 纹理
+		// 绑定 GBuffer 纹理（高层操作仍直接调用）
 		gBufferOutput.normalTexture->bind(0);
 		m_SSAOShader->setUniform("gNormal", 0);
 
@@ -146,24 +152,29 @@ namespace engine
 
 		// 绘制全屏四边形
 		ModelRenderer::drawNdcPlane();
-		m_SSAORT.endPass();
-		END_EVENT();
+		cmd().endRenderPass();
+		cmd().popDebugGroup();
 
-		BEGIN_EVENT("SSAO Blur");
 		// ========== Blur Pass ==========
-		m_SSAOBlurRT.beginPass();
+		cmd().pushDebugGroup("SSAO Blur");
+
+		rhi::RenderPassParams blurParams;
+		blurParams.viewport = { 0, 0, m_SSAOBlurRT.getWidth(), m_SSAOBlurRT.getHeight() };
+		blurParams.clearColorFlag = true;
+		blurParams.clearDepthFlag = true;
+		cmd().beginRenderPass(m_SSAOBlurRT.getHandle(), blurParams);
 
 		// 构建 Blur pass 的管线状态（复用大部分设置，仅切换 shader）
 		rhi::PipelineState blurPipeline = ssaoPipeline;
 		blurPipeline.program = m_SSAOBlurShader->getProgramHandle();
-		bindPipelineState(blurPipeline);
+		cmd().bindPipeline(blurPipeline);
 
 		m_SSAORT.getColorTexture()->bind(0);
 		m_SSAOBlurShader->setUniform("ssaoInput", 0);
 
 		ModelRenderer::drawNdcPlane();
-		m_SSAOBlurRT.endPass();
-		END_EVENT();
+		cmd().endRenderPass();
+		cmd().popDebugGroup();
 
 		// 返回结果
 		PreLightingPassOutput output;
