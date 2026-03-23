@@ -4,7 +4,7 @@
 #include "graphics/renderer/ModelRenderer.h"
 #include "graphics/Skybox.h"
 #include "terrain/Terrain.h"
-#include "graphics/dynamic_lights/DynamicLightManager.h"
+#include "scene/LightCollector.h"
 #include "graphics/ibl/ProbeManager.h"
 
 namespace engine {
@@ -21,7 +21,7 @@ namespace engine {
 		ModelRenderer* modelRenderer = nullptr;
 		Skybox* skybox = nullptr;
 		Terrain* terrain = nullptr;
-		DynamicLightManager* lightManager = nullptr;
+		LightCollector* lightCollector = nullptr;
 		ProbeManager* probeManager = nullptr;
 		FluidSim* fluid = nullptr;
 		std::vector<RenderableModel*>* renderableModels = nullptr;

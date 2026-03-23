@@ -3,7 +3,7 @@
 #include "graphics/Skybox.h"
 #include "graphics/Window.h"
 #include "graphics/camera/FPSCamera.h"
-#include "graphics/dynamic_lights/DynamicLightManager.h"
+#include "scene/LightCollector.h"
 #include "graphics/ibl/ProbeManager.h"
 #include "graphics/renderer/ModelRenderer.h"
 #include "scene/RenderableModel.h"
@@ -57,7 +57,7 @@ namespace engine {
 		inline ModelRenderer* getModelRenderer() { return &m_ModelRenderer; }
 		inline Terrain* getTerrain() { return &m_Terrain; }
 		inline FluidSim* getFluid() { return m_fluid; }
-		inline DynamicLightManager* getDynamicLightManager() { return &m_DynamicLightManager; }
+		inline LightCollector* getLightCollector() { return &m_LightCollector; }
 		inline ProbeManager* getProbeManager() { return &m_ProbeManager; }
 		inline FPSCamera* getCamera() { return &m_SceneCamera; }
 		inline Skybox* getSkybox() { return m_Skybox; }
@@ -78,7 +78,10 @@ namespace engine {
 		ModelRenderer m_ModelRenderer;
 		Terrain m_Terrain;
 		FluidSim* m_fluid = nullptr;
-		DynamicLightManager m_DynamicLightManager;
+		LightCollector m_LightCollector;
+
+		// 缓存聚光灯节点指针（避免每帧查找）
+		SceneNode* m_SpotLightNode = nullptr;
 		ProbeManager m_ProbeManager;
 
 		// [向后兼容] 旧的渲染模型列表 —— 逐步迁移到节点树

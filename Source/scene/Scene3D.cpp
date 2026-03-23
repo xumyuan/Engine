@@ -121,8 +121,18 @@ namespace engine {
 		// Camera Update
 		m_SceneCamera.processInput(deltaTime);
 
-		m_DynamicLightManager.setSpotLightDirection(m_SceneCamera.getFront());
-		m_DynamicLightManager.setSpotLightPosition(m_SceneCamera.getPosition());
+		// 聚光灯跟随相机 —— 通过节点树操作 LightComponent
+		if (!m_SpotLightNode) {
+			// 首次查找并缓存聚光灯节点指针
+			m_SpotLightNode = LightCollector::findNodeByName(&m_RootNode, "SpotLight");
+		}
+		if (m_SpotLightNode) {
+			m_SpotLightNode->setPosition(m_SceneCamera.getPosition());
+			auto* spotLight = m_SpotLightNode->getComponent<LightComponent>();
+			if (spotLight) {
+				spotLight->setDirection(m_SceneCamera.getFront());
+			}
+		}
 	}
 
 	// 场景渲染
@@ -135,7 +145,7 @@ namespace engine {
 		rs.modelRenderer = &m_ModelRenderer;
 		rs.skybox = m_Skybox;
 		rs.terrain = &m_Terrain;
-		rs.lightManager = &m_DynamicLightManager;
+		rs.lightCollector = &m_LightCollector;
 		rs.probeManager = &m_ProbeManager;
 		rs.fluid = m_fluid;
 		rs.renderableModels = &m_RenderableModels;

@@ -117,16 +117,9 @@ namespace engine {
 
 	void SceneLoader::loadLights(Scene3D& scene, const SceneInfo& sceneInfo) {
 		auto& lightsInfo = sceneInfo.lightsInfo;
-		DynamicLightManager* lightManager = scene.getDynamicLightManager();
 
-		// 设置方向光
+		// 创建方向光 SceneNode + LightComponent
 		if (lightsInfo.directionalLight.isActive) {
-			lightManager->setDirectionalLight(
-				lightsInfo.directionalLight.direction,
-				lightsInfo.directionalLight.lightColor
-			);
-
-			// ── 创建方向光 SceneNode + LightComponent（阶段三） ──
 			auto* dirLightNode = new SceneNode("DirectionalLight");
 			auto* lightComp = new LightComponent(LightType::Directional);
 			lightComp->setDirection(lightsInfo.directionalLight.direction);
@@ -136,39 +129,23 @@ namespace engine {
 			scene.addSceneNode(dirLightNode);
 		}
 
-		// 设置聚光灯
+		// 创建聚光灯 SceneNode + LightComponent
 		if (lightsInfo.spotLight.isActive) {
-			lightManager->setSpotLight(
-				lightsInfo.spotLight.position,
-				lightsInfo.spotLight.direction,
-				lightsInfo.spotLight.lightColor,
-				lightsInfo.spotLight.cutOff,
-				lightsInfo.spotLight.outerCutOff
-			);
-
-			// ── 创建聚光灯 SceneNode + LightComponent（阶段三） ──
 			auto* spotLightNode = new SceneNode("SpotLight");
 			spotLightNode->setPosition(lightsInfo.spotLight.position);
 			auto* spotComp = new LightComponent(LightType::Spot);
 			spotComp->setDirection(lightsInfo.spotLight.direction);
 			spotComp->setLightColor(lightsInfo.spotLight.lightColor);
-			spotComp->setCutOff(lightsInfo.spotLight.cutOff);
-			spotComp->setOuterCutOff(lightsInfo.spotLight.outerCutOff);
+			spotComp->setCutOff(glm::cos(glm::radians(lightsInfo.spotLight.cutOff)));
+			spotComp->setOuterCutOff(glm::cos(glm::radians(lightsInfo.spotLight.outerCutOff)));
 			spotComp->setActive(true);
 			spotLightNode->addComponent(spotComp);
 			scene.addSceneNode(spotLightNode);
 		}
 
-		// 设置点光源并添加光球模型
-		if (0)
+		// 创建点光源 SceneNode + LightComponent + MeshComponent（光球模型）
 		for (auto& pointLight : lightsInfo.pointLightList) {
 			if (pointLight.isActive) {
-				lightManager->addPointLight(
-					pointLight.position,
-					pointLight.lightColor
-				);
-
-				// ── 创建点光源 SceneNode + LightComponent + MeshComponent（阶段三） ──
 				auto* pointLightNode = new SceneNode("PointLight");
 				pointLightNode->setPosition(pointLight.position);
 				pointLightNode->setScale(glm::vec3(5.0f));
@@ -190,7 +167,7 @@ namespace engine {
 				pointLightNode->addComponent(new MeshComponent(lightSphereModel, true, false));
 				scene.addSceneNode(pointLightNode);
 
-				// ── [向后兼容] 旧接口 ──
+				// [向后兼容] 为旧渲染管线添加 RenderableModel
 				scene.addRenderableModel(new RenderableModel(
 					pointLight.position,
 					glm::vec3(5.0f, 5.0f, 5.0f),

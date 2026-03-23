@@ -31,7 +31,7 @@ namespace engine
 		// Setup
 		ModelRenderer* modelRenderer = m_RenderScene.modelRenderer;
 		Terrain* terrain = m_RenderScene.terrain;
-		DynamicLightManager* lightManager = m_RenderScene.lightManager;
+		LightCollector* lightCollector = m_RenderScene.lightCollector;
 
 		// 通过 PipelineState 设置 shader 和渲染状态
 		rhi::PipelineState pipeline;
@@ -43,7 +43,7 @@ namespace engine
 
 		// View setup
 		glm::vec3 dirLightShadowmapLookAtPos = camera->getPosition() + (glm::normalize(camera->getFront()) * 50.0f);
-		glm::vec3 dirLightShadowmapEyePos = dirLightShadowmapLookAtPos + (-lightManager->getDirectionalLightDirection() * 100.0f);
+		glm::vec3 dirLightShadowmapEyePos = dirLightShadowmapLookAtPos + (-lightCollector->getDirectionalLightDirection(m_RenderScene.rootNode) * 100.0f);
 		glm::mat4 directionalLightProjection = glm::ortho(-100.0f, 100.0f, -100.0f, 100.0f, SHADOWMAP_NEAR_PLANE, SHADOWMAP_FAR_PLANE);
 		glm::mat4 directionalLightView = glm::lookAt(dirLightShadowmapEyePos, dirLightShadowmapLookAtPos, glm::vec3(0.0f, 1.0f, 0.0f));
 		glm::mat4 directionalLightViewProjMatrix = directionalLightProjection * directionalLightView;

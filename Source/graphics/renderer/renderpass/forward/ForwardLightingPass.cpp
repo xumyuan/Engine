@@ -41,7 +41,7 @@ namespace engine
 		ModelRenderer* modelRenderer = m_RenderScene.modelRenderer;
 		Terrain* terrain = m_RenderScene.terrain;
 		FluidSim* fluid = m_RenderScene.fluid;
-		DynamicLightManager* lightManager = m_RenderScene.lightManager;
+		LightCollector* lightCollector = m_RenderScene.lightCollector;
 		Skybox* skybox = m_RenderScene.skybox;
 		ProbeManager* probeManager = m_RenderScene.probeManager;
 
@@ -65,7 +65,7 @@ namespace engine
 
 			// Lighting UBO
 			auto& lightingUBO = uboMgr->getLightingData();
-			lightManager->fillLightingUBO(lightingUBO);
+			lightCollector->fillLightingUBO(m_RenderScene.rootNode, lightingUBO);
 			uboMgr->updateLighting();
 			uboMgr->bindLighting();
 		}

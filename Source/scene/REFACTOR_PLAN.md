@@ -73,3 +73,29 @@
 实际顺序：阶段一 → 阶段二 → 阶段四 → 阶段三
 
 **全部阶段已完成！** 🎉
+
+---
+
+## ✅ 后续优化：灯光系统迁移 — DynamicLightManager → LightCollector
+
+**目标**：用 LightComponent + LightCollector 替代旧的 DynamicLightManager，实现标准的三层灯光架构。
+
+### 完成内容
+- 新增 `scene/LightCollector.h/cpp` — 灯光收集器
+  - `fillLightingUBO(rootNode, ubo)` 遍历节点树收集 LightComponent → 填充 UBOLighting
+  - `getDirectionalLightDirection(rootNode)` 获取方向光方向（供阴影图使用）
+  - `findNodeByName(rootNode, name)` 按名称查找节点（供运行时控制使用）
+- `RenderScene.h` — `DynamicLightManager* lightManager` → `LightCollector* lightCollector`
+- `Scene3D.h/cpp` — `DynamicLightManager` → `LightCollector`，聚光灯跟随相机改为通过节点树操作
+- `SceneLoader.cpp` — 移除 DynamicLightManager 双写逻辑，灯光仅通过 LightComponent 创建
+- `DeferredLightingPass.cpp`、`ForwardLightingPass.cpp`、`ShadowmapPass.cpp` — 改用 LightCollector
+
+### 架构变更
+```
+场景层：LightComponent（数据持有者）
+收集层：LightCollector（遍历节点树 → 填充 UBO）
+GPU层：UBOLighting（结构体不变，Shader 不变）
+```
+
+### ✅ 已删除的旧文件
+- `graphics/dynamic_lights/` 整个目录已删除（含 DynamicLightManager、DynamicLight、DirectionalLight、SpotLight、PointLight）

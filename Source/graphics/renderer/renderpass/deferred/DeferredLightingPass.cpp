@@ -61,7 +61,7 @@ namespace engine
 		stencilReadOnly.depthFail = rhi::StencilOp::Keep;
 		stencilReadOnly.depthPass = rhi::StencilOp::Keep;
 
-		DynamicLightManager* lightManager = m_RenderScene.lightManager;
+		LightCollector* lightCollector = m_RenderScene.lightCollector;
 		ProbeManager* probeManager = m_RenderScene.probeManager;
 
 		// 重新绑定 shader pipeline（blit 后 shader 状态可能需要恢复）
@@ -77,7 +77,7 @@ namespace engine
 			uboMgr->bindPerFrame();
 
 			auto& lightingUBO = uboMgr->getLightingData();
-			lightManager->fillLightingUBO(lightingUBO);
+			lightCollector->fillLightingUBO(m_RenderScene.rootNode, lightingUBO);
 			uboMgr->updateLighting();
 			uboMgr->bindLighting();
 		}
