@@ -91,11 +91,14 @@ namespace engine {
 		pipeline.stencilBack = baseStencil;
 		cmd().bindPipeline(pipeline);
 
-		// 更新并绑定 PerFrame UBO（高层操作仍直接调用）
+		// 更新并绑定 PerFrame UBO
 		if (auto* uboMgr = getUBOManager()) {
-			uboMgr->updatePerFrame(camera->getViewMatrix(), camera->getProjectionMatrix(),
+			uboMgr->preparePerFrame(camera->getViewMatrix(), camera->getProjectionMatrix(),
 				camera->getPosition());
-			uboMgr->bindPerFrame();
+			cmd().updateBuffer(uboMgr->getPerFrameHandle(),
+				&uboMgr->getPerFrameData(), sizeof(UBOPerFrame));
+			cmd().bindUBO(UBOBinding::PerFrame,
+				uboMgr->getPerFrameHandle(), sizeof(UBOPerFrame));
 		}
 	
 		// Render opaque objects: 开启 stencil 写入，model stencil value
@@ -105,11 +108,11 @@ namespace engine {
 		pipeline.stencilBack = pipeline.stencilFront;
 		cmd().bindPipeline(pipeline);
 
+		rhi::ProgramHandle modelProgram = m_ModelShader->getProgramHandle();
 		ModelRenderer* modelRenderer = m_RenderScene.modelRenderer;
-		
 		m_RenderScene.submitModelsToRenderer();
 
-		modelRenderer->flushOpaque(m_ModelShader, m_RenderPassType);
+		modelRenderer->flushOpaque(cmd(), modelProgram, m_RenderPassType);
 
 		// 关闭 stencil 写入
 		pipeline.stencilFront.writeMask = 0x00;
@@ -133,7 +136,8 @@ namespace engine {
 			pipeline.stencilBack = pipeline.stencilFront;
 			cmd().bindPipeline(pipeline);
 
-			terrain->Draw(m_TerrainShader, m_RenderPassType);
+			rhi::ProgramHandle terrainProgram = m_TerrainShader->getProgramHandle();
+			terrain->Draw(cmd(), terrainProgram, m_RenderPassType);
 
 			// 关闭 stencil 写入
 			pipeline.stencilFront.writeMask = 0x00;

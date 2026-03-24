@@ -40,6 +40,25 @@ namespace engine {
 		}
 	}
 
+	void Model::Draw(rhi::CommandBuffer& cmd, rhi::ProgramHandle program, RenderPassType pass) const {
+		for (unsigned int i = 0; i < m_Meshes.size(); ++i) {
+			if (pass != RenderPassType::ShadowmapPassType) {
+				auto* uboMgr = getUBOManager();
+				if (uboMgr) {
+					auto& matParams = uboMgr->getMaterialParamsData();
+					m_Meshes[i].m_Material.fillMaterialUBO(matParams);
+					// 通过命令录制 UBO 更新和绑定
+					cmd.updateBuffer(uboMgr->getMaterialParamsHandle(),
+						&matParams, sizeof(UBOMaterialParams));
+					cmd.bindUBO(UBOBinding::MaterialParams,
+						uboMgr->getMaterialParamsHandle(), sizeof(UBOMaterialParams));
+					m_Meshes[i].m_Material.bindMaterialTextures(cmd, program);
+				}
+			}
+			m_Meshes[i].Draw(cmd);
+		}
+	}
+
 	void Model::loadModel(const std::string& path) {
 		Assimp::Importer import;
 		const aiScene* scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);

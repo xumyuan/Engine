@@ -15,6 +15,7 @@ namespace engine {
 		m_SceneCaptureLightingRT(IBL_CAPTURE_RESOLUTION, IBL_CAPTURE_RESOLUTION),
 		m_LightProbeConvolutionRT(LIGHT_PROBE_RESOLUTION, LIGHT_PROBE_RESOLUTION),
 		m_ReflectionProbeSamplingRT(REFLECTION_PROBE_RESOLUTION, REFLECTION_PROBE_RESOLUTION),
+		m_BrdfRT(BRDF_LUT_RESOLUTION, BRDF_LUT_RESOLUTION),
 		m_SceneCaptureCubemap(m_SceneCaptureSettings)
 	{
 		m_SceneCaptureSettings.format = rhi::TextureFormat::RGBA16F;
@@ -77,9 +78,8 @@ namespace engine {
 		Texture* brdfLUT = new Texture(textureSettings);
 		brdfLUT->generate2DTexture(BRDF_LUT_RESOLUTION, BRDF_LUT_RESOLUTION, ChannelLayout::RG);
 
-		// 设置 LUT 的渲染目标
-		RenderTarget brdfRT(BRDF_LUT_RESOLUTION, BRDF_LUT_RESOLUTION);
-		brdfRT.addColorTexture(rhi::TextureFormat::RG16F).build();
+		// 使用成员变量 m_BrdfRT（纯录制模式下需要在 flush 之前保持存活）
+		m_BrdfRT.addColorTexture(rhi::TextureFormat::RG16F).build();
 
 		// 通过命令缓冲录制 beginRenderPass
 		rhi::RenderPassParams params;
@@ -87,10 +87,10 @@ namespace engine {
 		params.clearColorFlag = true;
 		params.clearDepthFlag = false;
 		params.clearStencilFlag = false;
-		cmd().beginRenderPass(brdfRT.getHandle(), params);
+		cmd().beginRenderPass(m_BrdfRT.getHandle(), params);
 
 		// 动态附件管理
-		cmd().setRenderTargetColorAttachment(brdfRT.getHandle(), 0, brdfLUT->getRHIHandle());
+		cmd().setRenderTargetColorAttachment(m_BrdfRT.getHandle(), 0, brdfLUT->getRHIHandle());
 
 		rhi::PipelineState pipeline;
 		pipeline.program = brdfIntegrationShader->getProgramHandle();
@@ -98,10 +98,10 @@ namespace engine {
 		pipeline.cullMode = rhi::CullMode::Back;
 		cmd().bindPipeline(pipeline);
 
-		ModelRenderer::drawNdcPlane();
+		ModelRenderer::drawNdcPlane(cmd());
 
 		// 恢复原始附件
-		cmd().setRenderTargetColorAttachment(brdfRT.getHandle(), 0, rhi::TextureHandle());
+		cmd().setRenderTargetColorAttachment(m_BrdfRT.getHandle(), 0, rhi::TextureHandle());
 		cmd().endRenderPass();
 
 		// 恢复深度测试
@@ -121,7 +121,9 @@ namespace engine {
 		// Initialize step before rendering to the probe's cubemap
 		m_CubemapCamera.setCenterPosition(probePosition);
 		ShadowmapPass shadowPass(m_RenderScene, &m_SceneCaptureShadowRT);
+		shadowPass.setExternalCommandBuffer(&cmd());
 		ForwardLightingPass lightingPass(m_RenderScene, &m_SceneCaptureLightingRT);
+		lightingPass.setExternalCommandBuffer(&cmd());
 
 		// Render the scene to the probe's cubemap
 		for (int i = 0; i < 6; i++) {
@@ -153,13 +155,16 @@ namespace engine {
 		convPipeline.depthTest = false;
 		cmd().bindPipeline(convPipeline);
 
-		m_SceneCaptureCubemap.bind(0);
-		m_ConvolutionShader->setUniform("sceneCaptureCubemap", 0);
+		cmd().bindTextureUnit(m_SceneCaptureCubemap.getRHIHandle(), 0);
+		cmd().setUniformInt(m_ConvolutionShader->getProgramHandle(), "sceneCaptureCubemap", 0);
 
 		// PerFrame UBO 更新 projection
 		if (auto* uboMgr = getUBOManager()) {
-			uboMgr->updatePerFrame(glm::mat4(1.0f), m_CubemapCamera.getProjectionMatrix(), glm::vec3(0.0f));
-			uboMgr->bindPerFrame();
+			uboMgr->preparePerFrame(glm::mat4(1.0f), m_CubemapCamera.getProjectionMatrix(), glm::vec3(0.0f));
+			cmd().updateBuffer(uboMgr->getPerFrameHandle(),
+				&uboMgr->getPerFrameData(), sizeof(UBOPerFrame));
+			cmd().bindUBO(UBOBinding::PerFrame,
+				uboMgr->getPerFrameHandle(), sizeof(UBOPerFrame));
 		}
 
 		rhi::RenderPassParams convParams;
@@ -175,13 +180,16 @@ namespace engine {
 				m_CubemapCamera.switchCameraToFace(i);
 				// 通过 PerFrame UBO 更新 view
 				if (auto* uboMgr = getUBOManager()) {
-					uboMgr->updatePerFrame(m_CubemapCamera.getViewMatrix(), m_CubemapCamera.getProjectionMatrix(), glm::vec3(0.0f));
-					uboMgr->bindPerFrame();
+					uboMgr->preparePerFrame(m_CubemapCamera.getViewMatrix(), m_CubemapCamera.getProjectionMatrix(), glm::vec3(0.0f));
+					cmd().updateBuffer(uboMgr->getPerFrameHandle(),
+						&uboMgr->getPerFrameData(), sizeof(UBOPerFrame));
+					cmd().bindUBO(UBOBinding::PerFrame,
+						uboMgr->getPerFrameHandle(), sizeof(UBOPerFrame));
 				}
 
 				cmd().setRenderTargetColorAttachment(m_LightProbeConvolutionRT.getHandle(), 0,
 					lightProbe->getIrradianceMap()->getRHIHandle(), 0, static_cast<uint8_t>(i));
-				ModelRenderer::drawNdcCube();
+				ModelRenderer::drawNdcCube(cmd());
 			}
 			// 恢复原始附件
 			cmd().setRenderTargetColorAttachment(m_LightProbeConvolutionRT.getHandle(), 0,
@@ -207,7 +215,9 @@ namespace engine {
 
 		m_CubemapCamera.setCenterPosition(probePosition);
 		ShadowmapPass shadowPass(m_RenderScene, &m_SceneCaptureShadowRT);
+		shadowPass.setExternalCommandBuffer(&cmd());
 		ForwardLightingPass lightingPass(m_RenderScene, &m_SceneCaptureLightingRT);
+		lightingPass.setExternalCommandBuffer(&cmd());
 
 		// 将场景渲染到探针的立方体贴图
 		for (int i = 0; i < 6; ++i) {
@@ -238,13 +248,16 @@ namespace engine {
 		samplePipeline.depthTest = false;
 		cmd().bindPipeline(samplePipeline);
 
-		m_SceneCaptureCubemap.bind(0);
-		m_ImportanceSamplingShader->setUniform("sceneCaptureCubemap", 0);
+		cmd().bindTextureUnit(m_SceneCaptureCubemap.getRHIHandle(), 0);
+		cmd().setUniformInt(m_ImportanceSamplingShader->getProgramHandle(), "sceneCaptureCubemap", 0);
 
 		// PerFrame UBO 更新
 		if (auto* uboMgr = getUBOManager()) {
-			uboMgr->updatePerFrame(glm::mat4(1.0f), m_CubemapCamera.getProjectionMatrix(), glm::vec3(0.0f));
-			uboMgr->bindPerFrame();
+			uboMgr->preparePerFrame(glm::mat4(1.0f), m_CubemapCamera.getProjectionMatrix(), glm::vec3(0.0f));
+			cmd().updateBuffer(uboMgr->getPerFrameHandle(),
+				&uboMgr->getPerFrameData(), sizeof(UBOPerFrame));
+			cmd().bindUBO(UBOBinding::PerFrame,
+				uboMgr->getPerFrameHandle(), sizeof(UBOPerFrame));
 		}
 
 		rhi::RenderPassParams sampleParams;
@@ -266,20 +279,24 @@ namespace engine {
 				if (auto* uboMgr = getUBOManager()) {
 					UBOProbeParams probeParams{};
 					probeParams.roughness = mipRoughnessLevel;
-					uboMgr->updateProbeParams(probeParams);
-					uboMgr->bindCustom(sizeof(UBOProbeParams));
+					cmd().updateBuffer(uboMgr->getCustomHandle(), &probeParams, sizeof(UBOProbeParams));
+				cmd().bindUBO(UBOBinding::CustomParams,
+						uboMgr->getCustomHandle(), sizeof(UBOProbeParams));
 				}
 				for (int i = 0; i < 6; i++) {
 					m_CubemapCamera.switchCameraToFace(i);
 					// 通过 PerFrame UBO 更新 view
 					if (auto* uboMgr = getUBOManager()) {
-						uboMgr->updatePerFrame(m_CubemapCamera.getViewMatrix(), m_CubemapCamera.getProjectionMatrix(), glm::vec3(0.0f));
-						uboMgr->bindPerFrame();
+						uboMgr->preparePerFrame(m_CubemapCamera.getViewMatrix(), m_CubemapCamera.getProjectionMatrix(), glm::vec3(0.0f));
+						cmd().updateBuffer(uboMgr->getPerFrameHandle(),
+							&uboMgr->getPerFrameData(), sizeof(UBOPerFrame));
+						cmd().bindUBO(UBOBinding::PerFrame,
+							uboMgr->getPerFrameHandle(), sizeof(UBOPerFrame));
 					}
 					cmd().setRenderTargetColorAttachment(m_ReflectionProbeSamplingRT.getHandle(), 0,
 						reflectionProbe->getPrefilterMap()->getRHIHandle(),
 						static_cast<uint8_t>(mip), static_cast<uint8_t>(i));
-					ModelRenderer::drawNdcCube();
+					ModelRenderer::drawNdcCube(cmd());
 				}
 			}
 			// 恢复原始附件

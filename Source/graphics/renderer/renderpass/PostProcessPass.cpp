@@ -5,7 +5,7 @@
 #include <ui/DebugPane.h>
 #include <utils/DebugEvent.h>
 #include <utils/loaders/ShaderLoader.h>
-#include <graphics/UniformBufferManager.h>
+#include <graphics/UniformBufferManager.h>\n#include <graphics/UniformBufferData.h>
 
 namespace engine
 {
@@ -60,8 +60,8 @@ namespace engine
 		}
 
 		// 输出到默认帧缓冲（屏幕）
-		Window::bind();
-		Window::clear();
+		cmd().bindDefaultFramebuffer(Window::getWidth(), Window::getHeight());
+		cmd().clear(0x07);
 
 		rhi::PipelineState pipeline;
 		pipeline.program = m_PassthroughShader->getProgramHandle();
@@ -71,9 +71,9 @@ namespace engine
 		pipeline.cullMode = rhi::CullMode::Back;
 		cmd().bindPipeline(pipeline);
 
-		m_PassthroughShader->setUniform("input_texture", 0);
-		currentTexture->bind(0);
-		ModelRenderer::drawNdcPlane();
+		cmd().setUniformInt(m_PassthroughShader->getProgramHandle(), "input_texture", 0);
+		cmd().bindTextureUnit(currentTexture->getRHIHandle(), 0);
+		ModelRenderer::drawNdcPlane(cmd());
 	}
 
 
@@ -99,14 +99,14 @@ namespace engine
 			ppParams.gamma_inverse = 1.0f / m_GammaCorrection;
 			ppParams.exposure = m_Exposure;
 			ppParams.texel_size = glm::vec2(0.0f); // gammaCorrect 不需要 texel_size
-			uboMgr->updatePostProcessParams(ppParams);
-			uboMgr->bindCustom(sizeof(UBOPostProcessParams));
+			cmd().updateBuffer(uboMgr->getCustomHandle(), &ppParams, sizeof(UBOPostProcessParams));
+			cmd().bindUBO(UBOBinding::CustomParams, uboMgr->getCustomHandle(), sizeof(UBOPostProcessParams));
 		}
 
-		m_GammaCorrectShader->setUniform("screen_texture", 0);
-		hdrTexture->bind(0);
+		cmd().setUniformInt(m_GammaCorrectShader->getProgramHandle(), "screen_texture", 0);
+		cmd().bindTextureUnit(hdrTexture->getRHIHandle(), 0);
 
-		ModelRenderer::drawNdcPlane();
+		ModelRenderer::drawNdcPlane(cmd());
 
 		// 通过命令缓冲录制 endRenderPass
 		cmd().endRenderPass();
@@ -130,15 +130,18 @@ namespace engine
 
 		// FXAA 使用 PerFrame UBO 的 texelSize
 		if (auto* uboMgr = getUBOManager()) {
-			uboMgr->updatePerFrame(glm::mat4(1.0f), glm::mat4(1.0f), glm::vec3(0.0f),
+			uboMgr->preparePerFrame(glm::mat4(1.0f), glm::mat4(1.0f), glm::vec3(0.0f),
 				glm::vec2(Window::getWidth(), Window::getHeight()));
-			uboMgr->bindPerFrame();
+			cmd().updateBuffer(uboMgr->getPerFrameHandle(),
+				&uboMgr->getPerFrameData(), sizeof(UBOPerFrame));
+			cmd().bindUBO(UBOBinding::PerFrame,
+				uboMgr->getPerFrameHandle(), sizeof(UBOPerFrame));
 		}
 
-		m_FxaaShader->setUniform("input_texture", 0);
-		texture->bind(0);
+		cmd().setUniformInt(m_FxaaShader->getProgramHandle(), "input_texture", 0);
+		cmd().bindTextureUnit(texture->getRHIHandle(), 0);
 
-		ModelRenderer::drawNdcPlane();
+		ModelRenderer::drawNdcPlane(cmd());
 
 		// 通过命令缓冲录制 endRenderPass
 		cmd().endRenderPass();

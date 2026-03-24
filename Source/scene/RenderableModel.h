@@ -2,6 +2,7 @@
 
 #include "graphics/mesh/Model.h"
 #include "graphics/renderer/renderpass/RenderPassType.h"
+#include "rhi/include/RHICommandBuffer.h"
 
 namespace engine {
 
@@ -12,6 +13,7 @@ namespace engine {
 
 		// Assumes shader is already bound by the renderer
 		void draw(Shader* shader, RenderPassType pass) const;
+		void draw(rhi::CommandBuffer& cmd, rhi::ProgramHandle program, RenderPassType pass) const;
 
 		void addChild(RenderableModel* child);
 

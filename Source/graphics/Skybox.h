@@ -5,6 +5,7 @@
 #include "graphics/camera/FPSCamera.h"
 #include "rhi/include/RHIDevice.h"
 #include "rhi/include/RHIResources.h"
+#include "rhi/include/RHICommandBuffer.h"
 #include "utils/loaders/TextureLoader.h"
 
 namespace engine {
@@ -15,6 +16,7 @@ namespace engine {
 		~Skybox();
 
 		void Draw(ICamera* camera);
+		void Draw(rhi::CommandBuffer& cmd, ICamera* camera);
 
 		Cubemap* getSkyboxCubemap() { return m_SkyboxCubemap; }
 	private:

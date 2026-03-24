@@ -3,6 +3,7 @@
 #include "RHIHandle.h"
 #include "RHIResources.h"
 #include "RHITypes.h"
+#include <glm/glm.hpp>
 #include <memory>
 #include <string>
 
@@ -126,6 +127,28 @@ class RHIDevice {
             uint32_t srcX, uint32_t srcY, uint32_t srcW, uint32_t srcH,
             uint32_t dstX, uint32_t dstY, uint32_t dstW, uint32_t dstH,
             uint8_t mask = BlitColor) = 0;
+
+    // ---------- Uniform 设置（通过 ProgramHandle） ----------
+    // 这些方法在命令队列 dispatch 时调用，替代直接访问 RHIShaderProgram
+    // 实现中需要根据 ProgramHandle 找到对应的 GL program 并设置 uniform
+    virtual void setUniform(ProgramHandle program, const char* name, int value) = 0;
+    virtual void setUniform(ProgramHandle program, const char* name, float value) = 0;
+    virtual void setUniform(ProgramHandle program, const char* name, const glm::vec2& value) = 0;
+    virtual void setUniform(ProgramHandle program, const char* name, const glm::vec3& value) = 0;
+    virtual void setUniform(ProgramHandle program, const char* name, const glm::vec4& value) = 0;
+    virtual void setUniform(ProgramHandle program, const char* name, const glm::mat3& value) = 0;
+    virtual void setUniform(ProgramHandle program, const char* name, const glm::mat4& value) = 0;
+
+    // 将纹理绑定到指定纹理单元（等价于 bindTexture(0, unit, handle)，语义更明确）
+    virtual void bindTextureToUnit(TextureHandle handle, uint32_t unit) {
+        bindTexture(0, unit, handle);
+    }
+
+    // ---------- 帧缓冲/清除 ----------
+    // 绑定默认帧缓冲（等价于 Window::bind()）
+    virtual void bindDefaultFramebuffer(uint32_t width, uint32_t height) = 0;
+    // 清除帧缓冲（flags: 1=color, 2=depth, 4=stencil 的位掩码）
+    virtual void clearFramebuffer(uint8_t clearFlags) = 0;
 
     // ---------- 调试标记 ----------
     virtual void pushDebugGroup(const char* name) = 0;

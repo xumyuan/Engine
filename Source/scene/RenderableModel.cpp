@@ -41,6 +41,11 @@ namespace engine {
 			m_Model->Draw(shader, pass);
 	}
 
+	void RenderableModel::draw(rhi::CommandBuffer& cmd, rhi::ProgramHandle program, RenderPassType pass) const {
+		if (m_Model)
+			m_Model->Draw(cmd, program, pass);
+	}
+
 	void RenderableModel::addChild(RenderableModel* child) {
 		if (child == this)
 			return;

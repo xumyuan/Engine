@@ -38,4 +38,11 @@ namespace engine {
 		shader->setUniform("brdfLUT", 3);
 	}
 
+	void ReflectionProbe::bind(rhi::CommandBuffer& cmd, rhi::ProgramHandle program) {
+		cmd.bindTextureUnit(m_PrefilterMap->getRHIHandle(), 2);
+		cmd.setUniformInt(program, "prefilterMap", 2);
+		cmd.bindTextureUnit(s_BRDF_LUT->getRHIHandle(), 3);
+		cmd.setUniformInt(program, "brdfLUT", 3);
+	}
+
 }

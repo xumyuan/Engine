@@ -4,6 +4,7 @@
 #include "graphics/UniformBufferData.h"
 #include "utils/loaders/TextureLoader.h"
 #include "utils/json/JsonType.h"
+#include "rhi/include/RHICommandBuffer.h"
 
 namespace engine {
 	class Material
@@ -18,6 +19,9 @@ namespace engine {
 		// UBO 接口：填充 UBOMaterialParams 并绑定纹理，sampler uniform 仍通过 shader 设置
 		void fillMaterialUBO(UBOMaterialParams& params) const;
 		void bindMaterialTextures(Shader* shader) const;
+
+		// 命令缓冲版本：通过 CommandBuffer 录制纹理绑定和 uniform 设置
+		void bindMaterialTextures(rhi::CommandBuffer& cmd, rhi::ProgramHandle program) const;
 
 		void processMaterial(const SceneInfo::ModelInfo& modelinfo);
 

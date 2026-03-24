@@ -3,6 +3,7 @@
 #include <graphics/renderer/renderpass/RenderPass.h>
 #include <graphics/renderer/renderpass/RenderPassType.h>
 #include <graphics/renderer/RenderTarget.h>
+#include <rhi/include/RHICommandBuffer.h>
 
 namespace engine
 {
@@ -16,7 +17,7 @@ namespace engine
 
 		LightingPassOutput ExecuteLightingPass(ShadowmapPassOutput& inputShadowmapData, GeometryPassOutput& inputGbuffer, PreLightingPassOutput& preLightingOutput, ICamera* camera, bool useIBL);
 	private:
-		void BindShadowmap(Shader* shader, ShadowmapPassOutput& shadowmapData);
+		void BindShadowmap(rhi::CommandBuffer& cmdBuf, rhi::ProgramHandle program, ShadowmapPassOutput& shadowmapData);
 	private:
 		RenderTarget* m_RT;
 		Shader* m_LightingShader;

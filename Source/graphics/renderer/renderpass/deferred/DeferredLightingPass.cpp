@@ -42,6 +42,9 @@ namespace engine
 		pipeline.cullMode = rhi::CullMode::Back;
 		cmd().bindPipeline(pipeline);
 
+		// 先结束当前 render pass，再执行 blit（保证 begin/end 成对）
+		cmd().endRenderPass();
+
 		// Move the depth + stencil of the GBuffer to our render target
 		cmd().blit(inputGbuffer.renderTarget, m_RT->getHandle(),
 			0, 0, inputGbuffer.width, inputGbuffer.height,
@@ -74,57 +77,64 @@ namespace engine
 		pipeline.stencilBack = stencilReadOnly;
 		cmd().bindPipeline(pipeline);
 
-		// UBO 方式：PerFrame + Lighting（高层操作仍直接调用）
+		// UBO 方式：PerFrame + Lighting
+		rhi::ProgramHandle lightingProgram = m_LightingShader->getProgramHandle();
 		if (auto* uboMgr = getUBOManager()) {
-			uboMgr->updatePerFrame(camera->getViewMatrix(), camera->getProjectionMatrix(),
+			uboMgr->preparePerFrame(camera->getViewMatrix(), camera->getProjectionMatrix(),
 				camera->getPosition());
-			uboMgr->bindPerFrame();
+			cmd().updateBuffer(uboMgr->getPerFrameHandle(),
+				&uboMgr->getPerFrameData(), sizeof(UBOPerFrame));
+			cmd().bindUBO(UBOBinding::PerFrame,
+				uboMgr->getPerFrameHandle(), sizeof(UBOPerFrame));
 
 			auto& lightingUBO = uboMgr->getLightingData();
 			lightCollector->fillLightingUBO(m_RenderScene.rootNode, lightingUBO);
-			uboMgr->updateLighting();
-			uboMgr->bindLighting();
+			cmd().updateBuffer(uboMgr->getLightingHandle(),
+				&uboMgr->getLightingDataConst(), sizeof(UBOLighting));
+			cmd().bindUBO(UBOBinding::Lighting,
+				uboMgr->getLightingHandle(), sizeof(UBOLighting));
 		}
 
-		// Bind GBuffer data（高层纹理绑定仍直接调用）
-		inputGbuffer.albedoTexture->bind(6);
-		m_LightingShader->setUniform("albedoTexture", 6);
+		// Bind GBuffer data
+		cmd().bindTextureUnit(inputGbuffer.albedoTexture->getRHIHandle(), 6);
+		cmd().setUniformInt(lightingProgram, "albedoTexture", 6);
 
-		inputGbuffer.normalTexture->bind(7);
-		m_LightingShader->setUniform("normalTexture", 7);
+		cmd().bindTextureUnit(inputGbuffer.normalTexture->getRHIHandle(), 7);
+		cmd().setUniformInt(lightingProgram, "normalTexture", 7);
 
-		inputGbuffer.materialInfoTexture->bind(8);
-		m_LightingShader->setUniform("materialInfoTexture", 8);
+		cmd().bindTextureUnit(inputGbuffer.materialInfoTexture->getRHIHandle(), 8);
+		cmd().setUniformInt(lightingProgram, "materialInfoTexture", 8);
 
 		// Bind SSAO texture
 		UBOIBLParams iblParams{};
 		iblParams.reflectionProbeMipCount = REFLECTION_PROBE_MIP_COUNT;
 		if (preLightingOutput.ssaoTexture != nullptr) {
-			preLightingOutput.ssaoTexture->bind(9);
-			m_LightingShader->setUniform("ssaoTexture", 9);
+			cmd().bindTextureUnit(preLightingOutput.ssaoTexture->getRHIHandle(), 9);
+			cmd().setUniformInt(lightingProgram, "ssaoTexture", 9);
 			iblParams.useSSAO = 1;
 		}
 		else {
 			iblParams.useSSAO = 0;
 		}
 
-		inputGbuffer.depthStencilTexture->bind(10);
-		m_LightingShader->setUniform("depthTexture", 10);
+		cmd().bindTextureUnit(inputGbuffer.depthStencilTexture->getRHIHandle(), 10);
+		cmd().setUniformInt(lightingProgram, "depthTexture", 10);
 
 		// Shadowmap code
-		BindShadowmap(m_LightingShader, inputShadowmapData);
+		BindShadowmap(cmd(), lightingProgram, inputShadowmapData);
 
 		// IBL Bindings
 		glm::vec3 cameraPosition = camera->getPosition();
-		probeManager->bindProbe(cameraPosition, m_LightingShader);
+		probeManager->bindProbe(cameraPosition, cmd(), lightingProgram);
 
-		m_LightingShader->setUniform("pointLightShadowCubemap", 1); 
+		cmd().setUniformInt(lightingProgram, "pointLightShadowCubemap", 1);
 
 		// Perform lighting on the terrain (turn IBL off)
 		iblParams.computeIBL = 0;
 		if (auto* uboMgr = getUBOManager()) {
-			uboMgr->updateIBLParams(iblParams);
-			uboMgr->bindCustom(sizeof(UBOIBLParams));
+			cmd().updateBuffer(uboMgr->getCustomHandle(), &iblParams, sizeof(UBOIBLParams));
+			cmd().bindUBO(UBOBinding::CustomParams,
+				uboMgr->getCustomHandle(), sizeof(UBOIBLParams));
 		}
 		// stencil: 匹配 terrain 值
 		rhi::StencilState terrainStencil = stencilReadOnly;
@@ -132,7 +142,7 @@ namespace engine
 		pipeline.stencilFront = terrainStencil;
 		pipeline.stencilBack = terrainStencil;
 		cmd().bindPipeline(pipeline);
-		ModelRenderer::drawNdcPlane();
+		ModelRenderer::drawNdcPlane(cmd());
 
 		// Perform lighting on the models in the scene
 		if (useIBL)
@@ -144,8 +154,9 @@ namespace engine
 			iblParams.computeIBL = 0;
 		}
 		if (auto* uboMgr = getUBOManager()) {
-			uboMgr->updateIBLParams(iblParams);
-			uboMgr->bindCustom(sizeof(UBOIBLParams));
+			cmd().updateBuffer(uboMgr->getCustomHandle(), &iblParams, sizeof(UBOIBLParams));
+			cmd().bindUBO(UBOBinding::CustomParams,
+				uboMgr->getCustomHandle(), sizeof(UBOIBLParams));
 		}
 		// stencil: 匹配 model 值
 		rhi::StencilState modelStencil = stencilReadOnly;
@@ -153,7 +164,7 @@ namespace engine
 		pipeline.stencilFront = modelStencil;
 		pipeline.stencilBack = modelStencil;
 		cmd().bindPipeline(pipeline);
-		ModelRenderer::drawNdcPlane();
+		ModelRenderer::drawNdcPlane(cmd());
 
 		// Reset state: 恢复深度测试
 		pipeline.depthTest = true;
@@ -162,7 +173,7 @@ namespace engine
 
 		cmd().pushDebugGroup("Render Skybox");
 		Skybox* skybox = m_RenderScene.skybox;
-		skybox->Draw(camera);
+		skybox->Draw(cmd(), camera);
 		cmd().popDebugGroup();
 
 		// 通过命令缓冲录制 endRenderPass
@@ -178,10 +189,10 @@ namespace engine
 		return passOutput;
 	}
 
-	void DeferredLightingPass::BindShadowmap(Shader* shader, ShadowmapPassOutput& shadowmapData)
+	void DeferredLightingPass::BindShadowmap(rhi::CommandBuffer& cmdBuf, rhi::ProgramHandle program, ShadowmapPassOutput& shadowmapData)
 	{
-		shadowmapData.depthTexture->bind(0);
-		shader->setUniform("dirLightShadowmap", 0);
+		cmdBuf.bindTextureUnit(shadowmapData.depthTexture->getRHIHandle(), 0);
+		cmdBuf.setUniformInt(program, "dirLightShadowmap", 0);
 		
 		// 阴影数据通过 Lighting UBO 传递
 		if (auto* uboMgr = getUBOManager()) {
@@ -189,7 +200,8 @@ namespace engine
 			lightingUBO.dirLightShadowData.shadowBias = 0.01f;
 			lightingUBO.dirLightShadowData.lightSpaceViewProjectionMatrix = shadowmapData.directionalLightViewProjMatrix;
 			lightingUBO.dirLightShadowData.lightShadowIndex = 1;
-			uboMgr->updateLighting();
+			cmdBuf.updateBuffer(uboMgr->getLightingHandle(),
+				&uboMgr->getLightingDataConst(), sizeof(UBOLighting));
 		}
 	}
 }

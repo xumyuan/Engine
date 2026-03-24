@@ -4,6 +4,7 @@
 #include <graphics/Skybox.h>
 #include <graphics/ibl/LightProbe.h>
 #include <graphics/ibl/ReflectionProbe.h>
+#include <rhi/include/RHICommandBuffer.h>
 
 namespace engine {
 
@@ -26,6 +27,7 @@ namespace engine {
 
 		// Assumes shader is bound
 		void bindProbe(glm::vec3& renderPosition, Shader* shader);
+		void bindProbe(glm::vec3& renderPosition, rhi::CommandBuffer& cmd, rhi::ProgramHandle program);
 	private:
 		ProbeBlendSetting m_ProbeBlendSetting;
 		std::vector<LightProbe*> m_LightProbes;

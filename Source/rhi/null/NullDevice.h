@@ -80,6 +80,18 @@ public:
     void pushDebugGroup(const char*) override {}
     void popDebugGroup() override {}
 
+    // ---------- Uniform 设置 ----------
+    void setUniform(ProgramHandle, const char*, int) override {}
+    void setUniform(ProgramHandle, const char*, float) override {}
+    void setUniform(ProgramHandle, const char*, const glm::vec2&) override {}
+    void setUniform(ProgramHandle, const char*, const glm::vec3&) override {}
+    void setUniform(ProgramHandle, const char*, const glm::vec4&) override {}
+    void setUniform(ProgramHandle, const char*, const glm::mat3&) override {}
+    void setUniform(ProgramHandle, const char*, const glm::mat4&) override {}
+
+    void bindDefaultFramebuffer(uint32_t, uint32_t) override {}
+    void clearFramebuffer(uint8_t) override {}
+
     void flush() override {}
     void finish() override {}
 

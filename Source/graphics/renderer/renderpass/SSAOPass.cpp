@@ -122,9 +122,12 @@ namespace engine
 		// 传递采样核 + 参数 通过 UBO
 		if (auto* uboMgr = getUBOManager()) {
 			// PerFrame UBO
-			uboMgr->updatePerFrame(camera->getViewMatrix(), camera->getProjectionMatrix(),
+			uboMgr->preparePerFrame(camera->getViewMatrix(), camera->getProjectionMatrix(),
 				glm::vec3(0.0f), glm::vec2(Window::getWidth(), Window::getHeight()));
-			uboMgr->bindPerFrame();
+			cmd().updateBuffer(uboMgr->getPerFrameHandle(),
+				&uboMgr->getPerFrameData(), sizeof(UBOPerFrame));
+			cmd().bindUBO(UBOBinding::PerFrame,
+				uboMgr->getPerFrameHandle(), sizeof(UBOPerFrame));
 
 			// SSAO Params UBO
 			UBOSSAOParams ssaoUBOParams{};
@@ -135,23 +138,25 @@ namespace engine
 			ssaoUBOParams.radius = m_Radius;
 			ssaoUBOParams.bias = m_Bias;
 			ssaoUBOParams.power = m_Power;
-			uboMgr->updateSSAOParams(ssaoUBOParams);
-			uboMgr->bindCustom(sizeof(UBOSSAOParams));
+			cmd().updateBuffer(uboMgr->getCustomHandle(), &ssaoUBOParams, sizeof(UBOSSAOParams));
+			cmd().bindUBO(UBOBinding::CustomParams,
+				uboMgr->getCustomHandle(), sizeof(UBOSSAOParams));
 		}
 
-		// 绑定 GBuffer 纹理（高层操作仍直接调用）
-		gBufferOutput.normalTexture->bind(0);
-		m_SSAOShader->setUniform("gNormal", 0);
+		// 绑定 GBuffer 纹理
+		rhi::ProgramHandle ssaoProgram = m_SSAOShader->getProgramHandle();
+		cmd().bindTextureUnit(gBufferOutput.normalTexture->getRHIHandle(), 0);
+		cmd().setUniformInt(ssaoProgram, "gNormal", 0);
 
-		gBufferOutput.depthStencilTexture->bind(1);
-		m_SSAOShader->setUniform("gDepth", 1);
+		cmd().bindTextureUnit(gBufferOutput.depthStencilTexture->getRHIHandle(), 1);
+		cmd().setUniformInt(ssaoProgram, "gDepth", 1);
 
 		// 绑定噪声纹理
-		m_NoiseTexture.bind(2);
-		m_SSAOShader->setUniform("texNoise", 2);
+		cmd().bindTextureUnit(m_NoiseTexture.getRHIHandle(), 2);
+		cmd().setUniformInt(ssaoProgram, "texNoise", 2);
 
 		// 绘制全屏四边形
-		ModelRenderer::drawNdcPlane();
+		ModelRenderer::drawNdcPlane(cmd());
 		cmd().endRenderPass();
 		cmd().popDebugGroup();
 
@@ -169,10 +174,10 @@ namespace engine
 		blurPipeline.program = m_SSAOBlurShader->getProgramHandle();
 		cmd().bindPipeline(blurPipeline);
 
-		m_SSAORT.getColorTexture()->bind(0);
-		m_SSAOBlurShader->setUniform("ssaoInput", 0);
+		cmd().bindTextureUnit(m_SSAORT.getColorTexture()->getRHIHandle(), 0);
+		cmd().setUniformInt(m_SSAOBlurShader->getProgramHandle(), "ssaoInput", 0);
 
-		ModelRenderer::drawNdcPlane();
+		ModelRenderer::drawNdcPlane(cmd());
 		cmd().endRenderPass();
 		cmd().popDebugGroup();
 

@@ -57,6 +57,26 @@ public:
     // 通用绑定接口
     void bind(uint32_t binding, rhi::BufferHandle handle, uint32_t size);
 
+    // ===== 句柄访问器（供命令录制使用）=====
+    rhi::BufferHandle getPerFrameHandle() const { return m_PerFrameUBO; }
+    rhi::BufferHandle getPerObjectHandle() const { return m_PerObjectUBO; }
+    rhi::BufferHandle getLightingHandle() const { return m_LightingUBO; }
+    rhi::BufferHandle getMaterialParamsHandle() const { return m_MaterialParamsUBO; }
+    rhi::BufferHandle getCustomHandle() const { return m_CustomUBO; }
+
+    // ===== CPU 侧数据访问（供命令录制前填充）=====
+    const UBOPerFrame& getPerFrameData() const { return m_PerFrameData; }
+    const UBOPerObject& getPerObjectData() const { return m_PerObjectData; }
+    const UBOLighting& getLightingDataConst() const { return m_LightingData; }
+    const UBOMaterialParams& getMaterialParamsDataConst() const { return m_MaterialParamsData; }
+
+    // ===== 仅更新 CPU 侧数据（不上传 GPU，供命令录制模式使用）=====
+    void preparePerFrame(const glm::mat4& view, const glm::mat4& projection,
+                         const glm::vec3& viewPos,
+                         const glm::vec2& screenSize = glm::vec2(0.0f));
+    void preparePerObject(const glm::mat4& model, const glm::mat3& normalMatrix);
+    void preparePerObject(const glm::mat4& model);
+
 private:
     rhi::RHIDevice* m_Device = nullptr;
 

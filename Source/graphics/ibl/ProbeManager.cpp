@@ -70,4 +70,34 @@ namespace engine {
 			shader->setUniform("brdfLUT", 3);
 		}
 	}
+
+	void ProbeManager::bindProbe(glm::vec3& renderPosition, rhi::CommandBuffer& cmd, rhi::ProgramHandle program) {
+		if (m_ProbeBlendSetting == PROBES_SIMPLE) {
+			if (m_LightProbes.size() > 0) {
+				m_LightProbes[0]->bind(cmd, program);
+			}
+			else {
+				cmd.bindTextureUnit(m_Skybox->getSkyboxCubemap()->getRHIHandle(), 1);
+				cmd.setUniformInt(program, "irradianceMap", 1);
+			}
+
+			if (m_ReflectionProbes.size() > 0) {
+				m_ReflectionProbes[0]->bind(cmd, program);
+			}
+			else {
+				cmd.bindTextureUnit(m_Skybox->getSkyboxCubemap()->getRHIHandle(), 2);
+				cmd.setUniformInt(program, "prefilterMap", 2);
+				cmd.bindTextureUnit(ReflectionProbe::getBRDFLUT()->getRHIHandle(), 3);
+				cmd.setUniformInt(program, "brdfLUT", 3);
+			}
+		}
+		else if (m_ProbeBlendSetting == PROBES_DISABLED) {
+			cmd.bindTextureUnit(m_Skybox->getSkyboxCubemap()->getRHIHandle(), 1);
+			cmd.setUniformInt(program, "irradianceMap", 1);
+			cmd.bindTextureUnit(m_Skybox->getSkyboxCubemap()->getRHIHandle(), 2);
+			cmd.setUniformInt(program, "prefilterMap", 2);
+			cmd.bindTextureUnit(ReflectionProbe::getBRDFLUT()->getRHIHandle(), 3);
+			cmd.setUniformInt(program, "brdfLUT", 3);
+		}
+	}
 }

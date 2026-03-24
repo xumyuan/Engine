@@ -33,4 +33,9 @@ namespace engine {
 		shader->setUniform("irradianceMap", 1);  // sampler uniform 保持独立
 	}
 
+	void LightProbe::bind(rhi::CommandBuffer& cmd, rhi::ProgramHandle program) {
+		cmd.bindTextureUnit(m_IrradianceMap->getRHIHandle(), 1);
+		cmd.setUniformInt(program, "irradianceMap", 1);
+	}
+
 }

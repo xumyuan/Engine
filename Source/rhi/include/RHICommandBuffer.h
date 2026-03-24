@@ -5,6 +5,7 @@
 #include <vector>
 #include <cstring>
 #include <cstdint>
+#include <glm/glm.hpp>
 
 namespace engine {
 namespace rhi {
@@ -14,9 +15,10 @@ class RHIDevice;
 
 // ===================================================================
 // 命令类型枚举
-// 覆盖 RHIDevice 中"渲染命令"部分的所有接口
+// 覆盖 RHIDevice 中"渲染命令"部分的所有接口 + 高层操作抽象
 // ===================================================================
 enum class CommandType : uint8_t {
+    // --- 原有 RHI 级命令 ---
     BeginFrame,
     EndFrame,
     BeginRenderPass,
@@ -39,6 +41,20 @@ enum class CommandType : uint8_t {
     PopDebugGroup,
     Flush,
     Finish,
+
+    // --- 步骤 5: 高层操作命令 ---
+    SetUniformInt,      // Shader::setUniform(name, int) — 纹理单元绑定等
+    SetUniformFloat,    // Shader::setUniform(name, float)
+    SetUniformVec2,     // Shader::setUniform(name, vec2)
+    SetUniformVec3,     // Shader::setUniform(name, vec3)
+    SetUniformVec4,     // Shader::setUniform(name, vec4)
+    SetUniformMat3,     // Shader::setUniform(name, mat3)
+    SetUniformMat4,     // Shader::setUniform(name, mat4)
+    BindTextureUnit,    // Texture::bind(unit) — 将纹理绑定到指定纹理单元
+    UpdateBuffer,       // 更新 UBO 数据（UBOManager::updateXXX）
+    BindUBO,            // 绑定 UBO 到 binding point（UBOManager::bindXXX）
+    BindDefaultFramebuffer, // Window::bind() — 绑定默认帧缓冲
+    Clear,                  // Window::clear() — 清除帧缓冲
 };
 
 // ===================================================================
@@ -138,11 +154,91 @@ struct CmdPushDebugGroup {
 };
 
 // ===================================================================
+// 步骤 5: 高层操作命令参数结构
+// ===================================================================
+
+// Uniform 名称固定长度（shader uniform 名称通常不超过 48 字符）
+static constexpr uint32_t UNIFORM_NAME_MAX = 48;
+
+struct CmdSetUniformInt {
+    ProgramHandle program;
+    char          name[UNIFORM_NAME_MAX];
+    int           value;
+};
+
+struct CmdSetUniformFloat {
+    ProgramHandle program;
+    char          name[UNIFORM_NAME_MAX];
+    float         value;
+};
+
+struct CmdSetUniformVec2 {
+    ProgramHandle program;
+    char          name[UNIFORM_NAME_MAX];
+    glm::vec2     value;
+};
+
+struct CmdSetUniformVec3 {
+    ProgramHandle program;
+    char          name[UNIFORM_NAME_MAX];
+    glm::vec3     value;
+};
+
+struct CmdSetUniformVec4 {
+    ProgramHandle program;
+    char          name[UNIFORM_NAME_MAX];
+    glm::vec4     value;
+};
+
+struct CmdSetUniformMat3 {
+    ProgramHandle program;
+    char          name[UNIFORM_NAME_MAX];
+    glm::mat3     value;
+};
+
+struct CmdSetUniformMat4 {
+    ProgramHandle program;
+    char          name[UNIFORM_NAME_MAX];
+    glm::mat4     value;
+};
+
+struct CmdBindTextureUnit {
+    TextureHandle handle;
+    uint32_t      unit;       // 纹理单元编号
+};
+
+// UBO 数据更新命令：将 CPU 侧数据拷贝到 staging 区域
+// 最大 1040 bytes（UBOSSAOParams 是最大的 UBO）
+static constexpr uint32_t UBO_STAGING_MAX = 1040;
+
+struct CmdUpdateBuffer {
+    BufferHandle  handle;
+    uint32_t      dataSize;
+    uint8_t       data[UBO_STAGING_MAX];  // 内联 staging 区域
+};
+
+struct CmdBindUBO {
+    uint32_t      binding;
+    BufferHandle  handle;
+    uint32_t      size;
+};
+
+struct CmdBindDefaultFramebuffer {
+    uint32_t width;
+    uint32_t height;
+};
+
+struct CmdClear {
+    uint8_t clearFlags;  // 1=color, 2=depth, 4=stencil (bitmask)
+};
+
+// ===================================================================
 // 渲染命令节点（union + 类型标签）
 // 使用 union 保证缓存友好，避免虚函数和堆分配开销
 // ===================================================================
 struct RenderCommand {
     CommandType type;
+    uint64_t    sortKey = 0;  // 步骤 6: 排序键（用于 RenderPass 内命令排序优化）
 
     union {
         CmdBeginFrame           beginFrame;
@@ -162,9 +258,22 @@ struct RenderCommand {
         CmdBlit                 blit;
         CmdResolve              resolve;
         CmdPushDebugGroup       pushDebugGroup;
+        // 步骤 5: 高层操作命令
+        CmdSetUniformInt        setUniformInt;
+        CmdSetUniformFloat      setUniformFloat;
+        CmdSetUniformVec2       setUniformVec2;
+        CmdSetUniformVec3       setUniformVec3;
+        CmdSetUniformVec4       setUniformVec4;
+        CmdSetUniformMat3       setUniformMat3;
+        CmdSetUniformMat4       setUniformMat4;
+        CmdBindTextureUnit      bindTextureUnit;
+        CmdUpdateBuffer         updateBuffer;
+        CmdBindUBO              bindUBO;
+        CmdBindDefaultFramebuffer bindDefaultFramebuffer;
+        CmdClear                clear;
     };
 
-    RenderCommand() : type(CommandType::EndRenderPass), beginRenderPass{} {}
+    RenderCommand() : type(CommandType::EndRenderPass), sortKey(0), beginRenderPass{} {}
 };
 
 // ===================================================================
@@ -174,6 +283,8 @@ struct RenderCommand {
 //   CommandBuffer cmdBuf;
 //   cmdBuf.beginRenderPass(target, params);
 //   cmdBuf.bindPipeline(state);
+//   cmdBuf.setUniformInt(program, "texture0", 0);
+//   cmdBuf.bindTextureUnit(texHandle, 0);
 //   cmdBuf.draw(indexCount, 0);
 //   cmdBuf.endRenderPass();
 //   // ... 提交到 CommandQueue 执行
@@ -189,10 +300,6 @@ public:
     }
 
     // ---------- 即时执行模式 ----------
-    // 设置即时执行设备后，每条录制的命令会同时立即分发到设备执行。
-    // 这是当前过渡阶段的临时方案：部分高层操作（setUniform、Texture::bind）
-    // 仍直接调用 OpenGL，需要 bindPipeline 等命令立即生效。
-    // 传入 nullptr 可关闭即时执行模式（回到纯录制模式）。
     void setImmediateDevice(RHIDevice* device) { m_ImmediateDevice = device; }
     RHIDevice* getImmediateDevice() const { return m_ImmediateDevice; }
 
@@ -203,6 +310,9 @@ public:
 
     // 获取只读命令列表（供 CommandQueue 遍历执行）
     const std::vector<RenderCommand>& getCommands() const { return m_Commands; }
+
+    // 获取可修改的命令列表（供排序优化使用）
+    std::vector<RenderCommand>& getCommands() { return m_Commands; }
 
     // ---------- 帧生命周期 ----------
 
@@ -361,6 +471,120 @@ public:
 
     void finish() {
         auto& cmd = emplaceCommand(CommandType::Finish);
+        dispatchImmediate(cmd);
+    }
+
+    // ========== 步骤 5: 高层操作命令录制 ==========
+
+    // --- SetUniform 系列 ---
+
+    void setUniformInt(ProgramHandle program, const char* name, int value) {
+        auto& cmd = emplaceCommand(CommandType::SetUniformInt);
+        cmd.setUniformInt.program = program;
+        cmd.setUniformInt.value = value;
+        std::strncpy(cmd.setUniformInt.name, name, UNIFORM_NAME_MAX - 1);
+        cmd.setUniformInt.name[UNIFORM_NAME_MAX - 1] = '\0';
+        dispatchImmediate(cmd);
+    }
+
+    void setUniformFloat(ProgramHandle program, const char* name, float value) {
+        auto& cmd = emplaceCommand(CommandType::SetUniformFloat);
+        cmd.setUniformFloat.program = program;
+        cmd.setUniformFloat.value = value;
+        std::strncpy(cmd.setUniformFloat.name, name, UNIFORM_NAME_MAX - 1);
+        cmd.setUniformFloat.name[UNIFORM_NAME_MAX - 1] = '\0';
+        dispatchImmediate(cmd);
+    }
+
+    void setUniformVec2(ProgramHandle program, const char* name, const glm::vec2& value) {
+        auto& cmd = emplaceCommand(CommandType::SetUniformVec2);
+        cmd.setUniformVec2.program = program;
+        cmd.setUniformVec2.value = value;
+        std::strncpy(cmd.setUniformVec2.name, name, UNIFORM_NAME_MAX - 1);
+        cmd.setUniformVec2.name[UNIFORM_NAME_MAX - 1] = '\0';
+        dispatchImmediate(cmd);
+    }
+
+    void setUniformVec3(ProgramHandle program, const char* name, const glm::vec3& value) {
+        auto& cmd = emplaceCommand(CommandType::SetUniformVec3);
+        cmd.setUniformVec3.program = program;
+        cmd.setUniformVec3.value = value;
+        std::strncpy(cmd.setUniformVec3.name, name, UNIFORM_NAME_MAX - 1);
+        cmd.setUniformVec3.name[UNIFORM_NAME_MAX - 1] = '\0';
+        dispatchImmediate(cmd);
+    }
+
+    void setUniformVec4(ProgramHandle program, const char* name, const glm::vec4& value) {
+        auto& cmd = emplaceCommand(CommandType::SetUniformVec4);
+        cmd.setUniformVec4.program = program;
+        cmd.setUniformVec4.value = value;
+        std::strncpy(cmd.setUniformVec4.name, name, UNIFORM_NAME_MAX - 1);
+        cmd.setUniformVec4.name[UNIFORM_NAME_MAX - 1] = '\0';
+        dispatchImmediate(cmd);
+    }
+
+    void setUniformMat3(ProgramHandle program, const char* name, const glm::mat3& value) {
+        auto& cmd = emplaceCommand(CommandType::SetUniformMat3);
+        cmd.setUniformMat3.program = program;
+        cmd.setUniformMat3.value = value;
+        std::strncpy(cmd.setUniformMat3.name, name, UNIFORM_NAME_MAX - 1);
+        cmd.setUniformMat3.name[UNIFORM_NAME_MAX - 1] = '\0';
+        dispatchImmediate(cmd);
+    }
+
+    void setUniformMat4(ProgramHandle program, const char* name, const glm::mat4& value) {
+        auto& cmd = emplaceCommand(CommandType::SetUniformMat4);
+        cmd.setUniformMat4.program = program;
+        cmd.setUniformMat4.value = value;
+        std::strncpy(cmd.setUniformMat4.name, name, UNIFORM_NAME_MAX - 1);
+        cmd.setUniformMat4.name[UNIFORM_NAME_MAX - 1] = '\0';
+        dispatchImmediate(cmd);
+    }
+
+    // --- 纹理绑定到纹理单元 ---
+
+    void bindTextureUnit(TextureHandle handle, uint32_t unit) {
+        auto& cmd = emplaceCommand(CommandType::BindTextureUnit);
+        cmd.bindTextureUnit.handle = handle;
+        cmd.bindTextureUnit.unit = unit;
+        dispatchImmediate(cmd);
+    }
+
+    // --- UBO 数据更新（将 CPU 数据拷贝到命令内联 staging 区域）---
+
+    void updateBuffer(BufferHandle handle, const void* data, uint32_t dataSize) {
+        if (dataSize > UBO_STAGING_MAX) return;  // 防止越界
+        auto& cmd = emplaceCommand(CommandType::UpdateBuffer);
+        cmd.updateBuffer.handle = handle;
+        cmd.updateBuffer.dataSize = dataSize;
+        std::memcpy(cmd.updateBuffer.data, data, dataSize);
+        dispatchImmediate(cmd);
+    }
+
+    // --- UBO 绑定到 binding point ---
+
+    void bindUBO(uint32_t binding, BufferHandle handle, uint32_t size) {
+        auto& cmd = emplaceCommand(CommandType::BindUBO);
+        cmd.bindUBO.binding = binding;
+        cmd.bindUBO.handle = handle;
+        cmd.bindUBO.size = size;
+        dispatchImmediate(cmd);
+    }
+
+    // --- 默认帧缓冲绑定 ---
+
+    void bindDefaultFramebuffer(uint32_t width, uint32_t height) {
+        auto& cmd = emplaceCommand(CommandType::BindDefaultFramebuffer);
+        cmd.bindDefaultFramebuffer.width = width;
+        cmd.bindDefaultFramebuffer.height = height;
+        dispatchImmediate(cmd);
+    }
+
+    // --- 清除帧缓冲 ---
+
+    void clear(uint8_t clearFlags = 0x03 /*color|depth*/) {
+        auto& cmd = emplaceCommand(CommandType::Clear);
+        cmd.clear.clearFlags = clearFlags;
         dispatchImmediate(cmd);
     }
 

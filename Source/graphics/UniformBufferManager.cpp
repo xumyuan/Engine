@@ -95,6 +95,30 @@ void UniformBufferManager::bindPerObject() {
     bind(UBOBinding::PerObject, m_PerObjectUBO, sizeof(UBOPerObject));
 }
 
+// ===== 仅更新 CPU 侧数据（不上传 GPU）=====
+void UniformBufferManager::preparePerFrame(const glm::mat4& view, const glm::mat4& projection,
+                                           const glm::vec3& viewPos, const glm::vec2& screenSize) {
+    m_PerFrameData.view = view;
+    m_PerFrameData.projection = projection;
+    m_PerFrameData.viewInverse = glm::inverse(view);
+    m_PerFrameData.projectionInverse = glm::inverse(projection);
+    m_PerFrameData.viewPos = glm::vec4(viewPos, 1.0f);
+    m_PerFrameData.screenSize = screenSize;
+    if (screenSize.x > 0.0f && screenSize.y > 0.0f) {
+        m_PerFrameData.texelSize = glm::vec2(1.0f / screenSize.x, 1.0f / screenSize.y);
+    }
+}
+
+void UniformBufferManager::preparePerObject(const glm::mat4& model, const glm::mat3& normalMatrix) {
+    m_PerObjectData.model = model;
+    setNormalMatrix(m_PerObjectData, normalMatrix);
+}
+
+void UniformBufferManager::preparePerObject(const glm::mat4& model) {
+    glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
+    preparePerObject(model, normalMatrix);
+}
+
 // ===== Lighting =====
 void UniformBufferManager::updateLighting() {
     updateUBO(m_LightingUBO, &m_LightingData, sizeof(UBOLighting));

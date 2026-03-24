@@ -60,47 +60,54 @@ namespace engine
 		pipeline.multisample = m_RT->isMultisampled();
 		cmd().bindPipeline(pipeline);
 
-		// View setup + lighting setup via UBO（高层操作仍直接调用）
+		// View setup + lighting setup via UBO
 		auto* uboMgr = getUBOManager();
+		rhi::ProgramHandle modelProgram = m_ModelShader->getProgramHandle();
 		if (uboMgr) {
 			// PerFrame UBO
-			uboMgr->updatePerFrame(camera->getViewMatrix(), camera->getProjectionMatrix(),
+			uboMgr->preparePerFrame(camera->getViewMatrix(), camera->getProjectionMatrix(),
 				camera->getPosition());
-			uboMgr->bindPerFrame();
+			cmd().updateBuffer(uboMgr->getPerFrameHandle(),
+				&uboMgr->getPerFrameData(), sizeof(UBOPerFrame));
+			cmd().bindUBO(UBOBinding::PerFrame,
+				uboMgr->getPerFrameHandle(), sizeof(UBOPerFrame));
 
 			// Lighting UBO
 			auto& lightingUBO = uboMgr->getLightingData();
 			lightCollector->fillLightingUBO(m_RenderScene.rootNode, lightingUBO);
-			uboMgr->updateLighting();
-			uboMgr->bindLighting();
+			cmd().updateBuffer(uboMgr->getLightingHandle(),
+				&uboMgr->getLightingDataConst(), sizeof(UBOLighting));
+			cmd().bindUBO(UBOBinding::Lighting,
+				uboMgr->getLightingHandle(), sizeof(UBOLighting));
 		}
 		// Shadowmap code
-		bindShadowmap(m_ModelShader, shadowmapData);
+		bindShadowmap(cmd(), modelProgram, shadowmapData);
 		// IBL code
 		UBOIBLParams iblParams{};
 		iblParams.reflectionProbeMipCount = REFLECTION_PROBE_MIP_COUNT;
 		if (useIBL) {
 			iblParams.computeIBL = 1;
 			glm::vec3 renderPos(0.0f, 0.0f, 0.0f);
-			probeManager->bindProbe(renderPos, m_ModelShader);
+			probeManager->bindProbe(renderPos, cmd(), modelProgram);
 		}
 		else {
 			iblParams.computeIBL = 0;
 			Skybox* skyboxForBind = m_RenderScene.skybox;
 			if (skyboxForBind && skyboxForBind->getSkyboxCubemap()) {
-				skyboxForBind->getSkyboxCubemap()->bind(1);
-				m_ModelShader->setUniform("irradianceMap", 1);
-				skyboxForBind->getSkyboxCubemap()->bind(2);
-				m_ModelShader->setUniform("prefilterMap", 2);
+				cmd().bindTextureUnit(skyboxForBind->getSkyboxCubemap()->getRHIHandle(), 1);
+				cmd().setUniformInt(modelProgram, "irradianceMap", 1);
+				cmd().bindTextureUnit(skyboxForBind->getSkyboxCubemap()->getRHIHandle(), 2);
+				cmd().setUniformInt(modelProgram, "prefilterMap", 2);
 			}
 		}
 		if (uboMgr) {
-			uboMgr->updateIBLParams(iblParams);
-			uboMgr->bindCustom(sizeof(UBOIBLParams));
+			cmd().updateBuffer(uboMgr->getCustomHandle(), &iblParams, sizeof(UBOIBLParams));
+			cmd().bindUBO(UBOBinding::CustomParams,
+				uboMgr->getCustomHandle(), sizeof(UBOIBLParams));
 		}
 		// Render the scene
 		m_RenderScene.submitModelsToRenderer();
-		modelRenderer->flushOpaque(m_ModelShader, m_RenderPassType);
+		modelRenderer->flushOpaque(cmd(), modelProgram, m_RenderPassType);
 
 		// 切换 terrain shader 管线
 		rhi::PipelineState terrainPipeline = pipeline;
@@ -108,23 +115,28 @@ namespace engine
 		cmd().bindPipeline(terrainPipeline);
 
 		// Terrain PerObject UBO
+		rhi::ProgramHandle terrainProgram = m_TerrainShader->getProgramHandle();
 		glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), terrain->getPosition());
 		if (uboMgr) {
-			uboMgr->updatePerObject(modelMatrix);
-			uboMgr->bindPerObject();
+			uboMgr->preparePerObject(modelMatrix);
+			cmd().updateBuffer(uboMgr->getPerObjectHandle(),
+				&uboMgr->getPerObjectData(), sizeof(UBOPerObject));
+			cmd().bindUBO(UBOBinding::PerObject,
+				uboMgr->getPerObjectHandle(), sizeof(UBOPerObject));
 			UBOClipPlane clipPlane{};
 			clipPlane.usesClipPlane = 0;
-			uboMgr->updateClipPlane(clipPlane);
-			uboMgr->bindCustom(sizeof(UBOClipPlane));
+			cmd().updateBuffer(uboMgr->getCustomHandle(), &clipPlane, sizeof(UBOClipPlane));
+			cmd().bindUBO(UBOBinding::CustomParams,
+				uboMgr->getCustomHandle(), sizeof(UBOClipPlane));
 		}
-		bindShadowmap(m_TerrainShader, shadowmapData);
-		terrain->Draw(m_TerrainShader, m_RenderPassType);
+		bindShadowmap(cmd(), terrainProgram, shadowmapData);
+		terrain->Draw(cmd(), terrainProgram, m_RenderPassType);
 
 		FPSCamera* fpscamera = dynamic_cast<FPSCamera*>(camera);
 		if (fpscamera && fluid) {
-			fluid->drawParticle(dynamic_cast<FPSCamera*>(camera));
+			fluid->drawParticle(cmd(), dynamic_cast<FPSCamera*>(camera));
 		}
-		skybox->Draw(camera);
+		skybox->Draw(cmd(), camera);
 
 		// 切换回 model shader 渲染透明物体（需要开启 blend、关闭 face cull）
 		rhi::PipelineState transparentPipeline = pipeline;
@@ -137,7 +149,7 @@ namespace engine
 		transparentPipeline.stencilEnable = false;
 		transparentPipeline.cullMode = rhi::CullMode::None;
 		cmd().bindPipeline(transparentPipeline);
-		modelRenderer->flushTransparent(m_ModelShader, m_RenderPassType);
+		modelRenderer->flushTransparent(cmd(), modelProgram, m_RenderPassType);
 
 		// 通过命令缓冲录制 endRenderPass
 		cmd().endRenderPass();
@@ -152,9 +164,9 @@ namespace engine
 		return passOutput;
 	}
 
-	void ForwardLightingPass::bindShadowmap(Shader* shader, ShadowmapPassOutput& shadowmapData) {
-		shadowmapData.depthTexture->bind(0);
-		shader->setUniform("dirLightShadowmap", 0);
+	void ForwardLightingPass::bindShadowmap(rhi::CommandBuffer& cmdBuf, rhi::ProgramHandle program, ShadowmapPassOutput& shadowmapData) {
+		cmdBuf.bindTextureUnit(shadowmapData.depthTexture->getRHIHandle(), 0);
+		cmdBuf.setUniformInt(program, "dirLightShadowmap", 0);
 		
 		// 阴影数据通过 Lighting UBO 传递
 		if (auto* uboMgr = getUBOManager()) {
@@ -162,7 +174,8 @@ namespace engine
 			lightingUBO.dirLightShadowData.shadowBias = 0.01f;
 			lightingUBO.dirLightShadowData.lightSpaceViewProjectionMatrix = shadowmapData.directionalLightViewProjMatrix;
 			lightingUBO.dirLightShadowData.lightShadowIndex = 1;
-			uboMgr->updateLighting();
+			cmdBuf.updateBuffer(uboMgr->getLightingHandle(),
+				&uboMgr->getLightingDataConst(), sizeof(UBOLighting));
 		}
 	}
 

@@ -99,6 +99,18 @@ namespace engine {
 		}
 	}
 
+	void Mesh::Draw(rhi::CommandBuffer& cmd) const {
+		if (!static_cast<bool>(m_RenderPrimitive)) return;
+
+		cmd.bindRenderPrimitive(m_RenderPrimitive);
+		if (m_Indices.size() > 0) {
+			cmd.draw(static_cast<uint32_t>(m_Indices.size()), 0);
+		} else {
+			cmd.drawArrays(rhi::PrimitiveType::Triangles,
+				static_cast<uint32_t>(m_Positions.size()));
+		}
+	}
+
 	void Mesh::LoadData(bool interleaved) {
 		if (!m_Device) {
 			m_Device = getRHIDevice();

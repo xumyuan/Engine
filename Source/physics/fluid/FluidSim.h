@@ -1,6 +1,7 @@
 #pragma once
 
 #include "rhi/include/RHIDevice.h"
+#include "rhi/include/RHICommandBuffer.h"
 #include "graphics/Shader.h"
 #include <mutex>
 
@@ -52,6 +53,7 @@ namespace engine {
 		void init();
 
 		void drawParticle(FPSCamera* camera);
+		void drawParticle(rhi::CommandBuffer& cmd, FPSCamera* camera);
 
 		void startSim();
 		void subPosData();

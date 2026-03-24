@@ -121,6 +121,18 @@ public:
     void copyTexture(TextureHandle src, TextureHandle dst,
             uint32_t width, uint32_t height) override;
 
+    // ---------- Uniform 设置 ----------
+    void setUniform(ProgramHandle program, const char* name, int value) override;
+    void setUniform(ProgramHandle program, const char* name, float value) override;
+    void setUniform(ProgramHandle program, const char* name, const glm::vec2& value) override;
+    void setUniform(ProgramHandle program, const char* name, const glm::vec3& value) override;
+    void setUniform(ProgramHandle program, const char* name, const glm::vec4& value) override;
+    void setUniform(ProgramHandle program, const char* name, const glm::mat3& value) override;
+    void setUniform(ProgramHandle program, const char* name, const glm::mat4& value) override;
+
+    void bindDefaultFramebuffer(uint32_t width, uint32_t height) override;
+    void clearFramebuffer(uint8_t clearFlags) override;
+
     void pushDebugGroup(const char* name) override;
     void popDebugGroup() override;
 

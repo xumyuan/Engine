@@ -56,17 +56,19 @@ namespace engine
 		if (auto* uboMgr = getUBOManager()) {
 			UBOShadowmapPass shadowParams{};
 			shadowParams.lightSpaceViewProjectionMatrix = directionalLightViewProjMatrix;
-			uboMgr->updateShadowmapPass(shadowParams);
-			uboMgr->bindCustom(sizeof(UBOShadowmapPass));
+			cmd().updateBuffer(uboMgr->getCustomHandle(), &shadowParams, sizeof(UBOShadowmapPass));
+			cmd().bindUBO(UBOBinding::CustomParams,
+				uboMgr->getCustomHandle(), sizeof(UBOShadowmapPass));
 		}
 
-		// Render models（高层绘制仍保持直接调用）
+		// Render models
 		m_RenderScene.submitModelsToRenderer();
-		modelRenderer->flushOpaque(m_ShadowmapShader, m_RenderPassType);
-		modelRenderer->flushTransparent(m_ShadowmapShader, m_RenderPassType);
+		rhi::ProgramHandle shadowProgram = m_ShadowmapShader->getProgramHandle();
+		modelRenderer->flushOpaque(cmd(), shadowProgram, m_RenderPassType);
+		modelRenderer->flushTransparent(cmd(), shadowProgram, m_RenderPassType);
 
 		// Render terrain
-		terrain->Draw(m_ShadowmapShader, m_RenderPassType);
+		terrain->Draw(cmd(), shadowProgram, m_RenderPassType);
 
 		// 通过命令缓冲录制 endRenderPass
 		cmd().endRenderPass();

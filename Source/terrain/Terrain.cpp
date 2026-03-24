@@ -233,6 +233,69 @@ namespace engine {
 		m_Mesh->Draw();
 	}
 
+	void Terrain::Draw(rhi::CommandBuffer& cmd, rhi::ProgramHandle program, RenderPassType pass) const {
+		if (!m_isVisible) return;
+
+		if (pass != RenderPassType::ShadowmapPassType) {
+			int currentTextureUnit = 3;
+
+			cmd.bindTextureUnit(m_Textures[0]->getRHIHandle(), currentTextureUnit);
+			cmd.setUniformInt(program, "material.texture_albedo1", currentTextureUnit++);
+			cmd.bindTextureUnit(m_Textures[1]->getRHIHandle(), currentTextureUnit);
+			cmd.setUniformInt(program, "material.texture_albedo2", currentTextureUnit++);
+			cmd.bindTextureUnit(m_Textures[2]->getRHIHandle(), currentTextureUnit);
+			cmd.setUniformInt(program, "material.texture_albedo3", currentTextureUnit++);
+			cmd.bindTextureUnit(m_Textures[3]->getRHIHandle(), currentTextureUnit);
+			cmd.setUniformInt(program, "material.texture_albedo4", currentTextureUnit++);
+
+			cmd.bindTextureUnit(m_Textures[4]->getRHIHandle(), currentTextureUnit);
+			cmd.setUniformInt(program, "material.texture_normal1", currentTextureUnit++);
+			cmd.bindTextureUnit(m_Textures[5]->getRHIHandle(), currentTextureUnit);
+			cmd.setUniformInt(program, "material.texture_normal2", currentTextureUnit++);
+			cmd.bindTextureUnit(m_Textures[6]->getRHIHandle(), currentTextureUnit);
+			cmd.setUniformInt(program, "material.texture_normal3", currentTextureUnit++);
+			cmd.bindTextureUnit(m_Textures[7]->getRHIHandle(), currentTextureUnit);
+			cmd.setUniformInt(program, "material.texture_normal4", currentTextureUnit++);
+
+			cmd.bindTextureUnit(m_Textures[8]->getRHIHandle(), currentTextureUnit);
+			cmd.setUniformInt(program, "material.texture_roughness1", currentTextureUnit++);
+			cmd.bindTextureUnit(m_Textures[9]->getRHIHandle(), currentTextureUnit);
+			cmd.setUniformInt(program, "material.texture_roughness2", currentTextureUnit++);
+			cmd.bindTextureUnit(m_Textures[10]->getRHIHandle(), currentTextureUnit);
+			cmd.setUniformInt(program, "material.texture_roughness3", currentTextureUnit++);
+			cmd.bindTextureUnit(m_Textures[11]->getRHIHandle(), currentTextureUnit);
+			cmd.setUniformInt(program, "material.texture_roughness4", currentTextureUnit++);
+
+			cmd.bindTextureUnit(m_Textures[12]->getRHIHandle(), currentTextureUnit);
+			cmd.setUniformInt(program, "material.texture_metallic1", currentTextureUnit++);
+			cmd.bindTextureUnit(m_Textures[13]->getRHIHandle(), currentTextureUnit);
+			cmd.setUniformInt(program, "material.texture_metallic2", currentTextureUnit++);
+			cmd.bindTextureUnit(m_Textures[14]->getRHIHandle(), currentTextureUnit);
+			cmd.setUniformInt(program, "material.texture_metallic3", currentTextureUnit++);
+			cmd.bindTextureUnit(m_Textures[15]->getRHIHandle(), currentTextureUnit);
+			cmd.setUniformInt(program, "material.texture_metallic4", currentTextureUnit++);
+
+			cmd.bindTextureUnit(m_Textures[16]->getRHIHandle(), currentTextureUnit);
+			cmd.setUniformInt(program, "material.texture_AO1", currentTextureUnit++);
+			cmd.bindTextureUnit(m_Textures[17]->getRHIHandle(), currentTextureUnit);
+			cmd.setUniformInt(program, "material.texture_AO2", currentTextureUnit++);
+			cmd.bindTextureUnit(m_Textures[18]->getRHIHandle(), currentTextureUnit);
+			cmd.setUniformInt(program, "material.texture_AO3", currentTextureUnit++);
+			cmd.bindTextureUnit(m_Textures[19]->getRHIHandle(), currentTextureUnit);
+			cmd.setUniformInt(program, "material.texture_AO4", currentTextureUnit++);
+
+			cmd.bindTextureUnit(m_Textures[20]->getRHIHandle(), currentTextureUnit);
+			cmd.setUniformInt(program, "material.blendmap", currentTextureUnit++);
+
+			glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(m_ModelMatrix)));
+			cmd.setUniformMat3(program, "normalMatrix", normalMatrix);
+			cmd.setUniformFloat(program, "material.tilingAmount", m_TextureTilingAmount);
+		}
+
+		cmd.setUniformMat4(program, "model", m_ModelMatrix);
+		m_Mesh->Draw(cmd);
+	}
+
 	glm::vec3 Terrain::calculateNormal(unsigned int x, unsigned int z, unsigned char* heightMapData) {
 		float heightR = getVertexHeight(x + 1, z, heightMapData);
 		float heightL = getVertexHeight(x - 1, z, heightMapData);

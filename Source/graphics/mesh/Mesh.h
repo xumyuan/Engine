@@ -2,6 +2,7 @@
 
 #include "Material.h"
 #include "rhi/include/RHIDevice.h"
+#include "rhi/include/RHICommandBuffer.h"
 
 namespace engine {
 
@@ -31,6 +32,7 @@ namespace engine {
 		void LoadData(bool interleaved = true);
 
 		void Draw() const;
+		void Draw(rhi::CommandBuffer& cmd) const;
 
 		inline void setPositions(std::vector<glm::vec3>& positions) { m_Positions = positions; }
 		inline void setUVs(std::vector<glm::vec2>& uvs) { m_UVs = uvs; }

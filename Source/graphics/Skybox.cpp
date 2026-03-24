@@ -4,6 +4,7 @@
 #include <utils/loaders/ShaderLoader.h>
 #include "rhi/include/RHIContext.h"
 #include "graphics/UniformBufferManager.h"
+#include "graphics/UniformBufferData.h"
 
 namespace engine {
 
@@ -132,6 +133,38 @@ namespace engine {
 		m_Device->bindPipeline(restorePipeline);
 
 		m_SkyboxCubemap->unbind();
+	}
+
+	void Skybox::Draw(rhi::CommandBuffer& cmd, ICamera* camera) {
+		rhi::PipelineState pipeline;
+		pipeline.program = m_SkyboxShader->getProgramHandle();
+		pipeline.depthTest = true;
+		pipeline.depthFunc = rhi::CompareOp::LessEqual;
+		pipeline.depthWrite = false;
+		pipeline.cullMode = rhi::CullMode::Back;
+		cmd.bindPipeline(pipeline);
+
+		cmd.bindTextureUnit(m_SkyboxCubemap->getRHIHandle(), 0);
+		cmd.setUniformInt(m_SkyboxShader->getProgramHandle(), "skyboxCubemap", 0);
+
+		if (auto* uboMgr = getUBOManager()) {
+			uboMgr->preparePerFrame(camera->getViewMatrix(), camera->getProjectionMatrix(),
+				glm::vec3(0.0f));
+			cmd.updateBuffer(uboMgr->getPerFrameHandle(),
+				&uboMgr->getPerFrameData(), sizeof(UBOPerFrame));
+			cmd.bindUBO(UBOBinding::PerFrame,
+				uboMgr->getPerFrameHandle(), sizeof(UBOPerFrame));
+		}
+
+		cmd.bindRenderPrimitive(m_RenderPrimitive);
+		cmd.draw(36, 0);
+
+		rhi::PipelineState restorePipeline;
+		restorePipeline.depthTest = true;
+		restorePipeline.depthFunc = rhi::CompareOp::Less;
+		restorePipeline.depthWrite = true;
+		restorePipeline.cullMode = rhi::CullMode::Back;
+		cmd.bindPipeline(restorePipeline);
 	}
 
 }

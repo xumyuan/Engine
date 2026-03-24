@@ -180,6 +180,59 @@ namespace engine {
 		glDisable(GL_VERTEX_PROGRAM_POINT_SIZE);
 	}
 
+	void FluidSim::drawParticle(rhi::CommandBuffer& cmd, FPSCamera* camera) {
+		{
+			std::unique_lock<std::mutex> lock(m_pbf->getPosMutex());
+			if (m_condVar.wait_for(lock, std::chrono::milliseconds(1), [this] { return dataReady; })) {
+				subPosData();
+				dataReady = false;
+			}
+		}
+
+		float aspect = static_cast<float>(WINDOW_X_RESOLUTION) / WINDOW_Y_RESOLUTION;
+		float fov = camera->getFOV();
+		glm::vec3 cameraPos = camera->getPosition();
+		glm::mat4 projectMat = camera->getProjectionMatrix();
+		glm::vec3 waterPos(0.0);
+		glm::mat4 modelMat = glm::translate(glm::mat4(1), waterPos);
+
+		const glm::vec3 lightPos = { 0.0f,1000.f,0.f };
+		const glm::vec3 lightColor = { 1.f,1.f,1.f };
+		glm::vec3 objectColor = { 0.267, 0.447, 0.769 };
+
+		float pointScale = 1.0f * 768.f / glm::tan(glm::radians(fov) * 0.5f);
+		float pointSize = 0.5f;
+
+		rhi::ProgramHandle program = m_particleShader->getProgramHandle();
+
+		rhi::PipelineState pipeline;
+		pipeline.program = program;
+		pipeline.depthTest = true;
+		pipeline.cullMode = rhi::CullMode::Back;
+		cmd.bindPipeline(pipeline);
+
+		cmd.setUniformFloat(program, "pointScale", pointScale);
+		cmd.setUniformFloat(program, "pointSize", pointSize);
+		cmd.setUniformVec3(program, "lightPos", lightPos);
+		cmd.setUniformVec3(program, "lightColor", lightColor);
+		cmd.setUniformVec3(program, "objectColor", objectColor);
+		cmd.setUniformMat4(program, "projection", projectMat);
+		cmd.setUniformMat4(program, "model", modelMat);
+		cmd.setUniformMat4(program, "view", camera->getViewMatrix());
+		cmd.setUniformVec3(program, "viewPos", cameraPos);
+
+		// 注意：GL_PROGRAM_POINT_SIZE 是 GL 特有状态，暂时保留直接调用
+		glEnable(GL_PROGRAM_POINT_SIZE);
+		glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
+
+		cmd.bindRenderPrimitive(m_RenderPrimitive);
+		cmd.drawArrays(rhi::PrimitiveType::Points,
+			static_cast<uint32_t>(m_particleNum));
+
+		glDisable(GL_PROGRAM_POINT_SIZE);
+		glDisable(GL_VERTEX_PROGRAM_POINT_SIZE);
+	}
+
 	void FluidSim::startSim() {
 		while (true) {
 			m_pbf->solve();

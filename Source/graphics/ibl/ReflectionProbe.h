@@ -3,6 +3,7 @@
 #include <graphics/Shader.h>
 #include <graphics/texture/Texture.h>
 #include <graphics/texture/Cubemap.h>
+#include <rhi/include/RHICommandBuffer.h>
 
 namespace engine {
 
@@ -15,6 +16,7 @@ namespace engine {
 
 		// Assumes the shader is bound
 		void bind(Shader* shader);
+		void bind(rhi::CommandBuffer& cmd, rhi::ProgramHandle program);
 
 		// Getters
 		inline Cubemap* getPrefilterMap() { return m_PrefilterMap; }

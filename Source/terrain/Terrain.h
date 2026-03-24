@@ -4,6 +4,7 @@
 #include "graphics/mesh/Mesh.h"
 #include "graphics/mesh/Model.h"
 #include "utils/loaders/TextureLoader.h"
+#include "rhi/include/RHICommandBuffer.h"
 
 namespace engine {
 	class Terrain {
@@ -14,6 +15,7 @@ namespace engine {
 		~Terrain();
 
 		void Draw(Shader *shader, RenderPassType pass) const;
+		void Draw(rhi::CommandBuffer& cmd, rhi::ProgramHandle program, RenderPassType pass) const;
 
 		inline const glm::vec3& getPosition() const { return m_Position; }
 

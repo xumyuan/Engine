@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Material.h"
 #include "graphics/Window.h"
+#include "rhi/include/RHICommandBuffer.h"
 
 namespace engine {
 
@@ -155,6 +156,57 @@ namespace engine {
 			m_EmissionMap->bind(currentTextureUnit++);
 		} else {
 			TextureLoader::getDefaultEmission()->bind(currentTextureUnit++);
+		}
+	}
+
+	void Material::bindMaterialTextures(rhi::CommandBuffer& cmd, rhi::ProgramHandle program) const {
+		// 纹理单元分配与旧接口一致
+		// 0: shadowmap, 1: irradianceMap, 2: prefilterMap, 3: brdfLUT
+		int currentTextureUnit = 4;
+
+		cmd.setUniformInt(program, "texture_albedo", currentTextureUnit);
+		if (m_AlbedoMap) {
+			cmd.bindTextureUnit(m_AlbedoMap->getRHIHandle(), currentTextureUnit++);
+		} else {
+			cmd.bindTextureUnit(TextureLoader::getDefaultAlbedo()->getRHIHandle(), currentTextureUnit++);
+		}
+
+		cmd.setUniformInt(program, "texture_normal", currentTextureUnit);
+		if (m_NormalMap) {
+			cmd.bindTextureUnit(m_NormalMap->getRHIHandle(), currentTextureUnit++);
+		} else {
+			cmd.bindTextureUnit(TextureLoader::getDefaultNormal()->getRHIHandle(), currentTextureUnit++);
+		}
+
+		cmd.setUniformInt(program, "texture_metallic", currentTextureUnit);
+		if (m_MetallicMap) {
+			cmd.bindTextureUnit(m_MetallicMap->getRHIHandle(), currentTextureUnit++);
+		} else {
+			cmd.bindTextureUnit(TextureLoader::getDefaultMetallic()->getRHIHandle(), currentTextureUnit++);
+		}
+
+		cmd.setUniformInt(program, "texture_roughness", currentTextureUnit);
+		if (m_RoughnessMap) {
+			cmd.bindTextureUnit(m_RoughnessMap->getRHIHandle(), currentTextureUnit++);
+		} else {
+			cmd.bindTextureUnit(TextureLoader::getDefaultRoughness()->getRHIHandle(), currentTextureUnit++);
+		}
+
+		cmd.setUniformInt(program, "texture_ao", currentTextureUnit);
+		if (m_AmbientOcclusionMap) {
+			cmd.bindTextureUnit(m_AmbientOcclusionMap->getRHIHandle(), currentTextureUnit++);
+		} else {
+			cmd.bindTextureUnit(TextureLoader::getDefaultAO()->getRHIHandle(), currentTextureUnit++);
+		}
+
+		cmd.setUniformInt(program, "texture_displacement", currentTextureUnit);
+		cmd.bindTextureUnit(TextureLoader::getDefaultNormal()->getRHIHandle(), currentTextureUnit++);
+
+		cmd.setUniformInt(program, "texture_emission", currentTextureUnit);
+		if (m_EmissionMap) {
+			cmd.bindTextureUnit(m_EmissionMap->getRHIHandle(), currentTextureUnit++);
+		} else {
+			cmd.bindTextureUnit(TextureLoader::getDefaultEmission()->getRHIHandle(), currentTextureUnit++);
 		}
 	}
 

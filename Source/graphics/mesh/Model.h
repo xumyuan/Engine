@@ -4,6 +4,7 @@
 #include <graphics/mesh/Mesh.h>
 #include <graphics/renderer/renderpass/RenderPassType.h>
 #include <utils/loaders/TextureLoader.h>
+#include <rhi/include/RHICommandBuffer.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -23,6 +24,7 @@ namespace engine {
 		Model(std::vector<Mesh>&& meshes);
 
 		void Draw(Shader* shader, RenderPassType pass) const;
+		void Draw(rhi::CommandBuffer& cmd, rhi::ProgramHandle program, RenderPassType pass) const;
 		inline std::vector<Mesh>& getMeshes() { return m_Meshes; }
 	private:
 		std::vector<Mesh> m_Meshes;

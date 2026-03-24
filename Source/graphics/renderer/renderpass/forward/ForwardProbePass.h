@@ -22,7 +22,8 @@ namespace engine {
 		RenderTarget m_SceneCaptureShadowRT,
 			m_SceneCaptureLightingRT,
 			m_LightProbeConvolutionRT,
-			m_ReflectionProbeSamplingRT;
+			m_ReflectionProbeSamplingRT,
+			m_BrdfRT;  // brdfLUT 生成用 RT，需要在 flush 之前保持存活
 		CubemapCamera m_CubemapCamera;
 		CubemapSettings m_SceneCaptureSettings;
 		Cubemap m_SceneCaptureCubemap;
