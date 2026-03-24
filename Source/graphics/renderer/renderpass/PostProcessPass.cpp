@@ -5,7 +5,8 @@
 #include <ui/DebugPane.h>
 #include <utils/DebugEvent.h>
 #include <utils/loaders/ShaderLoader.h>
-#include <graphics/UniformBufferManager.h>\n#include <graphics/UniformBufferData.h>
+#include <graphics/UniformBufferManager.h>
+#include <graphics/UniformBufferData.h>
 
 namespace engine
 {

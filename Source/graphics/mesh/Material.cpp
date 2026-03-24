@@ -3,8 +3,90 @@
 #include "graphics/Window.h"
 #include "rhi/include/RHICommandBuffer.h"
 
-namespace engine {
+#include <unordered_set>
 
+namespace {
+	constexpr int kMaterialTextureUnitBase = 4;
+	constexpr int kMaterialTextureAlbedoUnit = 4;
+	constexpr int kMaterialTextureNormalUnit = 5;
+	constexpr int kMaterialTextureMetallicUnit = 6;
+	constexpr int kMaterialTextureRoughnessUnit = 7;
+	constexpr int kMaterialTextureAOUnit = 8;
+	constexpr int kMaterialTextureDisplacementUnit = 9;
+	constexpr int kMaterialTextureEmissionUnit = 10;
+
+	void setLegacyMaterialSamplerBindings(engine::Shader* shader) {
+		shader->setUniform("material.texture_albedo", kMaterialTextureAlbedoUnit);
+		shader->setUniform("material.texture_normal", kMaterialTextureNormalUnit);
+		shader->setUniform("material.texture_metallic", kMaterialTextureMetallicUnit);
+		shader->setUniform("material.texture_roughness", kMaterialTextureRoughnessUnit);
+		shader->setUniform("material.texture_ao", kMaterialTextureAOUnit);
+		shader->setUniform("material.texture_displacement", kMaterialTextureDisplacementUnit);
+		shader->setUniform("material.texture_emission", kMaterialTextureEmissionUnit);
+	}
+
+	void setModernMaterialSamplerBindings(engine::Shader* shader) {
+		shader->setUniform("texture_albedo", kMaterialTextureAlbedoUnit);
+		shader->setUniform("texture_normal", kMaterialTextureNormalUnit);
+		shader->setUniform("texture_metallic", kMaterialTextureMetallicUnit);
+		shader->setUniform("texture_roughness", kMaterialTextureRoughnessUnit);
+		shader->setUniform("texture_ao", kMaterialTextureAOUnit);
+		shader->setUniform("texture_displacement", kMaterialTextureDisplacementUnit);
+		shader->setUniform("texture_emission", kMaterialTextureEmissionUnit);
+	}
+
+	void setLegacyMaterialSamplerBindingsOnce(engine::Shader* shader) {
+		if (!shader) {
+			return;
+		}
+
+		static std::unordered_set<engine::rhi::HandleBase::HandleId> s_InitializedLegacyPrograms;
+		const auto program = shader->getProgramHandle();
+		if (program) {
+			const auto [_, inserted] = s_InitializedLegacyPrograms.emplace(program.getId());
+			if (!inserted) {
+				return;
+			}
+		}
+		setLegacyMaterialSamplerBindings(shader);
+	}
+
+	void setModernMaterialSamplerBindingsOnce(engine::Shader* shader) {
+		if (!shader) {
+			return;
+		}
+
+		static std::unordered_set<engine::rhi::HandleBase::HandleId> s_InitializedModernPrograms;
+		const auto program = shader->getProgramHandle();
+		if (program) {
+			const auto [_, inserted] = s_InitializedModernPrograms.emplace(program.getId());
+			if (!inserted) {
+				return;
+			}
+		}
+		setModernMaterialSamplerBindings(shader);
+	}
+
+	void setModernMaterialSamplerBindingsOnce(engine::rhi::CommandBuffer& cmd, engine::rhi::ProgramHandle program) {
+		static std::unordered_set<engine::rhi::HandleBase::HandleId> s_InitializedModernPrograms;
+		if (program) {
+			const auto [_, inserted] = s_InitializedModernPrograms.emplace(program.getId());
+			if (!inserted) {
+				return;
+			}
+		}
+
+		cmd.setUniformInt(program, "texture_albedo", kMaterialTextureAlbedoUnit);
+		cmd.setUniformInt(program, "texture_normal", kMaterialTextureNormalUnit);
+		cmd.setUniformInt(program, "texture_metallic", kMaterialTextureMetallicUnit);
+		cmd.setUniformInt(program, "texture_roughness", kMaterialTextureRoughnessUnit);
+		cmd.setUniformInt(program, "texture_ao", kMaterialTextureAOUnit);
+		cmd.setUniformInt(program, "texture_displacement", kMaterialTextureDisplacementUnit);
+		cmd.setUniformInt(program, "texture_emission", kMaterialTextureEmissionUnit);
+	}
+}
+
+namespace engine {
 	Material::Material(Texture* albedoMap, Texture* normalMap, Texture* metallicMap, Texture* roughnessMap, Texture* ambientOcclusionMap, Texture* emissionMap)
 		: m_AlbedoMap(albedoMap), m_NormalMap(normalMap), m_MetallicMap(metallicMap), m_RoughnessMap(roughnessMap), m_AmbientOcclusionMap(ambientOcclusionMap), m_EmissionMap(emissionMap) {
 	}
@@ -15,10 +97,10 @@ namespace engine {
 		// 纹理单元 1 保留用于用于间接漫反射 IBL 的 irradianceMap
 		// 纹理单元 2 保留给 prefilterMap
 		// 纹理单元 3 保留给 brdfLUT
-		int currentTextureUnit = 4;
+		int currentTextureUnit = kMaterialTextureUnitBase;
+		setLegacyMaterialSamplerBindingsOnce(shader);
 
 		shader->setUniform("material.albedoColour", m_AlbedoColour);
-		shader->setUniform("material.texture_albedo", currentTextureUnit);
 		if (m_AlbedoMap) {
 			m_AlbedoMap->bind(currentTextureUnit++);
 			shader->setUniform("material.hasAlbedoTexture", true);
@@ -35,9 +117,6 @@ namespace engine {
 		shader->setUniform("material.emissionIntensity", m_EmissionIntensity);
 		shader->setUniform("parallaxStrength", m_ParallaxStrength);
 
-
-
-		shader->setUniform("material.texture_normal", currentTextureUnit);
 		if (m_NormalMap) {
 			m_NormalMap->bind(currentTextureUnit++);
 		}
@@ -45,7 +124,6 @@ namespace engine {
 			TextureLoader::getDefaultNormal()->bind(currentTextureUnit++);
 		}
 
-		shader->setUniform("material.texture_metallic", currentTextureUnit);
 		if (m_MetallicMap) {
 			m_MetallicMap->bind(currentTextureUnit++);
 			shader->setUniform("material.hasMetallicTexture", true);
@@ -56,7 +134,6 @@ namespace engine {
 			shader->setUniform("material.hasMetallicTexture", false);
 		}
 
-		shader->setUniform("material.texture_roughness", currentTextureUnit);
 		if (m_RoughnessMap) {
 			m_RoughnessMap->bind(currentTextureUnit++);
 			shader->setUniform("material.hasRoughnessTexture", true);
@@ -68,7 +145,6 @@ namespace engine {
 
 		}
 
-		shader->setUniform("material.texture_ao", currentTextureUnit);
 		if (m_AmbientOcclusionMap) {
 			m_AmbientOcclusionMap->bind(currentTextureUnit++);
 		}
@@ -77,10 +153,8 @@ namespace engine {
 		}
 
 		// Bind displacement texture (currently not used in forward rendering, but keeping consistency)
-		shader->setUniform("material.texture_displacement", currentTextureUnit);
 		TextureLoader::getDefaultNormal()->bind(currentTextureUnit++); // Use default for now
 
-		shader->setUniform("material.texture_emission", currentTextureUnit);
 		if (m_EmissionMap) {
 			m_EmissionMap->bind(currentTextureUnit++);
 			shader->setUniform("material.hasEmissionTexture", true);
@@ -111,47 +185,41 @@ namespace engine {
 	void Material::bindMaterialTextures(Shader* shader) const {
 		// 纹理单元分配与旧接口一致
 		// 0: shadowmap, 1: irradianceMap, 2: prefilterMap, 3: brdfLUT
-		int currentTextureUnit = 4;
+		int currentTextureUnit = kMaterialTextureUnitBase;
+		setModernMaterialSamplerBindingsOnce(shader);
 
-		shader->setUniform("texture_albedo", currentTextureUnit);
 		if (m_AlbedoMap) {
 			m_AlbedoMap->bind(currentTextureUnit++);
 		} else {
 			TextureLoader::getDefaultAlbedo()->bind(currentTextureUnit++);
 		}
 
-		shader->setUniform("texture_normal", currentTextureUnit);
 		if (m_NormalMap) {
 			m_NormalMap->bind(currentTextureUnit++);
 		} else {
 			TextureLoader::getDefaultNormal()->bind(currentTextureUnit++);
 		}
 
-		shader->setUniform("texture_metallic", currentTextureUnit);
 		if (m_MetallicMap) {
 			m_MetallicMap->bind(currentTextureUnit++);
 		} else {
 			TextureLoader::getDefaultMetallic()->bind(currentTextureUnit++);
 		}
 
-		shader->setUniform("texture_roughness", currentTextureUnit);
 		if (m_RoughnessMap) {
 			m_RoughnessMap->bind(currentTextureUnit++);
 		} else {
 			TextureLoader::getDefaultRoughness()->bind(currentTextureUnit++);
 		}
 
-		shader->setUniform("texture_ao", currentTextureUnit);
 		if (m_AmbientOcclusionMap) {
 			m_AmbientOcclusionMap->bind(currentTextureUnit++);
 		} else {
 			TextureLoader::getDefaultAO()->bind(currentTextureUnit++);
 		}
 
-		shader->setUniform("texture_displacement", currentTextureUnit);
 		TextureLoader::getDefaultNormal()->bind(currentTextureUnit++);
 
-		shader->setUniform("texture_emission", currentTextureUnit);
 		if (m_EmissionMap) {
 			m_EmissionMap->bind(currentTextureUnit++);
 		} else {
@@ -162,47 +230,41 @@ namespace engine {
 	void Material::bindMaterialTextures(rhi::CommandBuffer& cmd, rhi::ProgramHandle program) const {
 		// 纹理单元分配与旧接口一致
 		// 0: shadowmap, 1: irradianceMap, 2: prefilterMap, 3: brdfLUT
-		int currentTextureUnit = 4;
+		int currentTextureUnit = kMaterialTextureUnitBase;
+		setModernMaterialSamplerBindingsOnce(cmd, program);
 
-		cmd.setUniformInt(program, "texture_albedo", currentTextureUnit);
 		if (m_AlbedoMap) {
 			cmd.bindTextureUnit(m_AlbedoMap->getRHIHandle(), currentTextureUnit++);
 		} else {
 			cmd.bindTextureUnit(TextureLoader::getDefaultAlbedo()->getRHIHandle(), currentTextureUnit++);
 		}
 
-		cmd.setUniformInt(program, "texture_normal", currentTextureUnit);
 		if (m_NormalMap) {
 			cmd.bindTextureUnit(m_NormalMap->getRHIHandle(), currentTextureUnit++);
 		} else {
 			cmd.bindTextureUnit(TextureLoader::getDefaultNormal()->getRHIHandle(), currentTextureUnit++);
 		}
 
-		cmd.setUniformInt(program, "texture_metallic", currentTextureUnit);
 		if (m_MetallicMap) {
 			cmd.bindTextureUnit(m_MetallicMap->getRHIHandle(), currentTextureUnit++);
 		} else {
 			cmd.bindTextureUnit(TextureLoader::getDefaultMetallic()->getRHIHandle(), currentTextureUnit++);
 		}
 
-		cmd.setUniformInt(program, "texture_roughness", currentTextureUnit);
 		if (m_RoughnessMap) {
 			cmd.bindTextureUnit(m_RoughnessMap->getRHIHandle(), currentTextureUnit++);
 		} else {
 			cmd.bindTextureUnit(TextureLoader::getDefaultRoughness()->getRHIHandle(), currentTextureUnit++);
 		}
 
-		cmd.setUniformInt(program, "texture_ao", currentTextureUnit);
 		if (m_AmbientOcclusionMap) {
 			cmd.bindTextureUnit(m_AmbientOcclusionMap->getRHIHandle(), currentTextureUnit++);
 		} else {
 			cmd.bindTextureUnit(TextureLoader::getDefaultAO()->getRHIHandle(), currentTextureUnit++);
 		}
 
-		cmd.setUniformInt(program, "texture_displacement", currentTextureUnit);
 		cmd.bindTextureUnit(TextureLoader::getDefaultNormal()->getRHIHandle(), currentTextureUnit++);
 
-		cmd.setUniformInt(program, "texture_emission", currentTextureUnit);
 		if (m_EmissionMap) {
 			cmd.bindTextureUnit(m_EmissionMap->getRHIHandle(), currentTextureUnit++);
 		} else {
