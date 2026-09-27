@@ -34,7 +34,8 @@ find_package(CompactNSearch CONFIG REQUIRED)
 # ============================================================================
 # 收集源文件
 # ============================================================================
-file(GLOB_RECURSE ENGINE_SOURCES
+# CONFIGURE_DEPENDS：每次构建时重新检查文件列表，新增 / 删除源文件后无需手动重新配置
+file(GLOB_RECURSE ENGINE_SOURCES CONFIGURE_DEPENDS
     "Source/*.cpp"
     "Source/*.h"
 )
