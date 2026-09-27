@@ -47,6 +47,7 @@
     },
     "fluid":{
         "isActive": true,
+        "backend": "compute",
         "maxParticles": 3000,
         "boundary":{
             "min":[110.0, 130.5, 88.0],

@@ -138,6 +138,18 @@ private:
     // 命令分发：将 RenderCommand 映射到 RHIDevice 对应的方法调用
     void dispatch(const RenderCommand& cmd) {
         switch (cmd.type) {
+            case CommandType::BindComputeProgram:
+                m_Device->bindComputeProgram(cmd.bindComputeProgram.program);
+                break;
+            case CommandType::BindStorageBuffer:
+                m_Device->bindStorageBuffer(cmd.bindStorageBuffer.binding, cmd.bindStorageBuffer.buffer);
+                break;
+            case CommandType::DispatchCompute:
+                m_Device->dispatchCompute(cmd.dispatchCompute.x, cmd.dispatchCompute.y, cmd.dispatchCompute.z);
+                break;
+            case CommandType::MemoryBarrier:
+                m_Device->memoryBarrier(cmd.memoryBarrier.barriers);
+                break;
             // --- 帧生命周期 ---
             case CommandType::BeginFrame:
                 m_Device->beginFrame(cmd.beginFrame.swapChain);

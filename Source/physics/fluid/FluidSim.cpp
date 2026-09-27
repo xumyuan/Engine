@@ -2,6 +2,7 @@
 #include "SPHKernel.h"
 #include "FluidSim.h"
 #include "solvers/PBF.h"
+#include "solvers/ComputePBF.h"
 
 #include <algorithm>
 
@@ -12,7 +13,7 @@
 
 namespace engine {
 
-	FluidSim::FluidSim(size_t pnum, Boundary boundary) :m_maxParticleNum(pnum)
+	FluidSim::FluidSim(size_t pnum, Boundary boundary, FluidBackend backend) :m_maxParticleNum(pnum)
 	{
 		m_Device = getRHIDevice();
 		m_particleShader = ShaderLoader::loadShader("Shaders/fluid/particle_draw.glsl");
@@ -60,12 +61,23 @@ namespace engine {
 		m_velocities.resize(m_particleNum, glm::vec3(0.0f));
 		m_neighborList.resize(m_particleNum);
 
-		m_pbf = new PBF(this);
+		if (backend == FluidBackend::Compute) {
+			m_computePbf = std::make_unique<ComputePBF>(*m_Device);
+			if (m_computePbf->initialize(m_VertexBuffer, m_velocities, m_simParams)) {
+				m_backend = FluidBackend::Compute;
+				m_computeDt = m_simParams.dt;
+			} else {
+				spdlog::warn("Compute PBF unavailable or initialization failed; using CPU PBF");
+				m_computePbf.reset();
+			}
+		}
+		if (!m_computePbf && m_particleNum > 0) m_pbf = new PBF(this);
 	}
 
 	FluidSim::~FluidSim()
 	{
 		stopSimulation();
+		m_computePbf.reset();
 		delete m_pbf;
 		m_pbf = nullptr;
 
@@ -99,7 +111,7 @@ namespace engine {
 		std::uniform_real_distribution<float> dist(-0.2f, 0.2f);
 
 		bool shouldBreak = false;
-		for (pos.y = min.y + 0.4f; pos.y < max.y; pos.y += spacing) {
+		for (pos.y = min.y + 0.4f; pos.y < max.y && m_particleNum < m_maxParticleNum; pos.y += spacing) {
 			for (int xz = 0; xz < cnt; xz++) {
 				float dx = dist(rng);
 				float dz = dist(rng);
@@ -132,6 +144,7 @@ namespace engine {
 	}
 
 	void FluidSim::uploadLatestPositions() {
+		if (!m_pbf) return;
 		// 不等待模拟线程：有新结果就上传，否则沿用上一帧
 		std::lock_guard<std::mutex> lock(m_pbf->getPosMutex());
 		if (dataReady) {
@@ -185,15 +198,38 @@ namespace engine {
 	}
 
 	void FluidSim::startSimulation() {
+		if (m_computePbf) {
+			if (m_computeRunning) return;
+			m_computeRunning = true;
+			m_accumulator = 0.0;
+			m_lastUpdate = std::chrono::steady_clock::now();
+			return;
+		}
+		if (!m_pbf) return;
 		if (m_simThread.joinable()) return;
 		m_stopRequested = false;
 		m_simThread = std::thread([this] { simulationLoop(); });
 	}
 
 	void FluidSim::stopSimulation() {
+		m_computeRunning = false;
+		m_accumulator = 0.0;
 		if (!m_simThread.joinable()) return;
 		m_stopRequested = true;
 		m_simThread.join();
+	}
+
+	void FluidSim::updateSimulation(rhi::CommandBuffer& cmd) {
+		if (!m_computePbf || !m_computeRunning) return;
+		const auto now = std::chrono::steady_clock::now();
+		const double elapsed = std::chrono::duration<double>(now - m_lastUpdate).count();
+		m_lastUpdate = now;
+		// Bound catch-up work after a stall, while retaining fractional time between frames.
+		m_accumulator = std::min(m_accumulator + elapsed, 4.0 * m_computeDt);
+		while (m_accumulator >= m_computeDt) {
+			m_computePbf->step(cmd);
+			m_accumulator -= m_computeDt;
+		}
 	}
 
 	void FluidSim::simulationLoop() {

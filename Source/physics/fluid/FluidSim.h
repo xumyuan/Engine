@@ -2,15 +2,20 @@
 
 #include "rhi/include/RHIDevice.h"
 #include "rhi/include/RHICommandBuffer.h"
-#include "graphics/Shader.h"
 #include <atomic>
 #include <mutex>
 #include <thread>
+#include <chrono>
+#include <memory>
+#include <vector>
 
 namespace engine {
 
 	class FPSCamera;
+	class Shader;
 	class PBF;
+	class ComputePBF;
+	enum class FluidBackend { CPU, Compute };
 
 	struct Boundary
 	{
@@ -35,9 +40,10 @@ namespace engine {
 	class FluidSim
 	{
 	public:
-		FluidSim(size_t pnum, Boundary boundary);
+		FluidSim(size_t pnum, Boundary boundary, FluidBackend backend = FluidBackend::CPU);
 		~FluidSim();
 
+		// CPU solver state only; compute mode does not read particle data back from the GPU.
 		std::vector<glm::vec3>& getPositions() { return m_positions; }
 		std::vector<glm::vec3>& getVelocities() { return m_velocities; }
 		std::vector<std::vector<size_t>>& getNeighborList() { return m_neighborList; }
@@ -59,14 +65,17 @@ namespace engine {
 
 		// 渲染线程每帧调用一次：模拟线程有新结果时上传到顶点缓冲
 		void uploadLatestPositions();
+		// Called once per frame before any render pass; compute commands stay on the render thread.
+		void updateSimulation(rhi::CommandBuffer& cmd);
+		FluidBackend getBackend() const { return m_backend; }
 		// 以点图元绘制全部粒子，shader 与管线状态由调用方负责
 		void drawPoints(rhi::CommandBuffer& cmd) const;
 		float getParticleRadius() const { return m_simParams.spacing * 0.5f; }
 
-		// 在后台线程上持续求解；重复调用无效果。析构时自动停止并等待线程退出
+		// CPU 后端启动后台线程；compute 后端由渲染线程推进。重复调用无效果。
 		void startSimulation();
 		void stopSimulation();
-		bool isSimulating() const { return m_simThread.joinable(); }
+		bool isSimulating() const { return m_computePbf ? m_computeRunning : m_simThread.joinable(); }
 
 		size_t getParticleNum() const { return m_particleNum; }
 	private:
@@ -96,6 +105,12 @@ namespace engine {
 
 		// solver
 		PBF* m_pbf = nullptr;
+		std::unique_ptr<ComputePBF> m_computePbf;
+		FluidBackend m_backend = FluidBackend::CPU;
+		bool m_computeRunning = false;
+		double m_accumulator = 0.0;
+		float m_computeDt = 0.01f;
+		std::chrono::steady_clock::time_point m_lastUpdate;
 
 		bool dataReady = false;  // 由 m_pbf->getPosMutex() 保护
 

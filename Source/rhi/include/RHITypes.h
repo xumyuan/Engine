@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 
 namespace engine {
 namespace rhi {
@@ -64,6 +65,20 @@ enum class BufferUsage : uint8_t {
   Uniform,
   Storage,
   Staging,
+};
+
+enum class MemoryBarrier : uint8_t {
+  ShaderStorage = 1,
+  VertexAttribute = 2,
+};
+
+inline MemoryBarrier operator|(MemoryBarrier a, MemoryBarrier b) {
+  return MemoryBarrier(uint8_t(a) | uint8_t(b));
+}
+
+struct ComputeLimits {
+  uint32_t maxGroupCountX = 0; // Zero means compute is unavailable.
+  uint64_t maxStorageBufferSize = 0;
 };
 
 enum class IndexType : uint8_t {

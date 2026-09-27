@@ -1,4 +1,6 @@
 #pragma once
+#include <string>
+#include <vector>
 #include "RHIHandle.h"
 #include "RHITypes.h"
 

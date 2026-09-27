@@ -24,6 +24,7 @@ class RHIDevice {
     virtual Backend getBackend() const noexcept = 0;
     virtual bool isTextureFormatSupported(TextureFormat format) const noexcept = 0;
     virtual uint32_t getMaxTextureSize() const noexcept = 0;
+    virtual ComputeLimits getComputeLimits() const noexcept { return {}; }
 
     // ---------- 资源创建 ----------
     virtual TextureHandle createTexture(const TextureDesc& desc) = 0;
@@ -88,6 +89,10 @@ class RHIDevice {
     virtual void endRenderPass() = 0;
 
     virtual void bindPipeline(const PipelineState& state) = 0;
+    virtual void bindComputeProgram(ProgramHandle program) = 0;
+    virtual void bindStorageBuffer(uint32_t binding, BufferHandle buffer) = 0;
+    virtual void dispatchCompute(uint32_t x, uint32_t y, uint32_t z) = 0;
+    virtual void memoryBarrier(MemoryBarrier barriers) = 0;
     virtual void bindRenderPrimitive(RenderPrimitiveHandle rph) = 0;
     virtual void bindUniformBuffer(uint32_t set, uint32_t binding,
             BufferHandle handle, uint32_t offset, uint32_t size) = 0;

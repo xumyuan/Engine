@@ -58,9 +58,28 @@ Engine/
 └── CMakePresets.json # CMake 预设
 ```
 
+## 流体模拟后端
+
+场景 JSON 的 `fluid.backend` 可设为 `"cpu"`（默认，后台线程 PBF）或 `"compute"`（GPU PBF）。
+`Assets/scene/sponza_fluid.json` 已启用 compute，要求 OpenGL 4.3+；设备不支持、资源规模超限或着色器编译失败时会记录警告并回退到 CPU。
+
+GPU 路径使用固定 0.01 秒时间步，每帧最多追赶 4 步。预测、网格邻域搜索、3 轮密度约束与位置修正、XSPH 粘性全部在 GPU 上执行；位置缓冲直接用于前向粒子和屏幕空间流体绘制，没有逐帧 CPU 回读或位置上传。`autoStart`、`startSimulation()` 和 `stopSimulation()` 同样适用。
+
+compute 参数在创建时固定，CPU 的 `getPositions()` / `getVelocities()` / `getNeighborList()` 不反映 GPU 当前状态。GPU 每轮应用修正并重建邻域、修正后限制边界，因此与现有 CPU 求解器不保证逐粒子数值一致。macOS 原生 OpenGL 最高为 4.1，无法运行 compute 路径；当前引擎窗口本身要求 OpenGL 4.5，需在支持该版本的环境验证运行效果。
+
 ## RHI 测试
 
 ```bash
 # 构建后运行 NullDevice 测试
 Engine.exe --test-rhi
 ```
+
+不需要图形上下文的 compute 命令与资源测试（仅依赖 GLM）：
+
+```bash
+cmake -S Tests -B Build/compute-tests -DCMAKE_TOOLCHAIN_FILE="$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
+cmake --build Build/compute-tests --config Debug
+ctest --test-dir Build/compute-tests -C Debug --output-on-failure
+```
+
+测试覆盖即时/延迟命令一致性、每轮网格重建与屏障、非整工作组粒子数以及初始化失败后的资源释放；不替代真实 GPU 上的数值和视觉验证。

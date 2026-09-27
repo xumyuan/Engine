@@ -61,6 +61,10 @@ public:
     void beginRenderPass(RenderTargetHandle, const RenderPassParams&) override {}
     void endRenderPass() override {}
     void bindPipeline(const PipelineState&) override {}
+    void bindComputeProgram(ProgramHandle) override {}
+    void bindStorageBuffer(uint32_t, BufferHandle) override {}
+    void dispatchCompute(uint32_t, uint32_t, uint32_t) override {}
+    void memoryBarrier(MemoryBarrier) override {}
     void bindRenderPrimitive(RenderPrimitiveHandle) override {}
     void bindUniformBuffer(uint32_t, uint32_t, BufferHandle, uint32_t, uint32_t) override {}
     void bindTexture(uint32_t, uint32_t, TextureHandle) override {}

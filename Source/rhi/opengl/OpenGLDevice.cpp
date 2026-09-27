@@ -233,6 +233,13 @@ bool OpenGLDevice::initialize() {
     GLint maxSize = 0;
     glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxSize);
     mMaxTextureSize = static_cast<uint32_t>(maxSize);
+    if (GLEW_VERSION_4_3) {
+        GLint groups = 0;
+        GLint64 bytes = 0;
+        glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &groups);
+        glGetInteger64v(GL_MAX_SHADER_STORAGE_BLOCK_SIZE, &bytes);
+        mComputeLimits = { static_cast<uint32_t>(groups), static_cast<uint64_t>(bytes) };
+    }
 
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
     // 点图元的尺寸由 shader 写 gl_PointSize 决定（粒子点精灵）
@@ -888,6 +895,25 @@ void OpenGLDevice::beginRenderPass(RenderTargetHandle target,
 
 void OpenGLDevice::endRenderPass() {
     mCurrentRenderTarget.clear();
+}
+
+void OpenGLDevice::bindComputeProgram(ProgramHandle program) {
+    glUseProgram(resolveProgram(program));
+}
+
+void OpenGLDevice::bindStorageBuffer(uint32_t binding, BufferHandle buffer) {
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding, getGLBufferId(buffer));
+}
+
+void OpenGLDevice::dispatchCompute(uint32_t x, uint32_t y, uint32_t z) {
+    glDispatchCompute(x, y, z);
+}
+
+void OpenGLDevice::memoryBarrier(MemoryBarrier barriers) {
+    GLbitfield bits = 0;
+    if (uint8_t(barriers) & uint8_t(MemoryBarrier::ShaderStorage)) bits |= GL_SHADER_STORAGE_BARRIER_BIT;
+    if (uint8_t(barriers) & uint8_t(MemoryBarrier::VertexAttribute)) bits |= GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT;
+    glMemoryBarrier(bits);
 }
 
 void OpenGLDevice::bindPipeline(const PipelineState& state) {

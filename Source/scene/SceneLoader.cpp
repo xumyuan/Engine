@@ -195,8 +195,10 @@ namespace engine {
 		}
 
 		delete scene.m_fluid;
-		scene.m_fluid = new FluidSim(fluidInfo.maxParticles, Boundary{ fluidInfo.boundaryMin, fluidInfo.boundaryMax });
-		spdlog::info("Fluid created: {} particles", scene.m_fluid->getParticleNum());
+		const auto backend = fluidInfo.backend == "compute" ? FluidBackend::Compute : FluidBackend::CPU;
+		scene.m_fluid = new FluidSim(fluidInfo.maxParticles, Boundary{ fluidInfo.boundaryMin, fluidInfo.boundaryMax }, backend);
+		spdlog::info("Fluid created: {} particles, {} backend", scene.m_fluid->getParticleNum(),
+			scene.m_fluid->getBackend() == FluidBackend::Compute ? "compute" : "cpu");
 
 		if (fluidInfo.autoStart) {
 			scene.m_fluid->startSimulation();

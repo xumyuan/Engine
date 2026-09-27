@@ -24,6 +24,10 @@ enum class CommandType : uint8_t {
     BeginRenderPass,
     EndRenderPass,
     BindPipeline,
+    BindComputeProgram,
+    BindStorageBuffer,
+    DispatchCompute,
+    MemoryBarrier,
     BindRenderPrimitive,
     BindUniformBuffer,
     BindTexture,
@@ -66,6 +70,11 @@ struct CmdBeginRenderPass {
 struct CmdBindPipeline {
     PipelineState state;
 };
+
+struct CmdBindComputeProgram { ProgramHandle program; };
+struct CmdBindStorageBuffer { uint32_t binding; BufferHandle buffer; };
+struct CmdDispatchCompute { uint32_t x, y, z; };
+struct CmdMemoryBarrier { MemoryBarrier barriers; };
 
 struct CmdBindRenderPrimitive {
     RenderPrimitiveHandle handle;
@@ -192,6 +201,10 @@ struct RenderCommand {
         CmdBeginFrame           beginFrame;
         CmdBeginRenderPass      beginRenderPass;
         CmdBindPipeline         bindPipeline;
+        CmdBindComputeProgram   bindComputeProgram;
+        CmdBindStorageBuffer    bindStorageBuffer;
+        CmdDispatchCompute      dispatchCompute;
+        CmdMemoryBarrier        memoryBarrier;
         CmdBindRenderPrimitive  bindRenderPrimitive;
         CmdBindUniformBuffer    bindUniformBuffer;
         CmdBindTexture          bindTexture;
@@ -286,6 +299,30 @@ public:
     void bindPipeline(const PipelineState& state) {
         auto& cmd = emplaceCommand(CommandType::BindPipeline);
         cmd.bindPipeline.state = state;
+        dispatchImmediate(cmd);
+    }
+
+    void bindComputeProgram(ProgramHandle program) {
+        auto& cmd = emplaceCommand(CommandType::BindComputeProgram);
+        cmd.bindComputeProgram = { program };
+        dispatchImmediate(cmd);
+    }
+
+    void bindStorageBuffer(uint32_t binding, BufferHandle buffer) {
+        auto& cmd = emplaceCommand(CommandType::BindStorageBuffer);
+        cmd.bindStorageBuffer = { binding, buffer };
+        dispatchImmediate(cmd);
+    }
+
+    void dispatchCompute(uint32_t x, uint32_t y = 1, uint32_t z = 1) {
+        auto& cmd = emplaceCommand(CommandType::DispatchCompute);
+        cmd.dispatchCompute = { x, y, z };
+        dispatchImmediate(cmd);
+    }
+
+    void memoryBarrier(MemoryBarrier barriers) {
+        auto& cmd = emplaceCommand(CommandType::MemoryBarrier);
+        cmd.memoryBarrier = { barriers };
         dispatchImmediate(cmd);
     }
 

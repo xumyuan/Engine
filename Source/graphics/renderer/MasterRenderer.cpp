@@ -4,6 +4,7 @@
 #include <gl/glew.h>
 #include <ui/RuntimePane.h>
 #include "rhi/include/RHIContext.h"
+#include "physics/fluid/FluidSim.h"
 
 namespace engine
 {
@@ -40,6 +41,7 @@ namespace engine
 
 	void MasterRenderer::applyCommandModeToAllPasses() {
 		auto* device = (m_CommandMode == CommandMode::Immediate) ? getRHIDevice() : nullptr;
+		m_SimulationCommands.setImmediateDevice(device);
 
 		m_ShadowmapPass.enableImmediateMode(device);
 		m_LightingPass.enableImmediateMode(device);
@@ -72,6 +74,7 @@ namespace engine
 	void MasterRenderer::render() {
 		// 每帧更新渲染场景快照（场景数据可能在帧间变化）
 		m_RenderScene = m_ActiveScene->extractRenderScene();
+		if (m_RenderScene.fluid) m_RenderScene.fluid->updateSimulation(m_SimulationCommands);
 
 #if FORWARD_RENDER
 		BEGIN_EVENT("Forward render");
@@ -111,6 +114,7 @@ namespace engine
 		// ===== 命令执行 =====
 		if (m_CommandMode == CommandMode::Deferred) {
 			// 延迟模式：提交所有 pass 的命令缓冲到队列，然后统一执行
+			m_CommandQueue.submit(m_SimulationCommands);
 #if FORWARD_RENDER
 			m_CommandQueue.submit(m_ShadowmapPass.getCommandBuffer());
 			m_CommandQueue.submit(m_LightingPass.getCommandBuffer());
@@ -129,6 +133,7 @@ namespace engine
 		// 即时模式：命令已在录制时执行，无需 submit/flush
 
 		// 重置所有 pass 的命令缓冲，为下一帧做准备
+		m_SimulationCommands.reset();
 		m_ShadowmapPass.resetCommandBuffer();
 		m_LightingPass.resetCommandBuffer();
 		m_PostProcessPass.resetCommandBuffer();
@@ -139,4 +144,3 @@ namespace engine
 	}
 
 }
-

@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "TypeProcess.h"
+#include <stdexcept>
 
 namespace glm {
 	using json = nlohmann::json;
@@ -107,6 +108,10 @@ namespace engine {
 		boundary.at("min").get_to(f.boundaryMin);
 		boundary.at("max").get_to(f.boundaryMax);
 		f.autoStart = j.value("autoStart", true);
+		f.backend = j.value("backend", std::string("cpu"));
+		if (f.backend != "cpu" && f.backend != "compute") {
+			throw std::invalid_argument("fluid.backend must be 'cpu' or 'compute'");
+		}
 	}
 
 	void from_json(const json& j, SceneInfo& s) {

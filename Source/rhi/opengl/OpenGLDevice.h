@@ -54,6 +54,7 @@ public:
     Backend getBackend() const noexcept override { return Backend::OpenGL; }
     bool isTextureFormatSupported(TextureFormat format) const noexcept override;
     uint32_t getMaxTextureSize() const noexcept override;
+    ComputeLimits getComputeLimits() const noexcept override { return mComputeLimits; }
 
     // ---------- 资源创建 ----------
     TextureHandle createTexture(const TextureDesc& desc) override;
@@ -105,6 +106,10 @@ public:
     void endRenderPass() override;
 
     void bindPipeline(const PipelineState& state) override;
+    void bindComputeProgram(ProgramHandle program) override;
+    void bindStorageBuffer(uint32_t binding, BufferHandle buffer) override;
+    void dispatchCompute(uint32_t x, uint32_t y, uint32_t z) override;
+    void memoryBarrier(MemoryBarrier barriers) override;
     void bindRenderPrimitive(RenderPrimitiveHandle rph) override;
     void bindUniformBuffer(uint32_t set, uint32_t binding,
             BufferHandle handle, uint32_t offset, uint32_t size) override;
@@ -162,6 +167,7 @@ private:
     HandleBase::HandleId mNextHandle = 1;
     uint32_t mMaxTextureSize = 0;
     bool mHasParallelCompile = false;
+    ComputeLimits mComputeLimits;
 
     // 当前绑定状态（仅用于 draw 时读取 primitiveType 等，不用于 diff）
     PipelineState mCurrentPipeline;

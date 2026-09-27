@@ -53,6 +53,7 @@ namespace engine
 
 		// 命令队列（统一管理所有 pass 录制的命令）
 		rhi::CommandQueue m_CommandQueue;
+		rhi::CommandBuffer m_SimulationCommands;
 
 		// other passes 
 		PostProcessPass m_PostProcessPass;

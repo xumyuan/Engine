@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "rhi/include/RHICommandBuffer.h"
 #include "rhi/include/RHIDevice.h"
 
@@ -10,6 +9,18 @@ void CommandBuffer::dispatchImmediate(const RenderCommand& cmd) {
     if (!m_ImmediateDevice) return;
 
     switch (cmd.type) {
+        case CommandType::BindComputeProgram:
+            m_ImmediateDevice->bindComputeProgram(cmd.bindComputeProgram.program);
+            break;
+        case CommandType::BindStorageBuffer:
+            m_ImmediateDevice->bindStorageBuffer(cmd.bindStorageBuffer.binding, cmd.bindStorageBuffer.buffer);
+            break;
+        case CommandType::DispatchCompute:
+            m_ImmediateDevice->dispatchCompute(cmd.dispatchCompute.x, cmd.dispatchCompute.y, cmd.dispatchCompute.z);
+            break;
+        case CommandType::MemoryBarrier:
+            m_ImmediateDevice->memoryBarrier(cmd.memoryBarrier.barriers);
+            break;
         // --- 帧生命周期 ---
         case CommandType::BeginFrame:
             m_ImmediateDevice->beginFrame(cmd.beginFrame.swapChain);

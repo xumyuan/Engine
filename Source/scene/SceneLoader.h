@@ -27,7 +27,7 @@ namespace engine {
 		/// @brief 加载灯光（方向光、聚光灯、点光源）—— 创建 SceneNode + LightComponent
 		static void loadLights(Scene3D& scene, const struct SceneInfo& sceneInfo);
 
-		/// @brief 加载流体模拟 —— 创建 FluidSim，按配置启动后台模拟线程
+		/// @brief 创建 FluidSim，选择求解后端并按配置启动模拟
 		static void loadFluid(Scene3D& scene, const struct SceneInfo& sceneInfo);
 	};
 

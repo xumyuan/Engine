@@ -63,6 +63,7 @@ namespace engine {
 			glm::vec3 boundaryMin{ 0.0f };
 			glm::vec3 boundaryMax{ 0.0f };
 			bool autoStart = true;
+			std::string backend = "cpu";
 		};
 
 		std::vector<ModelInfo> modelInfoList;
