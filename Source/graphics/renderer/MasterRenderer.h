@@ -7,6 +7,7 @@
 #include <graphics/renderer/renderpass/PostProcessPass.h>
 #include <graphics/renderer/renderpass/ShadowmapPass.h>
 #include <graphics/renderer/renderpass/SSAOPass.h>
+#include <graphics/renderer/renderpass/FluidRenderPass.h>
 #include <scene/Scene3D.h>
 #include <utils/Timer.h>
 #include <graphics/UniformBufferManager.h>
@@ -65,6 +66,9 @@ namespace engine
 		// Deferred passes
 		DeferredGeometryPass m_DeferredGeometryPass;
 		DeferredLightingPass m_DeferredLightingPass;
+
+		// 屏幕空间流体（延迟渲染路径，光照之后、后处理之前）
+		FluidRenderPass m_FluidPass;
 
 
 		Timer m_Timer;

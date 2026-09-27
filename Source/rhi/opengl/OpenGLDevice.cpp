@@ -235,6 +235,8 @@ bool OpenGLDevice::initialize() {
     mMaxTextureSize = static_cast<uint32_t>(maxSize);
 
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+    // 点图元的尺寸由 shader 写 gl_PointSize 决定（粒子点精灵）
+    glEnable(GL_PROGRAM_POINT_SIZE);
 
     // 0xFFFFFFFF 表示由驱动决定编译线程数
 #if defined(GL_KHR_parallel_shader_compile)

@@ -47,6 +47,14 @@ namespace TextureUnit {
     static constexpr uint32_t SSAONormal             = 0;
     static constexpr uint32_t SSAODepth              = 1;
     static constexpr uint32_t SSAONoise              = 2;
+
+    // ----- 屏幕空间流体（Shaders/fluid/ssf_*.glsl）-----
+    static constexpr uint32_t SSFSceneDepth          = 0;  // ssf_depth / ssf_thickness：遮挡剔除
+    static constexpr uint32_t SSFSmoothInput         = 0;  // ssf_smooth
+    static constexpr uint32_t SSFSceneColor          = 0;  // ssf_composite
+    static constexpr uint32_t SSFFluidDepth          = 1;
+    static constexpr uint32_t SSFThickness           = 2;
+    static constexpr uint32_t SSFEnvironment         = 3;
 }
 
 } // namespace engine

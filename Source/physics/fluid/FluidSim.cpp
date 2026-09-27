@@ -3,8 +3,6 @@
 #include "FluidSim.h"
 #include "solvers/PBF.h"
 
-#include <gl/glew.h>
-
 #include <algorithm>
 
 #include <utils/loaders/ShaderLoader.h>
@@ -133,15 +131,22 @@ namespace engine {
 		m_Device->updateBuffer(m_VertexBuffer, bufData);
 	}
 
-	void FluidSim::drawParticle(rhi::CommandBuffer& cmd, FPSCamera* camera) {
+	void FluidSim::uploadLatestPositions() {
 		// 不等待模拟线程：有新结果就上传，否则沿用上一帧
-		{
-			std::lock_guard<std::mutex> lock(m_pbf->getPosMutex());
-			if (dataReady) {
-				subPosData();
-				dataReady = false;
-			}
+		std::lock_guard<std::mutex> lock(m_pbf->getPosMutex());
+		if (dataReady) {
+			subPosData();
+			dataReady = false;
 		}
+	}
+
+	void FluidSim::drawPoints(rhi::CommandBuffer& cmd) const {
+		cmd.bindRenderPrimitive(m_RenderPrimitive);
+		cmd.drawArrays(rhi::PrimitiveType::Points, static_cast<uint32_t>(m_particleNum));
+	}
+
+	void FluidSim::drawParticle(rhi::CommandBuffer& cmd, FPSCamera* camera) {
+		uploadLatestPositions();
 
 		float fov = camera->getFOV();
 		glm::vec3 waterPos(0.0);
@@ -152,7 +157,7 @@ namespace engine {
 		glm::vec3 objectColor = { 0.267, 0.447, 0.769 };
 
 		float pointScale = 1.0f * 768.f / glm::tan(glm::radians(fov) * 0.5f);
-		float pointSize = 0.5f;
+		float pointSize = getParticleRadius();
 
 		rhi::ProgramHandle program = m_particleShader->getProgramHandle();
 
@@ -176,16 +181,7 @@ namespace engine {
 			cmd.bindUBO(UBOBinding::CustomParams, uboMgr->getCustomHandle(), sizeof(UBOFluidParams));
 		}
 
-		// 注意：GL_PROGRAM_POINT_SIZE 是 GL 特有状态，暂时保留直接调用
-		glEnable(GL_PROGRAM_POINT_SIZE);
-		glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
-
-		cmd.bindRenderPrimitive(m_RenderPrimitive);
-		cmd.drawArrays(rhi::PrimitiveType::Points,
-			static_cast<uint32_t>(m_particleNum));
-
-		glDisable(GL_PROGRAM_POINT_SIZE);
-		glDisable(GL_VERTEX_PROGRAM_POINT_SIZE);
+		drawPoints(cmd);
 	}
 
 	void FluidSim::startSimulation() {

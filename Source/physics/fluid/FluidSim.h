@@ -54,7 +54,14 @@ namespace engine {
 
 		void init();
 
+		// 前向渲染用：Blinn-Phong 着色的球形点精灵
 		void drawParticle(rhi::CommandBuffer& cmd, FPSCamera* camera);
+
+		// 渲染线程每帧调用一次：模拟线程有新结果时上传到顶点缓冲
+		void uploadLatestPositions();
+		// 以点图元绘制全部粒子，shader 与管线状态由调用方负责
+		void drawPoints(rhi::CommandBuffer& cmd) const;
+		float getParticleRadius() const { return m_simParams.spacing * 0.5f; }
 
 		// 在后台线程上持续求解；重复调用无效果。析构时自动停止并等待线程退出
 		void startSimulation();

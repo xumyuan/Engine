@@ -175,6 +175,18 @@ struct alignas(16) UBOFluidParams {
 static_assert(sizeof(UBOFluidParams) == 48, "UBOFluidParams size mismatch");
 
 // ============================================================================
+// UBO 4: SSFParams — 屏幕空间流体渲染参数（ssf_depth / ssf_thickness / ssf_smooth / ssf_composite 共用）
+// ============================================================================
+struct alignas(16) UBOSSFParams {
+    glm::vec4 particle;    // x = 粒子半径（世界单位），y = 厚度缩放，zw = padding
+    glm::vec4 blur;        // xy = 本次滤波方向的纹素步长，z = 世界空间滤波半径，w = 深度差衰减系数（1/世界单位）
+    glm::vec4 absorption;  // rgb = Beer-Lambert 吸收系数（每世界单位），w = 折射偏移强度
+    glm::vec4 shading;     // x = 菲涅尔 F0，y = 高光指数，z = 最大滤波半径（像素），w = padding
+    // Total: 64 bytes
+};
+static_assert(sizeof(UBOSSFParams) == 64, "UBOSSFParams size mismatch");
+
+// ============================================================================
 // Shadowmap UBO — lightSpaceViewProjectionMatrix 用于 shadowmap pass
 // ============================================================================
 struct alignas(16) UBOShadowmapPass {

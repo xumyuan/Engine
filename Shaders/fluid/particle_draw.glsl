@@ -94,8 +94,7 @@ void main() {
 	vec4 pixelEyePos = vec4(eyeSpacePos + normal * pointSize, 1.0f);
 	vec4 pixelClipPos = projection * pixelEyePos;
 	float ndcZ = pixelClipPos.z / pixelClipPos.w;
-	gl_FragDepth = ndcZ;
-	vec3 depth = vec3(ndcZ, ndcZ, ndcZ);
+	gl_FragDepth = ndcZ * 0.5 + 0.5;
 
 	vec3 color = BlinnPhong(normal);
 

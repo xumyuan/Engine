@@ -17,6 +17,7 @@ namespace engine
 		m_EnvironmentProbePass(m_RenderScene),
 		m_DeferredGeometryPass(m_RenderScene),
 		m_DeferredLightingPass(m_RenderScene),
+		m_FluidPass(m_RenderScene),
 		m_SSAOPass(m_RenderScene)
 	{
 		// 初始化 UBO 管理器
@@ -47,6 +48,7 @@ namespace engine
 		m_DeferredGeometryPass.enableImmediateMode(device);
 		m_DeferredLightingPass.enableImmediateMode(device);
 		m_SSAOPass.enableImmediateMode(device);
+		m_FluidPass.enableImmediateMode(device);
 	}
 
 	void MasterRenderer::init() {
@@ -99,7 +101,10 @@ namespace engine
 		BEGIN_EVENT("LightingPass");
 		LightingPassOutput deferredLightingOutput = m_DeferredLightingPass.ExecuteLightingPass(shadowmapOutput, geometryOutput, ssaoOutput, m_RenderScene.camera, true);
 		END_EVENT();
-		m_PostProcessPass.executeRenderPass(deferredLightingOutput);
+		BEGIN_EVENT("FluidPass");
+		LightingPassOutput fluidOutput = m_FluidPass.executeRenderPass(deferredLightingOutput, geometryOutput, m_RenderScene.camera);
+		END_EVENT();
+		m_PostProcessPass.executeRenderPass(fluidOutput);
 
 #endif // FORWARD_RENDER
 
@@ -115,6 +120,7 @@ namespace engine
 			m_CommandQueue.submit(m_DeferredGeometryPass.getCommandBuffer());
 			m_CommandQueue.submit(m_SSAOPass.getCommandBuffer());
 			m_CommandQueue.submit(m_DeferredLightingPass.getCommandBuffer());
+			m_CommandQueue.submit(m_FluidPass.getCommandBuffer());
 			m_CommandQueue.submit(m_PostProcessPass.getCommandBuffer());
 #endif
 			// 统一执行所有已提交的命令
@@ -129,6 +135,7 @@ namespace engine
 		m_SSAOPass.resetCommandBuffer();
 		m_DeferredGeometryPass.resetCommandBuffer();
 		m_DeferredLightingPass.resetCommandBuffer();
+		m_FluidPass.resetCommandBuffer();
 	}
 
 }
