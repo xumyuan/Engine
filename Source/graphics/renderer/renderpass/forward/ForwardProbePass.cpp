@@ -44,6 +44,8 @@ namespace engine {
 		m_ConvolutionShader = ShaderLoader::loadShader("Shaders/lightprobe_convolution.glsl");
 
 		m_ImportanceSamplingShader = ShaderLoader::loadShader("Shaders/reflectionprobe_importance_sampling.glsl");
+
+		m_BrdfIntegrationShader = ShaderLoader::loadShader("Shaders/prebrdf.glsl");
 	}
 
 	ForwardProbePass::~ForwardProbePass() {}
@@ -62,7 +64,7 @@ namespace engine {
 	}
 
 	void ForwardProbePass::generateBRDFLUT() {
-		Shader* brdfIntegrationShader = ShaderLoader::loadShader("Shaders/prebrdf.glsl");
+		Shader* brdfIntegrationShader = m_BrdfIntegrationShader;
 
 		// brdf 的纹理设置
 		TextureSettings textureSettings;

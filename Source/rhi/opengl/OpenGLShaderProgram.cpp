@@ -22,6 +22,7 @@ OpenGLShaderProgram::OpenGLShaderProgram(OpenGLShaderProgram&& other) noexcept
     : mProgramHandle(other.mProgramHandle)
     , mGLProgramId(other.mGLProgramId)
     , mDevice(other.mDevice)
+    , mStatus(other.mStatus)
     , mUniformLocationCache(std::move(other.mUniformLocationCache)) {
     other.mProgramHandle.clear();
     other.mGLProgramId = 0;
@@ -37,6 +38,7 @@ OpenGLShaderProgram& OpenGLShaderProgram::operator=(OpenGLShaderProgram&& other)
         mProgramHandle = other.mProgramHandle;
         mGLProgramId = other.mGLProgramId;
         mDevice = other.mDevice;
+        mStatus = other.mStatus;
         mUniformLocationCache = std::move(other.mUniformLocationCache);
         other.mProgramHandle.clear();
         other.mGLProgramId = 0;
@@ -49,7 +51,15 @@ OpenGLShaderProgram& OpenGLShaderProgram::operator=(OpenGLShaderProgram&& other)
 // Program 激活
 // ============================================================================
 
+bool OpenGLShaderProgram::ensureReady() {
+    if (mStatus == ProgramStatus::Pending && mDevice) {
+        mStatus = mDevice->waitProgram(mProgramHandle) ? ProgramStatus::Ready : ProgramStatus::Failed;
+    }
+    return mStatus == ProgramStatus::Ready;
+}
+
 void OpenGLShaderProgram::use() {
+    if (!ensureReady()) return;
     glUseProgram(mGLProgramId);
 }
 
@@ -62,6 +72,8 @@ void OpenGLShaderProgram::unuse() {
 // ============================================================================
 
 GLint OpenGLShaderProgram::getUniformLocation(const char* name) {
+    if (!ensureReady()) return -1;
+
     auto it = mUniformLocationCache.find(name);
     if (it != mUniformLocationCache.end()) {
         return it->second;

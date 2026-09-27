@@ -29,7 +29,12 @@ class RHIDevice {
     virtual TextureHandle createTexture(const TextureDesc& desc) = 0;
     virtual void generateMipmaps(const TextureHandle handle) = 0;
     virtual BufferHandle createBuffer(const BufferDesc& desc) = 0;
+    // 提交编译链接后立即返回；编译结果通过 getProgramStatus/waitProgram 获取
     virtual ProgramHandle createProgram(const ProgramDesc& desc) = 0;
+    // 非阻塞查询；同步编译的后端直接返回 Ready
+    virtual ProgramStatus getProgramStatus(ProgramHandle) { return ProgramStatus::Ready; }
+    // 阻塞直到结果确定，返回 program 是否可用
+    virtual bool waitProgram(ProgramHandle handle) { return getProgramStatus(handle) == ProgramStatus::Ready; }
     virtual RenderTargetHandle createRenderTarget(const RenderTargetDesc& desc) = 0;
     virtual RenderPrimitiveHandle createRenderPrimitive(
             const VertexLayout& layout,

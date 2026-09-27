@@ -1,6 +1,7 @@
 #pragma once
 
 #include "rhi/include/RHIShaderProgram.h"
+#include "rhi/include/RHITypes.h"
 #include <GL/glew.h>
 #include <unordered_map>
 
@@ -49,10 +50,13 @@ public:
 
 private:
     GLint getUniformLocation(const char* name);
+    // 首次使用时等待编译结果；失败的 program 不能交给 glUseProgram
+    bool ensureReady();
 
     ProgramHandle mProgramHandle;
     GLuint mGLProgramId = 0;
     RHIDevice* mDevice = nullptr;
+    ProgramStatus mStatus = ProgramStatus::Pending;
 
     // uniform location 缓存，避免每次都调用 glGetUniformLocation
     std::unordered_map<std::string, GLint> mUniformLocationCache;

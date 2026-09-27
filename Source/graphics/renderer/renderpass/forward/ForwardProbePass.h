@@ -28,7 +28,7 @@ namespace engine {
 		CubemapSettings m_SceneCaptureSettings;
 		Cubemap m_SceneCaptureCubemap;
 
-		Shader* m_ConvolutionShader, * m_ImportanceSamplingShader;
+		Shader* m_ConvolutionShader, * m_ImportanceSamplingShader, * m_BrdfIntegrationShader;
 	};
 
 }

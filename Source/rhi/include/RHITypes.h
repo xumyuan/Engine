@@ -90,6 +90,12 @@ enum class ShaderStage : uint8_t {
   Compute,
 };
 
+enum class ProgramStatus : uint8_t {
+  Pending, // 已提交，驱动可能仍在后台编译/链接
+  Ready,
+  Failed,
+};
+
 // ===== 混合/深度/光栅状态 =====
 enum class BlendFactor : uint8_t {
   Zero,

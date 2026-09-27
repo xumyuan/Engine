@@ -237,7 +237,22 @@ bool OpenGLDevice::initialize() {
 
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
-    spdlog::info("[RHI-OpenGL] initialized, max texture size: {}", mMaxTextureSize);
+    // 0xFFFFFFFF 表示由驱动决定编译线程数
+#if defined(GL_KHR_parallel_shader_compile)
+    if (GLEW_KHR_parallel_shader_compile) {
+        glMaxShaderCompilerThreadsKHR(0xFFFFFFFFu);
+        mHasParallelCompile = true;
+    }
+#endif
+#if defined(GL_ARB_parallel_shader_compile)
+    if (!mHasParallelCompile && GLEW_ARB_parallel_shader_compile) {
+        glMaxShaderCompilerThreadsARB(0xFFFFFFFFu);
+        mHasParallelCompile = true;
+    }
+#endif
+
+    spdlog::info("[RHI-OpenGL] initialized, max texture size: {}, parallel shader compile: {}",
+                 mMaxTextureSize, mHasParallelCompile);
     return true;
 }
 
@@ -251,7 +266,10 @@ void OpenGLDevice::terminate() {
         }
     }
     for (auto& [id, data] : mBuffers)        { glDeleteBuffers(1, &data.glId); }
-    for (auto& [id, data] : mPrograms)       { glDeleteProgram(data.glId); }
+    for (auto& [id, data] : mPrograms) {
+        releaseShaders(data);
+        if (data.glId) glDeleteProgram(data.glId);
+    }
     for (auto& [id, data] : mRenderTargets)  { glDeleteFramebuffers(1, &data.fboId); }
     for (auto& [id, data] : mRenderPrimitives) { glDeleteVertexArrays(1, &data.vaoId); }
 
@@ -420,10 +438,19 @@ BufferHandle OpenGLDevice::createBuffer(const BufferDesc& desc) {
     return BufferHandle(hid);
 }
 
+// 只提交编译和链接，不查询状态：立即查询会阻塞到该 program 编译完成，
+// 驱动无法在后台并行编译后续 program
 ProgramHandle OpenGLDevice::createProgram(const ProgramDesc& desc) {
     GLuint program = glCreateProgram();
+    if (program == 0) {
+        spdlog::error("[RHI-OpenGL] glCreateProgram failed ({})", desc.name);
+        return ProgramHandle();
+    }
 
-    std::vector<GLuint> shaders;
+    GLProgramData data;
+    data.glId = program;
+    data.name = desc.name;
+
     for (auto& src : desc.shaders) {
         GLenum type = GL_VERTEX_SHADER;
         switch (src.stage) {
@@ -436,49 +463,104 @@ ProgramHandle OpenGLDevice::createProgram(const ProgramDesc& desc) {
         }
 
         GLuint shader = glCreateShader(type);
+        if (shader == 0) {
+            spdlog::error("[RHI-OpenGL] glCreateShader failed ({})", desc.name);
+            releaseShaders(data);
+            glDeleteProgram(program);
+            return ProgramHandle();
+        }
         // 假设 code 存的是 GLSL 源码文本
         const char* code = reinterpret_cast<const char*>(src.code.data());
         GLint length = static_cast<GLint>(src.code.size());
         glShaderSource(shader, 1, &code, &length);
         glCompileShader(shader);
-
-        GLint success = 0;
-        glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-        if (!success) {
-            char log[1024];
-            glGetShaderInfoLog(shader, sizeof(log), nullptr, log);
-            spdlog::error("[RHI-OpenGL] Shader compile error ({}): {}", desc.name, log);
-            glDeleteShader(shader);
-            glDeleteProgram(program);
-            return ProgramHandle(); // 返回无效句柄
-        }
-
         glAttachShader(program, shader);
-        shaders.push_back(shader);
+        data.shaders.push_back(shader);
     }
 
     glLinkProgram(program);
-    GLint success = 0;
-    glGetProgramiv(program, GL_LINK_STATUS, &success);
-    if (!success) {
-        char log[1024];
-        glGetProgramInfoLog(program, sizeof(log), nullptr, log);
-        spdlog::error("[RHI-OpenGL] Program link error ({}): {}", desc.name, log);
-    }
-
-    // 清理 shader 对象
-    for (auto s : shaders) {
-        glDeleteShader(s);
-    }
-
-    if (!success) {
-        glDeleteProgram(program);
-        return ProgramHandle();
-    }
 
     auto hid = allocHandle();
-    mPrograms[hid] = { program };
+    mPrograms[hid] = std::move(data);
     return ProgramHandle(hid);
+}
+
+ProgramStatus OpenGLDevice::getProgramStatus(ProgramHandle handle) {
+    auto it = mPrograms.find(handle.getId());
+    if (it == mPrograms.end()) {
+        return ProgramStatus::Failed;
+    }
+    GLProgramData& data = it->second;
+    if (data.status == ProgramStatus::Pending && mHasParallelCompile) {
+        // GL_COMPLETION_STATUS_KHR 与 GL_COMPLETION_STATUS_ARB 同值
+        constexpr GLenum kCompletionStatus = 0x91B1;
+        GLint done = GL_FALSE;
+        glGetProgramiv(data.glId, kCompletionStatus, &done);
+        if (done) {
+            finalizeProgram(data);
+        }
+    }
+    return data.status;
+}
+
+bool OpenGLDevice::waitProgram(ProgramHandle handle) {
+    auto it = mPrograms.find(handle.getId());
+    if (it == mPrograms.end()) {
+        return false;
+    }
+    finalizeProgram(it->second);
+    return it->second.status == ProgramStatus::Ready;
+}
+
+uint32_t OpenGLDevice::resolveProgram(ProgramHandle h) {
+    auto it = mPrograms.find(h.getId());
+    if (it == mPrograms.end()) {
+        return 0;
+    }
+    finalizeProgram(it->second);
+    return it->second.status == ProgramStatus::Ready ? it->second.glId : 0;
+}
+
+// 查询 GL_LINK_STATUS 会阻塞到链接完成
+void OpenGLDevice::finalizeProgram(GLProgramData& data) {
+    if (data.status != ProgramStatus::Pending) {
+        return;
+    }
+
+    GLint linked = GL_FALSE;
+    glGetProgramiv(data.glId, GL_LINK_STATUS, &linked);
+
+    if (linked) {
+        spdlog::info("[RHI-OpenGL] Program '{}' ready", data.name);
+        releaseShaders(data);
+        data.status = ProgramStatus::Ready;
+        return;
+    }
+
+    char log[1024];
+    for (GLuint shader : data.shaders) {
+        GLint compiled = GL_FALSE;
+        glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
+        if (!compiled) {
+            glGetShaderInfoLog(shader, sizeof(log), nullptr, log);
+            spdlog::error("[RHI-OpenGL] Shader compile error ({}): {}", data.name, log);
+        }
+    }
+    glGetProgramInfoLog(data.glId, sizeof(log), nullptr, log);
+    spdlog::error("[RHI-OpenGL] Program link error ({}): {}", data.name, log);
+
+    releaseShaders(data);
+    glDeleteProgram(data.glId);
+    data.glId = 0;
+    data.status = ProgramStatus::Failed;
+}
+
+void OpenGLDevice::releaseShaders(GLProgramData& data) {
+    for (GLuint shader : data.shaders) {
+        if (data.glId) glDetachShader(data.glId, shader);
+        glDeleteShader(shader);
+    }
+    data.shaders.clear();
 }
 
 RenderTargetHandle OpenGLDevice::createRenderTarget(const RenderTargetDesc& desc) {
@@ -635,7 +717,8 @@ void OpenGLDevice::destroyBuffer(BufferHandle handle) {
 void OpenGLDevice::destroyProgram(ProgramHandle handle) {
     auto it = mPrograms.find(handle.getId());
     if (it != mPrograms.end()) {
-        glDeleteProgram(it->second.glId);
+        releaseShaders(it->second);
+        if (it->second.glId) glDeleteProgram(it->second.glId);
         mPrograms.erase(it);
     }
 }
@@ -813,9 +896,8 @@ void OpenGLDevice::bindPipeline(const PipelineState& state) {
 
     // ── Shader ──
     if (static_cast<bool>(state.program)) {
-        auto it = mPrograms.find(state.program.getId());
-        if (it != mPrograms.end()) {
-            glUseProgram(it->second.glId);
+        if (GLuint glId = resolveProgram(state.program)) {
+            glUseProgram(glId);
         }
     }
 
@@ -1104,7 +1186,7 @@ static GLint getUniformLocationFor(GLuint programId, const char* name) {
 }
 
 void OpenGLDevice::setUniform(ProgramHandle program, const char* name, int value) {
-    GLuint glId = getGLProgramId(program);
+    GLuint glId = resolveProgram(program);
     if (glId == 0) return;
     // bindPipeline 已确保 program 被 use，这里直接设置
     GLint loc = getUniformLocationFor(glId, name);
@@ -1112,42 +1194,42 @@ void OpenGLDevice::setUniform(ProgramHandle program, const char* name, int value
 }
 
 void OpenGLDevice::setUniform(ProgramHandle program, const char* name, float value) {
-    GLuint glId = getGLProgramId(program);
+    GLuint glId = resolveProgram(program);
     if (glId == 0) return;
     GLint loc = getUniformLocationFor(glId, name);
     if (loc >= 0) glUniform1f(loc, value);
 }
 
 void OpenGLDevice::setUniform(ProgramHandle program, const char* name, const glm::vec2& value) {
-    GLuint glId = getGLProgramId(program);
+    GLuint glId = resolveProgram(program);
     if (glId == 0) return;
     GLint loc = getUniformLocationFor(glId, name);
     if (loc >= 0) glUniform2fv(loc, 1, glm::value_ptr(value));
 }
 
 void OpenGLDevice::setUniform(ProgramHandle program, const char* name, const glm::vec3& value) {
-    GLuint glId = getGLProgramId(program);
+    GLuint glId = resolveProgram(program);
     if (glId == 0) return;
     GLint loc = getUniformLocationFor(glId, name);
     if (loc >= 0) glUniform3fv(loc, 1, glm::value_ptr(value));
 }
 
 void OpenGLDevice::setUniform(ProgramHandle program, const char* name, const glm::vec4& value) {
-    GLuint glId = getGLProgramId(program);
+    GLuint glId = resolveProgram(program);
     if (glId == 0) return;
     GLint loc = getUniformLocationFor(glId, name);
     if (loc >= 0) glUniform4fv(loc, 1, glm::value_ptr(value));
 }
 
 void OpenGLDevice::setUniform(ProgramHandle program, const char* name, const glm::mat3& value) {
-    GLuint glId = getGLProgramId(program);
+    GLuint glId = resolveProgram(program);
     if (glId == 0) return;
     GLint loc = getUniformLocationFor(glId, name);
     if (loc >= 0) glUniformMatrix3fv(loc, 1, GL_FALSE, glm::value_ptr(value));
 }
 
 void OpenGLDevice::setUniform(ProgramHandle program, const char* name, const glm::mat4& value) {
-    GLuint glId = getGLProgramId(program);
+    GLuint glId = resolveProgram(program);
     if (glId == 0) return;
     GLint loc = getUniformLocationFor(glId, name);
     if (loc >= 0) glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(value));

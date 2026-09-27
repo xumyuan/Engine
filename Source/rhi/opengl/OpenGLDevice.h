@@ -2,6 +2,7 @@
 #include "rhi/include/RHIDevice.h"
 #include <unordered_map>
 #include <string>
+#include <vector>
 
 namespace engine {
 namespace rhi {
@@ -21,6 +22,10 @@ struct GLBufferData {
 
 struct GLProgramData {
     uint32_t glId = 0;
+    ProgramStatus status = ProgramStatus::Pending;
+    // 编译日志挂在 shader 对象上，结果确定前不能删除
+    std::vector<uint32_t> shaders;
+    std::string name;
 };
 
 struct GLRenderTargetData {
@@ -56,6 +61,8 @@ public:
     void generateMipmaps(const TextureHandle handle) override;
     
     ProgramHandle createProgram(const ProgramDesc& desc) override;
+    ProgramStatus getProgramStatus(ProgramHandle handle) override;
+    bool waitProgram(ProgramHandle handle) override;
     RenderTargetHandle createRenderTarget(const RenderTargetDesc& desc) override;
     RenderPrimitiveHandle createRenderPrimitive(
             const VertexLayout& layout,
@@ -142,10 +149,16 @@ public:
     // ---------- OpenGL 特有：内部查询 ----------
     uint32_t getGLTextureId(TextureHandle h) const;
     uint32_t getGLBufferId(BufferHandle h) const;
+    // 不等待编译结果；需要使用 program 时走 resolveProgram
     uint32_t getGLProgramId(ProgramHandle h) const;
 
 private:
     HandleBase::HandleId allocHandle();
+
+    void finalizeProgram(GLProgramData& data);
+    void releaseShaders(GLProgramData& data);
+    // 等待编译结果，可用时返回 GL program id，否则返回 0
+    uint32_t resolveProgram(ProgramHandle h);
 
     // Handle → GL 资源映射
     std::unordered_map<HandleBase::HandleId, GLTextureData>         mTextures;
@@ -157,6 +170,7 @@ private:
 
     HandleBase::HandleId mNextHandle = 1;
     uint32_t mMaxTextureSize = 0;
+    bool mHasParallelCompile = false;
 
     // 当前绑定状态（仅用于 draw 时读取 primitiveType 等，不用于 diff）
     PipelineState mCurrentPipeline;

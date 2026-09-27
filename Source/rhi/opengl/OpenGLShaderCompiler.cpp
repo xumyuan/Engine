@@ -114,14 +114,12 @@ std::unique_ptr<RHIShaderProgram> OpenGLShaderCompiler::compileFromSources(
         return nullptr;
     }
 
+    // 编译结果在 program 首次使用或 RHIDevice::waitProgram 时确定并输出日志
     ProgramHandle handle = mDevice.createProgram(desc);
     if (!static_cast<bool>(handle)) {
-        spdlog::error("[OpenGLShaderCompiler] Failed to compile/link program: {}", name);
+        spdlog::error("[OpenGLShaderCompiler] Failed to create program: {}", name);
         return nullptr;
     }
-
-    spdlog::info("[OpenGLShaderCompiler] Program '{}' compiled successfully (handle={})",
-                 name, handle.getId());
 
     // 获取 GL program ID 并创建 OpenGLShaderProgram
     GLuint glProgramId = mDevice.getGLProgramId(handle);
