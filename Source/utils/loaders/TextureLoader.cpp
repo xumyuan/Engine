@@ -29,8 +29,6 @@ namespace engine {
 			int height = 0;
 			ChannelLayout channels = ChannelLayout::RGBA;
 			std::string error;
-
-			explicit operator bool() const { return pixels != nullptr; }
 		};
 
 		// 将 stbi 通道数转为 ChannelLayout
@@ -56,38 +54,16 @@ namespace engine {
 			return image;
 		}
 
-		// 只包含决定 GPU 资源内容与格式的字段；采样参数不参与，否则同一张图会因过滤方式不同重复占用显存
-		struct TextureKey {
-			std::string path;
-			bool srgb = false;
-			bool explicitFormat = false;
-			rhi::TextureFormat format = rhi::TextureFormat::RGBA8;
-			bool mips = true;
+		std::string normalizePath(const std::string& path) {
+			return std::filesystem::path(path).lexically_normal().generic_string();
+		}
 
-			bool operator==(const TextureKey&) const = default;
-		};
-
-		struct TextureKeyHash {
-			size_t operator()(const TextureKey& key) const noexcept {
-				size_t h = std::hash<std::string>{}(key.path);
-				auto mix = [&h](size_t v) { h ^= v + 0x9e3779b97f4a7c15ull + (h << 6) + (h >> 2); };
-				mix(key.srgb);
-				mix(key.explicitFormat);
-				mix(static_cast<size_t>(key.format));
-				mix(key.mips);
-				return h;
-			}
-		};
-
-		TextureKey makeKey(const std::string& path, const TextureSettings& settings) {
-			TextureKey key;
-			key.path = std::filesystem::path(path).lexically_normal().generic_string();
-			key.srgb = settings.IsSRGB;
-			key.explicitFormat = settings.formatExplicitlySet;
-			if (settings.formatExplicitlySet) {
-				key.format = settings.format;
-			}
-			key.mips = settings.HasMips;
+		// 只包含决定 GPU 资源内容与格式的设置；采样参数不参与，否则同一张图会因过滤方式不同重复占用显存
+		std::string makeCacheKey(const std::string& normalizedPath, const TextureSettings& settings) {
+			std::string key = normalizedPath;
+			key += settings.IsSRGB ? "|srgb" : "|linear";
+			key += settings.formatExplicitlySet ? "|fmt=" + std::to_string(static_cast<int>(settings.format)) : "|fmt=auto";
+			key += settings.HasMips ? "|mips" : "|nomips";
 			return key;
 		}
 
@@ -97,25 +73,8 @@ namespace engine {
 				|| a.anisotropy != b.anisotropy || a.HasBorder != b.HasBorder || a.MipBias != b.MipBias;
 		}
 
-		enum class LoadState : uint8_t { Loading, Ready, Failed };
-
-		struct TextureEntry {
-			std::unique_ptr<Texture> texture;
-			LoadState state = LoadState::Loading;
-		};
-
-		struct TextureCache {
-			std::unordered_map<TextureKey, TextureEntry, TextureKeyHash> entries;
-
-			// 未调用 shutdown() 时 RHI 设备可能已销毁，此时析构 Texture 会访问悬空设备，只能放弃释放
-			~TextureCache() {
-				for (auto& [key, entry] : entries) {
-					(void)entry.texture.release();
-				}
-			}
-		};
-
-		TextureCache s_Cache;
+		// 有意不析构：未调用 shutdown() 时，静态析构阶段 RHI 设备已销毁，不能再释放纹理
+		auto& s_Cache = *new std::unordered_map<std::string, std::unique_ptr<Texture>>();
 
 		std::mutex s_TaskMutex;
 		std::vector<std::function<void()>> s_MainThreadTasks;
@@ -135,75 +94,35 @@ namespace engine {
 			std::lock_guard lock(s_TaskMutex);
 			s_MainThreadTasks.push_back(std::move(task));
 		}
-
-		void finishTextureLoad(const TextureKey& key, Texture* texture, const DecodedImage& image) {
-			auto it = s_Cache.entries.find(key);
-			if (it == s_Cache.entries.end() || it->second.texture.get() != texture) {
-				return;
-			}
-			if (!image) {
-				spdlog::error("texture load fail - path:{0}, reason: {1}", key.path, image.error);
-				it->second.state = LoadState::Failed;
-				return;
-			}
-			texture->generate2DTexture(static_cast<unsigned>(image.width), static_cast<unsigned>(image.height),
-				image.channels, image.pixels.get());
-			it->second.state = LoadState::Ready;
-		}
-
-		struct CubemapRequest {
-			Cubemap* cubemap = nullptr;
-			std::array<std::string, 6> paths;
-			std::array<DecodedImage, 6> faces;
-			std::atomic<int> remaining{ 6 };
-		};
-
-		void finishCubemapLoad(const CubemapRequest& request) {
-			for (size_t i = 0; i < request.faces.size(); ++i) {
-				if (!request.faces[i]) {
-					spdlog::error("Couldn't load cubemap using 6 filepaths. Filepath error: {0}, reason: {1}",
-						request.paths[i], request.faces[i].error);
-					return;
-				}
-			}
-			for (uint8_t i = 0; i < 6; ++i) {
-				const DecodedImage& face = request.faces[i];
-				request.cubemap->generateCubemapFace(i, static_cast<unsigned>(face.width), static_cast<unsigned>(face.height),
-					face.channels, face.pixels.get());
-			}
-		}
 	}
 
 	Texture* TextureLoader::load2DTexture(const std::string& path, TextureSettings* settings) {
 		assert(isMainThread() && "TextureLoader must be used on the main thread");
 
 		const TextureSettings requested = (settings != nullptr) ? *settings : TextureSettings{};
-		TextureKey key = makeKey(path, requested);
+		std::string normalizedPath = normalizePath(path);
+		std::string key = makeCacheKey(normalizedPath, requested);
 
-		if (auto it = s_Cache.entries.find(key); it != s_Cache.entries.end()) {
-			Texture* cached = it->second.texture.get();
-			if (samplerSettingsDiffer(cached->getTextureSettings(), requested)) {
-				spdlog::warn("texture '{}' requested again with different sampler settings, keeping the first ones", key.path);
+		if (auto it = s_Cache.find(key); it != s_Cache.end()) {
+			if (samplerSettingsDiffer(it->second->getTextureSettings(), requested)) {
+				spdlog::warn("texture '{}' requested again with different sampler settings, keeping the first ones", normalizedPath);
 			}
-			return cached;
+			return it->second.get();
 		}
 
-		TextureEntry& entry = s_Cache.entries[key];
-		entry.texture = std::make_unique<Texture>(requested);
-		Texture* texture = entry.texture.get();
+		Texture* texture = (s_Cache[key] = std::make_unique<Texture>(requested)).get();
 
-		try {
-			pendingLoads().run([key, texture]() {
-				auto image = std::make_shared<DecodedImage>(decodeImage(key.path));
-				postToMainThread([key, texture, image]() {
-					finishTextureLoad(key, texture, *image);
-				});
+		pendingLoads().run([normalizedPath, texture]() {
+			auto image = std::make_shared<DecodedImage>(decodeImage(normalizedPath));
+			postToMainThread([normalizedPath, texture, image]() {
+				if (!image->pixels) {
+					spdlog::error("texture load fail - path:{0}, reason: {1}", normalizedPath, image->error);
+					return;
+				}
+				texture->generate2DTexture(static_cast<unsigned>(image->width), static_cast<unsigned>(image->height),
+					image->channels, image->pixels.get());
 			});
-		}
-		catch (...) {
-			s_Cache.entries.erase(key);
-			throw;
-		}
+		});
 		return texture;
 	}
 
@@ -218,18 +137,28 @@ namespace engine {
 		if (settings != nullptr)
 			cubemap->setCubemapSettings(*settings);
 
-		auto request = std::make_shared<CubemapRequest>();
-		request->cubemap = cubemap;
-		request->paths = { right, left, top, bottom, back, front };
+		std::array<std::string, 6> paths = { right, left, top, bottom, back, front };
 
-		for (size_t i = 0; i < request->paths.size(); ++i) {
-			pendingLoads().run([request, i]() {
-				request->faces[i] = decodeImage(request->paths[i]);
-				if (request->remaining.fetch_sub(1, std::memory_order_acq_rel) == 1) {
-					postToMainThread([request]() { finishCubemapLoad(*request); });
+		pendingLoads().run([cubemap, paths]() {
+			auto faces = std::make_shared<std::array<DecodedImage, 6>>();
+			for (size_t i = 0; i < paths.size(); ++i) {
+				(*faces)[i] = decodeImage(paths[i]);
+			}
+			postToMainThread([cubemap, paths, faces]() {
+				for (size_t i = 0; i < paths.size(); ++i) {
+					if (!(*faces)[i].pixels) {
+						spdlog::error("Couldn't load cubemap using 6 filepaths. Filepath error: {0}, reason: {1}",
+							paths[i], (*faces)[i].error);
+						return;
+					}
+				}
+				for (uint8_t i = 0; i < 6; ++i) {
+					const DecodedImage& face = (*faces)[i];
+					cubemap->generateCubemapFace(i, static_cast<unsigned>(face.width), static_cast<unsigned>(face.height),
+						face.channels, face.pixels.get());
 				}
 			});
-		}
+		});
 
 		return cubemap;
 	}
@@ -276,21 +205,12 @@ namespace engine {
 	void TextureLoader::shutdown() {
 		assert(isMainThread() && "TextureLoader must be used on the main thread");
 
-		try {
-			pendingLoads().wait();
-		}
-		catch (const std::exception& e) {
-			spdlog::error("texture loading task failed: {}", e.what());
-		}
-		catch (...) {
-			spdlog::error("texture loading task failed with unknown exception");
-		}
-
+		pendingLoads().wait();
 		{
 			std::lock_guard lock(s_TaskMutex);
 			s_MainThreadTasks.clear();
 		}
-		s_Cache.entries.clear();
+		s_Cache.clear();
 
 		s_DefaultAlbedo = s_DefaultNormal = nullptr;
 		s_FullMetallic = s_NoMetallic = nullptr;
