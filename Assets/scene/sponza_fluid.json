@@ -48,10 +48,10 @@
     "fluid":{
         "isActive": true,
         "backend": "compute",
-        "maxParticles": 3000,
+        "maxParticles": 3000000,
         "boundary":{
-            "min":[110.0, 130.5, 88.0],
-            "max":[134.0, 146.0, 108.0]
+            "min":[110.0, 130.5, 188.0],
+            "max":[160.0, 230.0, 280.0]
         },
         "autoStart": true
     }
