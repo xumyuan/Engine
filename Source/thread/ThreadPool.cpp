@@ -46,8 +46,15 @@ void ThreadPool::enqueueBatch(std::vector<Job>& jobs) {
 	{
 		std::lock_guard lock(m_mutex);
 		assert(!m_stopping);
-		for (auto& job : jobs) {
-			m_jobs.push_back(std::move(job));
+		const size_t old_size = m_jobs.size();
+		try {
+			for (auto& job : jobs) {
+				m_jobs.push_back(std::move(job));
+			}
+		}
+		catch (...) {
+			m_jobs.resize(old_size);
+			throw;
 		}
 	}
 	jobs.clear();

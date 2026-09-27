@@ -10,6 +10,7 @@
 #include <future>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <thread>
 #include <type_traits>
 #include <utility>
@@ -69,8 +70,15 @@ public:
 
 	template<class F>
 	void run(F&& f) {
+		ThreadPool::Job job = wrap(std::forward<F>(f));
 		addPending(1);
-		m_pool.enqueue(wrap(std::forward<F>(f)));
+		try {
+			m_pool.enqueue(std::move(job));
+		}
+		catch (...) {
+			finish(1);
+			throw;
+		}
 	}
 
 	void wait() {
@@ -82,16 +90,18 @@ public:
 private:
 	friend class ThreadPool;
 
+	// fn 必须在 finish() 之前析构：计数归零后等待方可能立即返回并销毁 fn 捕获所引用的数据
 	template<class F>
 	ThreadPool::Job wrap(F&& f) {
-		return [this, fn = std::forward<F>(f)]() mutable {
+		return [this, fn = std::optional<std::decay_t<F>>(std::in_place, std::forward<F>(f))]() mutable {
 			try {
-				fn();
+				(*fn)();
 			}
 			catch (...) {
 				recordError(std::current_exception());
 			}
-			finishOne();
+			fn.reset();
+			finish(1);
 		};
 	}
 
@@ -107,10 +117,12 @@ private:
 		}
 	}
 
-	void finishOne() {
+	void finish(size_t n) {
 		std::lock_guard lock(m_mutex);
+		assert(m_pending >= n);
+		m_pending -= n;
 		// 持锁通知：等待方一返回就可能析构本对象
-		if (--m_pending == 0) {
+		if (m_pending == 0) {
 			m_cv.notify_all();
 		}
 	}
@@ -132,10 +144,36 @@ private:
 template<class F>
 auto ThreadPool::submit(F&& f) -> std::future<std::invoke_result_t<std::decay_t<F>&>> {
 	using R = std::invoke_result_t<std::decay_t<F>&>;
-	// Job 可能退回到要求可拷贝的 std::function，packaged_task 只能移动，所以放进 shared_ptr
-	auto task = std::make_shared<std::packaged_task<R()>>(std::forward<F>(f));
-	std::future<R> future = task->get_future();
-	enqueue([task] { (*task)(); });
+	static_assert(!std::is_reference_v<R>, "submit() does not support reference results");
+
+	// 不用 packaged_task：它把可调用对象留在共享状态里，future 就绪后仍不析构
+	// Job 可能退回到要求可拷贝的 std::function，promise 只能移动，所以放进 shared_ptr
+	struct State {
+		std::promise<R> promise;
+		std::optional<std::decay_t<F>> fn;
+	};
+	auto state = std::make_shared<State>();
+	state->fn.emplace(std::forward<F>(f));
+	std::future<R> future = state->promise.get_future();
+
+	enqueue([state] {
+		std::exception_ptr error;
+		if constexpr (std::is_void_v<R>) {
+			try { (*state->fn)(); }
+			catch (...) { error = std::current_exception(); }
+			state->fn.reset();
+			if (error) state->promise.set_exception(error);
+			else state->promise.set_value();
+		}
+		else {
+			std::optional<R> result;
+			try { result.emplace((*state->fn)()); }
+			catch (...) { error = std::current_exception(); }
+			state->fn.reset();
+			if (error) state->promise.set_exception(error);
+			else state->promise.set_value(std::move(*result));
+		}
+	});
 	return future;
 }
 
@@ -161,8 +199,15 @@ void ThreadPool::parallelFor(size_t count, F&& body, size_t grain) {
 		const size_t end = std::min(begin + chunk, count);
 		jobs.push_back(group.wrap([&body, begin, end] { body(begin, end); }));
 	}
-	group.addPending(jobs.size());
-	enqueueBatch(jobs);
+	const size_t job_count = jobs.size();
+	group.addPending(job_count);
+	try {
+		enqueueBatch(jobs);
+	}
+	catch (...) {
+		group.finish(job_count);
+		throw;
+	}
 
 	std::exception_ptr caller_error;
 	try {
