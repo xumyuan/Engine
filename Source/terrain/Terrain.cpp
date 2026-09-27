@@ -28,13 +28,13 @@ namespace engine {
 		m_Textures[2] = TextureLoader::load2DTexture(std::string("Assets/terrain/branches/branchesAlbedo.tga"), &srgbTextureSettings);
 		m_Textures[3] = TextureLoader::load2DTexture(std::string("Assets/terrain/rock/rockAlbedo.tga"), &srgbTextureSettings);
 
-		m_Textures[4] = TextureLoader::load2DTexture(std::string("Assets/terrain/grass/grassNormal.tga"), &srgbTextureSettings);
-		m_Textures[5] = TextureLoader::load2DTexture(std::string("Assets/terrain/dirt/dirtNormal.tga"), &srgbTextureSettings);
-		m_Textures[6] = TextureLoader::load2DTexture(std::string("Assets/terrain/branches/branchesNormal.tga"), &srgbTextureSettings);
-		m_Textures[7] = TextureLoader::load2DTexture(std::string("Assets/terrain/rock/rockNormal.tga"), &srgbTextureSettings);
-
 		TextureSettings textureSettings;
 		textureSettings.format = rhi::TextureFormat::RGB8;
+
+		m_Textures[4] = TextureLoader::load2DTexture(std::string("Assets/terrain/grass/grassNormal.tga"), &textureSettings);
+		m_Textures[5] = TextureLoader::load2DTexture(std::string("Assets/terrain/dirt/dirtNormal.tga"), &textureSettings);
+		m_Textures[6] = TextureLoader::load2DTexture(std::string("Assets/terrain/branches/branchesNormal.tga"), &textureSettings);
+		m_Textures[7] = TextureLoader::load2DTexture(std::string("Assets/terrain/rock/rockNormal.tga"), &textureSettings);
 
 		m_Textures[8] = TextureLoader::load2DTexture(std::string("Assets/terrain/grass/grassRoughness.tga"), &textureSettings);
 		m_Textures[9] = TextureLoader::load2DTexture(std::string("Assets/terrain/dirt/dirtRoughness.tga"), &textureSettings);

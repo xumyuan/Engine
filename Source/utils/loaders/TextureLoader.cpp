@@ -131,11 +131,6 @@ namespace engine {
 		s_DefaultAO->setTextureMinFilter(rhi::FilterMode::Nearest);
 		s_DefaultAO->setTextureMagFilter(rhi::FilterMode::Nearest);
 
-		s_DefaultNormal = load2DTexture(std::string("Assets/textures/default/defaultNormal.png"), &srgbTextureSettings);
-		s_DefaultNormal->setAnisotropicFilteringMode(1.0f);
-		s_DefaultNormal->setTextureMinFilter(rhi::FilterMode::Nearest);
-		s_DefaultNormal->setTextureMagFilter(rhi::FilterMode::Nearest);
-
 		s_DefaultEmission = load2DTexture(std::string("Assets/textures/default/black.png"), &srgbTextureSettings);
 		s_DefaultEmission->setAnisotropicFilteringMode(1.0f);
 		s_DefaultEmission->setTextureMinFilter(rhi::FilterMode::Nearest);
