@@ -6,6 +6,11 @@
 #include <unordered_set>
 
 namespace {
+	// 纹理异步加载，上传前或加载失败时 isGenerated() 为 false；绑定它不会生效，纹理单元会残留上一次的绑定
+	bool isReady(const engine::Texture* texture) {
+		return texture != nullptr && texture->isGenerated();
+	}
+
 	constexpr int kMaterialTextureUnitBase = 4;
 	constexpr int kMaterialTextureAlbedoUnit = 4;
 	constexpr int kMaterialTextureNormalUnit = 5;
@@ -101,7 +106,7 @@ namespace engine {
 		setLegacyMaterialSamplerBindingsOnce(shader);
 
 		shader->setUniform("material.albedoColour", m_AlbedoColour);
-		if (m_AlbedoMap) {
+		if (isReady(m_AlbedoMap)) {
 			m_AlbedoMap->bind(currentTextureUnit++);
 			shader->setUniform("material.hasAlbedoTexture", true);
 		}
@@ -117,14 +122,14 @@ namespace engine {
 		shader->setUniform("material.emissionIntensity", m_EmissionIntensity);
 		shader->setUniform("parallaxStrength", m_ParallaxStrength);
 
-		if (m_NormalMap) {
+		if (isReady(m_NormalMap)) {
 			m_NormalMap->bind(currentTextureUnit++);
 		}
 		else {
 			TextureLoader::getDefaultNormal()->bind(currentTextureUnit++);
 		}
 
-		if (m_MetallicMap) {
+		if (isReady(m_MetallicMap)) {
 			m_MetallicMap->bind(currentTextureUnit++);
 			shader->setUniform("material.hasMetallicTexture", true);
 
@@ -134,7 +139,7 @@ namespace engine {
 			shader->setUniform("material.hasMetallicTexture", false);
 		}
 
-		if (m_RoughnessMap) {
+		if (isReady(m_RoughnessMap)) {
 			m_RoughnessMap->bind(currentTextureUnit++);
 			shader->setUniform("material.hasRoughnessTexture", true);
 
@@ -145,7 +150,7 @@ namespace engine {
 
 		}
 
-		if (m_AmbientOcclusionMap) {
+		if (isReady(m_AmbientOcclusionMap)) {
 			m_AmbientOcclusionMap->bind(currentTextureUnit++);
 		}
 		else {
@@ -155,7 +160,7 @@ namespace engine {
 		// Bind displacement texture (currently not used in forward rendering, but keeping consistency)
 		TextureLoader::getDefaultNormal()->bind(currentTextureUnit++); // Use default for now
 
-		if (m_EmissionMap) {
+		if (isReady(m_EmissionMap)) {
 			m_EmissionMap->bind(currentTextureUnit++);
 			shader->setUniform("material.hasEmissionTexture", true);
 		}
@@ -173,12 +178,12 @@ namespace engine {
 		params.roughnessValue = m_RoughnessValue;
 		params.parallaxStrength = m_ParallaxStrength;
 		params.tilingAmount = 1.0f;  // default
-		params.hasAlbedoTexture = m_AlbedoMap ? 1 : 0;
-		params.hasMetallicTexture = m_MetallicMap ? 1 : 0;
-		params.hasRoughnessTexture = m_RoughnessMap ? 1 : 0;
-		params.hasEmissionTexture = m_EmissionMap ? 1 : 0;
+		params.hasAlbedoTexture = isReady(m_AlbedoMap) ? 1 : 0;
+		params.hasMetallicTexture = isReady(m_MetallicMap) ? 1 : 0;
+		params.hasRoughnessTexture = isReady(m_RoughnessMap) ? 1 : 0;
+		params.hasEmissionTexture = isReady(m_EmissionMap) ? 1 : 0;
 		params.hasDisplacement = 0;
-		params.hasEmission = (m_EmissionMap || glm::length(m_EmissionColour) > 0.001f) ? 1 : 0;
+		params.hasEmission = (isReady(m_EmissionMap) || glm::length(m_EmissionColour) > 0.001f) ? 1 : 0;
 		params.minMaxDisplacementSteps = glm::vec2(8.0f, 32.0f);
 	}
 
@@ -188,31 +193,31 @@ namespace engine {
 		int currentTextureUnit = kMaterialTextureUnitBase;
 		setModernMaterialSamplerBindingsOnce(shader);
 
-		if (m_AlbedoMap) {
+		if (isReady(m_AlbedoMap)) {
 			m_AlbedoMap->bind(currentTextureUnit++);
 		} else {
 			TextureLoader::getDefaultAlbedo()->bind(currentTextureUnit++);
 		}
 
-		if (m_NormalMap) {
+		if (isReady(m_NormalMap)) {
 			m_NormalMap->bind(currentTextureUnit++);
 		} else {
 			TextureLoader::getDefaultNormal()->bind(currentTextureUnit++);
 		}
 
-		if (m_MetallicMap) {
+		if (isReady(m_MetallicMap)) {
 			m_MetallicMap->bind(currentTextureUnit++);
 		} else {
 			TextureLoader::getDefaultMetallic()->bind(currentTextureUnit++);
 		}
 
-		if (m_RoughnessMap) {
+		if (isReady(m_RoughnessMap)) {
 			m_RoughnessMap->bind(currentTextureUnit++);
 		} else {
 			TextureLoader::getDefaultRoughness()->bind(currentTextureUnit++);
 		}
 
-		if (m_AmbientOcclusionMap) {
+		if (isReady(m_AmbientOcclusionMap)) {
 			m_AmbientOcclusionMap->bind(currentTextureUnit++);
 		} else {
 			TextureLoader::getDefaultAO()->bind(currentTextureUnit++);
@@ -220,7 +225,7 @@ namespace engine {
 
 		TextureLoader::getDefaultNormal()->bind(currentTextureUnit++);
 
-		if (m_EmissionMap) {
+		if (isReady(m_EmissionMap)) {
 			m_EmissionMap->bind(currentTextureUnit++);
 		} else {
 			TextureLoader::getDefaultEmission()->bind(currentTextureUnit++);
@@ -233,31 +238,31 @@ namespace engine {
 		int currentTextureUnit = kMaterialTextureUnitBase;
 		setModernMaterialSamplerBindingsOnce(cmd, program);
 
-		if (m_AlbedoMap) {
+		if (isReady(m_AlbedoMap)) {
 			cmd.bindTextureUnit(m_AlbedoMap->getRHIHandle(), currentTextureUnit++);
 		} else {
 			cmd.bindTextureUnit(TextureLoader::getDefaultAlbedo()->getRHIHandle(), currentTextureUnit++);
 		}
 
-		if (m_NormalMap) {
+		if (isReady(m_NormalMap)) {
 			cmd.bindTextureUnit(m_NormalMap->getRHIHandle(), currentTextureUnit++);
 		} else {
 			cmd.bindTextureUnit(TextureLoader::getDefaultNormal()->getRHIHandle(), currentTextureUnit++);
 		}
 
-		if (m_MetallicMap) {
+		if (isReady(m_MetallicMap)) {
 			cmd.bindTextureUnit(m_MetallicMap->getRHIHandle(), currentTextureUnit++);
 		} else {
 			cmd.bindTextureUnit(TextureLoader::getDefaultMetallic()->getRHIHandle(), currentTextureUnit++);
 		}
 
-		if (m_RoughnessMap) {
+		if (isReady(m_RoughnessMap)) {
 			cmd.bindTextureUnit(m_RoughnessMap->getRHIHandle(), currentTextureUnit++);
 		} else {
 			cmd.bindTextureUnit(TextureLoader::getDefaultRoughness()->getRHIHandle(), currentTextureUnit++);
 		}
 
-		if (m_AmbientOcclusionMap) {
+		if (isReady(m_AmbientOcclusionMap)) {
 			cmd.bindTextureUnit(m_AmbientOcclusionMap->getRHIHandle(), currentTextureUnit++);
 		} else {
 			cmd.bindTextureUnit(TextureLoader::getDefaultAO()->getRHIHandle(), currentTextureUnit++);
@@ -265,7 +270,7 @@ namespace engine {
 
 		cmd.bindTextureUnit(TextureLoader::getDefaultNormal()->getRHIHandle(), currentTextureUnit++);
 
-		if (m_EmissionMap) {
+		if (isReady(m_EmissionMap)) {
 			cmd.bindTextureUnit(m_EmissionMap->getRHIHandle(), currentTextureUnit++);
 		} else {
 			cmd.bindTextureUnit(TextureLoader::getDefaultEmission()->getRHIHandle(), currentTextureUnit++);

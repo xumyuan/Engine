@@ -124,6 +124,8 @@ int main(int argc, char* argv[]) {
 		window.update();
 	}
 
+	// 纹理析构需要 RHI 设备，必须在 rhiDevice 销毁前释放
+	engine::TextureLoader::shutdown();
 	return 0;
 }
 
