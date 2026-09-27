@@ -99,6 +99,16 @@ namespace engine {
 		}
 	}
 
+	void from_json(const json& j, SceneInfo::FluidInfo& f) {
+		// 出现 "fluid" 字段即视为启用，可用 isActive=false 临时关闭
+		f.isActive = j.value("isActive", true);
+		j.at("maxParticles").get_to(f.maxParticles);
+		const auto& boundary = j.at("boundary");
+		boundary.at("min").get_to(f.boundaryMin);
+		boundary.at("max").get_to(f.boundaryMax);
+		f.autoStart = j.value("autoStart", true);
+	}
+
 	void from_json(const json& j, SceneInfo& s) {
 		// 解析模型列表，可选字段
 		if (j.contains("modelList")) {
@@ -113,6 +123,11 @@ namespace engine {
 		// 解析灯光信息，可选字段
 		if (j.contains("lights")) {
 			j.at("lights").get_to(s.lightsInfo);
+		}
+
+		// 解析流体模拟信息，可选字段
+		if (j.contains("fluid")) {
+			j.at("fluid").get_to(s.fluidInfo);
 		}
 	}
 }

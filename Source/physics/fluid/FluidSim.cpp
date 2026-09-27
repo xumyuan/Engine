@@ -5,6 +5,8 @@
 
 #include <gl/glew.h>
 
+#include <algorithm>
+
 #include <utils/loaders/ShaderLoader.h>
 #include <graphics/camera/FPSCamera.h>
 #include "rhi/include/RHIContext.h"
@@ -65,6 +67,10 @@ namespace engine {
 
 	FluidSim::~FluidSim()
 	{
+		stopSimulation();
+		delete m_pbf;
+		m_pbf = nullptr;
+
 		if (m_Device) {
 			if (static_cast<bool>(m_RenderPrimitive))
 				m_Device->destroyRenderPrimitive(m_RenderPrimitive);
@@ -113,6 +119,7 @@ namespace engine {
 			if (shouldBreak) break;
 		}
 
+		m_renderPositions.assign(m_positions.begin(), m_positions.begin() + m_particleNum);
 		subPosData();
 	}
 
@@ -120,16 +127,17 @@ namespace engine {
 		if (!m_Device) return;
 
 		rhi::BufferDataDesc bufData;
-		bufData.data = m_positions.data();
+		bufData.data = m_renderPositions.data();
 		bufData.size = static_cast<uint32_t>(m_particleNum * sizeof(glm::vec3));
 		bufData.offset = 0;
 		m_Device->updateBuffer(m_VertexBuffer, bufData);
 	}
 
 	void FluidSim::drawParticle(rhi::CommandBuffer& cmd, FPSCamera* camera) {
+		// 不等待模拟线程：有新结果就上传，否则沿用上一帧
 		{
-			std::unique_lock<std::mutex> lock(m_pbf->getPosMutex());
-			if (m_condVar.wait_for(lock, std::chrono::milliseconds(1), [this] { return dataReady; })) {
+			std::lock_guard<std::mutex> lock(m_pbf->getPosMutex());
+			if (dataReady) {
 				subPosData();
 				dataReady = false;
 			}
@@ -180,16 +188,25 @@ namespace engine {
 		glDisable(GL_VERTEX_PROGRAM_POINT_SIZE);
 	}
 
-	void FluidSim::startSim() {
-		while (true) {
-			m_pbf->solve();
-			{
-				std::lock_guard<std::mutex> lock(m_pbf->getPosMutex());
-				dataReady = true;
-			}
-			m_condVar.notify_all();
-		}
+	void FluidSim::startSimulation() {
+		if (m_simThread.joinable()) return;
+		m_stopRequested = false;
+		m_simThread = std::thread([this] { simulationLoop(); });
+	}
 
+	void FluidSim::stopSimulation() {
+		if (!m_simThread.joinable()) return;
+		m_stopRequested = true;
+		m_simThread.join();
+	}
+
+	void FluidSim::simulationLoop() {
+		while (!m_stopRequested) {
+			m_pbf->solve();
+			std::lock_guard<std::mutex> lock(m_pbf->getPosMutex());
+			std::copy_n(m_positions.begin(), m_particleNum, m_renderPositions.begin());
+			dataReady = true;
+		}
 	}
 
 

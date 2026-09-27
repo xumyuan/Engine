@@ -3,7 +3,9 @@
 #include "rhi/include/RHIDevice.h"
 #include "rhi/include/RHICommandBuffer.h"
 #include "graphics/Shader.h"
+#include <atomic>
 #include <mutex>
+#include <thread>
 
 namespace engine {
 
@@ -54,16 +56,25 @@ namespace engine {
 
 		void drawParticle(rhi::CommandBuffer& cmd, FPSCamera* camera);
 
-		void startSim();
-		void subPosData();
+		// 在后台线程上持续求解；重复调用无效果。析构时自动停止并等待线程退出
+		void startSimulation();
+		void stopSimulation();
+		bool isSimulating() const { return m_simThread.joinable(); }
+
 		size_t getParticleNum() const { return m_particleNum; }
 	private:
+		void simulationLoop();
+		// 调用方需持有 m_pbf->getPosMutex()（构造期间模拟线程尚未启动时除外）
+		void subPosData();
+
 		size_t m_maxParticleNum;
 		size_t m_particleNum;
 
-		// particle attribute
+		// particle attribute：m_positions 只由求解器（模拟线程）读写
 		std::vector<glm::vec3> m_positions;
 		std::vector<glm::vec3> m_velocities;
+		// 每步求解完成后在 posMutex 保护下拷贝，渲染线程只读这份快照
+		std::vector<glm::vec3> m_renderPositions;
 
 		// neighborList
 		std::vector<std::vector<size_t>> m_neighborList;
@@ -79,11 +90,13 @@ namespace engine {
 		// solver
 		PBF* m_pbf = nullptr;
 
-		// mutex
-		std::condition_variable m_condVar;
-		bool dataReady = false;
+		bool dataReady = false;  // 由 m_pbf->getPosMutex() 保护
 
 		SimParams m_simParams;
+
+		// 析构函数体中先 stopSimulation()，再释放 m_pbf 与 GPU 资源
+		std::thread m_simThread;
+		std::atomic<bool> m_stopRequested{ false };
 	};
 
 

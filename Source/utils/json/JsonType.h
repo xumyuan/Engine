@@ -55,8 +55,19 @@ namespace engine {
 			std::vector<PointLight> pointLightList;
 		};
 
+		struct FluidInfo
+		{
+			bool isActive = false;
+			size_t maxParticles = 0;
+			// 模拟边界（世界坐标），粒子从边界盒底部一侧按溃坝方式初始化
+			glm::vec3 boundaryMin{ 0.0f };
+			glm::vec3 boundaryMax{ 0.0f };
+			bool autoStart = true;
+		};
+
 		std::vector<ModelInfo> modelInfoList;
 		SkyboxInfo skyboxInfo;
 		LightsInfo lightsInfo;
+		FluidInfo fluidInfo;
 	};
 }

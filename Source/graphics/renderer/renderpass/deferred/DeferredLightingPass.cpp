@@ -5,6 +5,8 @@
 #include <graphics/Shader.h>
 #include <graphics/texture/Cubemap.h>
 #include <graphics/camera/ICamera.h>
+#include <graphics/camera/FPSCamera.h>
+#include <physics/fluid/FluidSim.h>
 #include <graphics/renderer/renderpass/deferred/DeferredGeometryPass.h>
 #include <graphics/UniformBufferManager.h>
 #include <graphics/TextureBindings.h>
@@ -161,6 +163,15 @@ namespace engine
 		pipeline.depthTest = true;
 		pipeline.stencilEnable = false;
 		cmd().bindPipeline(pipeline);
+
+		// 流体粒子为前向着色，依赖本 RT 中从 G-buffer 拷贝来的深度做遮挡
+		if (FluidSim* fluid = m_RenderScene.fluid) {
+			if (auto* fpsCamera = dynamic_cast<FPSCamera*>(camera)) {
+				cmd().pushDebugGroup("Render Fluid");
+				fluid->drawParticle(cmd(), fpsCamera);
+				cmd().popDebugGroup();
+			}
+		}
 
 		cmd().pushDebugGroup("Render Skybox");
 		Skybox* skybox = m_RenderScene.skybox;

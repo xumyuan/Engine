@@ -10,6 +10,7 @@
 #include "graphics/mesh/Model.h"
 #include "graphics/mesh/common/Sphere.h"
 #include "graphics/Skybox.h"
+#include "physics/fluid/FluidSim.h"
 
 #include "utils/json/TypeProcess.h"
 #include "utils/json/JsonType.h"
@@ -34,6 +35,7 @@ namespace engine {
 			loadModels(scene, sceneInfo);
 			loadSkybox(scene, sceneInfo);
 			loadLights(scene, sceneInfo);
+			loadFluid(scene, sceneInfo);
 		}
 		catch (const json::exception& e)
 		{
@@ -177,6 +179,27 @@ namespace engine {
 					false
 				));
 			}
+		}
+	}
+
+	void SceneLoader::loadFluid(Scene3D& scene, const SceneInfo& sceneInfo) {
+		const auto& fluidInfo = sceneInfo.fluidInfo;
+		if (!fluidInfo.isActive) return;
+
+		// FluidSim::init 在 x/z 方向各留 1 个粒子间距的边距，且只在 z 方向前 1/3 生成粒子（溃坝初始状态）
+		const glm::vec3 extent = fluidInfo.boundaryMax - fluidInfo.boundaryMin;
+		if (fluidInfo.maxParticles == 0 || extent.x < 3.0f || extent.y < 3.0f || extent.z < 3.0f) {
+			spdlog::error("Fluid config invalid: maxParticles={}, boundary extent=({}, {}, {}), each axis must be >= 3",
+				fluidInfo.maxParticles, extent.x, extent.y, extent.z);
+			return;
+		}
+
+		delete scene.m_fluid;
+		scene.m_fluid = new FluidSim(fluidInfo.maxParticles, Boundary{ fluidInfo.boundaryMin, fluidInfo.boundaryMax });
+		spdlog::info("Fluid created: {} particles", scene.m_fluid->getParticleNum());
+
+		if (fluidInfo.autoStart) {
+			scene.m_fluid->startSimulation();
 		}
 	}
 
