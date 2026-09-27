@@ -133,6 +133,8 @@ namespace engine {
 		// Error callback setup
 #if DEBUG_ENABLED
 		glEnable(GL_DEBUG_OUTPUT);
+		// 同步输出：回调在出错的 GL 调用内触发，调用堆栈可直接定位到引擎代码
+		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 		glDebugMessageCallback(DebugMessageCallback, 0);
 		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE);
 		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_LOW, 0, nullptr, GL_FALSE);

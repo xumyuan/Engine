@@ -33,7 +33,7 @@ namespace engine {
 	}
 
 	void ProbeManager::bindProbe(glm::vec3& renderPosition, rhi::CommandBuffer& cmd) {
-		rhi::TextureHandle skyboxCubemap = m_Skybox->getSkyboxCubemap()->getRHIHandle();
+		auto skyboxCubemap = [this] { return m_Skybox->getSkyboxCubemap()->getRHIHandle(); };
 
 		// If simple blending is enabled just use the closest probe
 		if (m_ProbeBlendSetting == PROBES_SIMPLE) {
@@ -41,7 +41,7 @@ namespace engine {
 				m_LightProbes[0]->bind(cmd);
 			}
 			else {
-				cmd.bindTextureUnit(skyboxCubemap, TextureUnit::IrradianceMap);
+				cmd.bindTextureUnit(skyboxCubemap(), TextureUnit::IrradianceMap);
 			}
 
 			// reflectionProbeMipCount 通过 IBLParams UBO 由调用方设置
@@ -49,14 +49,14 @@ namespace engine {
 				m_ReflectionProbes[0]->bind(cmd);
 			}
 			else {
-				cmd.bindTextureUnit(skyboxCubemap, TextureUnit::PrefilterMap);
+				cmd.bindTextureUnit(skyboxCubemap(), TextureUnit::PrefilterMap);
 				cmd.bindTextureUnit(ReflectionProbe::getBRDFLUT()->getRHIHandle(), TextureUnit::BrdfLUT);
 			}
 		}
 		// If probes are disabled just use the skybox
 		else if (m_ProbeBlendSetting == PROBES_DISABLED) {
-			cmd.bindTextureUnit(skyboxCubemap, TextureUnit::IrradianceMap);
-			cmd.bindTextureUnit(skyboxCubemap, TextureUnit::PrefilterMap);
+			cmd.bindTextureUnit(skyboxCubemap(), TextureUnit::IrradianceMap);
+			cmd.bindTextureUnit(skyboxCubemap(), TextureUnit::PrefilterMap);
 			cmd.bindTextureUnit(ReflectionProbe::getBRDFLUT()->getRHIHandle(), TextureUnit::BrdfLUT);
 		}
 	}
