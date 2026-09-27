@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "TextureLoader.h"
+#include "ImageDecoder.h"
 #include "thread/ThreadPool.h"
 
 #include <cassert>
@@ -18,15 +19,16 @@ namespace engine {
 
 	namespace {
 
-		struct StbiDeleter {
-			void operator()(unsigned char* pixels) const noexcept { stbi_image_free(pixels); }
+		struct PixelDeleter {
+			void operator()(unsigned char* pixels) const noexcept { image::freePixels(pixels); }
 		};
 
 		struct DecodedImage {
-			std::unique_ptr<unsigned char, StbiDeleter> pixels;
+			std::unique_ptr<unsigned char, PixelDeleter> pixels;
 			int width = 0;
 			int height = 0;
 			ChannelLayout channels = ChannelLayout::RGBA;
+			std::string error;
 
 			explicit operator bool() const { return pixels != nullptr; }
 		};
@@ -45,7 +47,11 @@ namespace engine {
 		DecodedImage decodeImage(const std::string& path) {
 			DecodedImage image;
 			int numComponents = 0;
-			image.pixels.reset(stbi_load(path.c_str(), &image.width, &image.height, &numComponents, 0));
+			image.pixels.reset(image::decodeFile(path.c_str(), &image.width, &image.height, &numComponents));
+			if (!image.pixels) {
+				const char* reason = image::failureReason();
+				image.error = reason ? reason : "unknown";
+			}
 			image.channels = channelsFromCount(numComponents);
 			return image;
 		}
@@ -136,7 +142,7 @@ namespace engine {
 				return;
 			}
 			if (!image) {
-				spdlog::error("texture load fail - path:{0}", key.path);
+				spdlog::error("texture load fail - path:{0}, reason: {1}", key.path, image.error);
 				it->second.state = LoadState::Failed;
 				return;
 			}
@@ -155,7 +161,8 @@ namespace engine {
 		void finishCubemapLoad(const CubemapRequest& request) {
 			for (size_t i = 0; i < request.faces.size(); ++i) {
 				if (!request.faces[i]) {
-					spdlog::error("Couldn't load cubemap using 6 filepaths. Filepath error: {0}", request.paths[i]);
+					spdlog::error("Couldn't load cubemap using 6 filepaths. Filepath error: {0}, reason: {1}",
+						request.paths[i], request.faces[i].error);
 					return;
 				}
 			}

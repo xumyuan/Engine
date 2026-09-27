@@ -80,6 +80,8 @@ target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::GL)
 # 预编译头
 # ============================================================================
 target_precompile_headers(${PROJECT_NAME} PRIVATE Source/pch.h)
+# 以 STB_IMAGE_STATIC 编译线程安全的 stb_image，不能与 pch.h 中的外部链接声明同处一个编译单元
+set_source_files_properties(Source/utils/loaders/ImageDecoder.cpp PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
 
 # ============================================================================
 # 编译定义
