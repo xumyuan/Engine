@@ -36,7 +36,6 @@ void testNullDevice() {
     assert(shaderProg != nullptr);
     assert(static_cast<bool>(shaderProg->getProgramHandle()));
     shaderProg->use();
-    shaderProg->setUniform("test", 1.0f);
     shaderProg->unuse();
 
     // 渲染流程走通（不崩即通过）

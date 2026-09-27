@@ -7,6 +7,7 @@
 #include <utils/loaders/ShaderLoader.h>
 #include <graphics/UniformBufferManager.h>
 #include <graphics/UniformBufferData.h>
+#include <graphics/TextureBindings.h>
 
 namespace engine
 {
@@ -72,8 +73,7 @@ namespace engine
 		pipeline.cullMode = rhi::CullMode::Back;
 		cmd().bindPipeline(pipeline);
 
-		cmd().setUniformInt(m_PassthroughShader->getProgramHandle(), "input_texture", 0);
-		cmd().bindTextureUnit(currentTexture->getRHIHandle(), 0);
+		cmd().bindTextureUnit(currentTexture->getRHIHandle(), TextureUnit::PostProcessInput);
 		ModelRenderer::drawNdcPlane(cmd());
 	}
 
@@ -104,8 +104,7 @@ namespace engine
 			cmd().bindUBO(UBOBinding::CustomParams, uboMgr->getCustomHandle(), sizeof(UBOPostProcessParams));
 		}
 
-		cmd().setUniformInt(m_GammaCorrectShader->getProgramHandle(), "screen_texture", 0);
-		cmd().bindTextureUnit(hdrTexture->getRHIHandle(), 0);
+		cmd().bindTextureUnit(hdrTexture->getRHIHandle(), TextureUnit::PostProcessInput);
 
 		ModelRenderer::drawNdcPlane(cmd());
 
@@ -139,8 +138,7 @@ namespace engine
 				uboMgr->getPerFrameHandle(), sizeof(UBOPerFrame));
 		}
 
-		cmd().setUniformInt(m_FxaaShader->getProgramHandle(), "input_texture", 0);
-		cmd().bindTextureUnit(texture->getRHIHandle(), 0);
+		cmd().bindTextureUnit(texture->getRHIHandle(), TextureUnit::PostProcessInput);
 
 		ModelRenderer::drawNdcPlane(cmd());
 

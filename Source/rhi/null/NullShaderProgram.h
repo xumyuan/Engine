@@ -14,14 +14,6 @@ public:
     void use() override {}
     void unuse() override {}
 
-    void setUniform(const char*, float) override {}
-    void setUniform(const char*, int) override {}
-    void setUniform(const char*, const glm::vec2&) override {}
-    void setUniform(const char*, const glm::vec3&) override {}
-    void setUniform(const char*, const glm::vec4&) override {}
-    void setUniform(const char*, const glm::ivec4&) override {}
-    void setUniform(const char*, const glm::mat3&) override {}
-    void setUniform(const char*, const glm::mat4&) override {}
 
     ProgramHandle getProgramHandle() const override { return mHandle; }
 

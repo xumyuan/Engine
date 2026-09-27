@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "ReflectionProbe.h"
+#include "graphics/TextureBindings.h"
 
 namespace engine {
 
@@ -30,19 +31,10 @@ namespace engine {
 		m_Generated = true;
 	}
 
-	void ReflectionProbe::bind(Shader* shader) {
-		// reflectionProbeMipCount 通过 IBLParams UBO 由调用方设置
-		m_PrefilterMap->bind(2);
-		shader->setUniform("prefilterMap", 2);
-		s_BRDF_LUT->bind(3);
-		shader->setUniform("brdfLUT", 3);
-	}
-
-	void ReflectionProbe::bind(rhi::CommandBuffer& cmd, rhi::ProgramHandle program) {
-		cmd.bindTextureUnit(m_PrefilterMap->getRHIHandle(), 2);
-		cmd.setUniformInt(program, "prefilterMap", 2);
-		cmd.bindTextureUnit(s_BRDF_LUT->getRHIHandle(), 3);
-		cmd.setUniformInt(program, "brdfLUT", 3);
+	// reflectionProbeMipCount 通过 IBLParams UBO 由调用方设置
+	void ReflectionProbe::bind(rhi::CommandBuffer& cmd) {
+		cmd.bindTextureUnit(m_PrefilterMap->getRHIHandle(), TextureUnit::PrefilterMap);
+		cmd.bindTextureUnit(s_BRDF_LUT->getRHIHandle(), TextureUnit::BrdfLUT);
 	}
 
 }

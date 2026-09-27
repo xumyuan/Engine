@@ -7,6 +7,7 @@
 #include <graphics/camera/ICamera.h>
 #include <graphics/renderer/renderpass/deferred/DeferredGeometryPass.h>
 #include <graphics/UniformBufferManager.h>
+#include <graphics/TextureBindings.h>
 #include <utils/loaders/ShaderLoader.h>
 
 namespace engine
@@ -78,7 +79,6 @@ namespace engine
 		cmd().bindPipeline(pipeline);
 
 		// UBO 方式：PerFrame + Lighting
-		rhi::ProgramHandle lightingProgram = m_LightingShader->getProgramHandle();
 		if (auto* uboMgr = getUBOManager()) {
 			uboMgr->preparePerFrame(camera->getViewMatrix(), camera->getProjectionMatrix(),
 				camera->getPosition());
@@ -96,38 +96,29 @@ namespace engine
 		}
 
 		// Bind GBuffer data
-		cmd().bindTextureUnit(inputGbuffer.albedoTexture->getRHIHandle(), 6);
-		cmd().setUniformInt(lightingProgram, "albedoTexture", 6);
-
-		cmd().bindTextureUnit(inputGbuffer.normalTexture->getRHIHandle(), 7);
-		cmd().setUniformInt(lightingProgram, "normalTexture", 7);
-
-		cmd().bindTextureUnit(inputGbuffer.materialInfoTexture->getRHIHandle(), 8);
-		cmd().setUniformInt(lightingProgram, "materialInfoTexture", 8);
+		cmd().bindTextureUnit(inputGbuffer.albedoTexture->getRHIHandle(), TextureUnit::GBufferAlbedo);
+		cmd().bindTextureUnit(inputGbuffer.normalTexture->getRHIHandle(), TextureUnit::GBufferNormal);
+		cmd().bindTextureUnit(inputGbuffer.materialInfoTexture->getRHIHandle(), TextureUnit::GBufferMaterialInfo);
 
 		// Bind SSAO texture
 		UBOIBLParams iblParams{};
 		iblParams.reflectionProbeMipCount = REFLECTION_PROBE_MIP_COUNT;
 		if (preLightingOutput.ssaoTexture != nullptr) {
-			cmd().bindTextureUnit(preLightingOutput.ssaoTexture->getRHIHandle(), 9);
-			cmd().setUniformInt(lightingProgram, "ssaoTexture", 9);
+			cmd().bindTextureUnit(preLightingOutput.ssaoTexture->getRHIHandle(), TextureUnit::GBufferSSAO);
 			iblParams.useSSAO = 1;
 		}
 		else {
 			iblParams.useSSAO = 0;
 		}
 
-		cmd().bindTextureUnit(inputGbuffer.depthStencilTexture->getRHIHandle(), 10);
-		cmd().setUniformInt(lightingProgram, "depthTexture", 10);
+		cmd().bindTextureUnit(inputGbuffer.depthStencilTexture->getRHIHandle(), TextureUnit::GBufferDepth);
 
 		// Shadowmap code
-		BindShadowmap(cmd(), lightingProgram, inputShadowmapData);
+		BindShadowmap(cmd(), inputShadowmapData);
 
 		// IBL Bindings
 		glm::vec3 cameraPosition = camera->getPosition();
-		probeManager->bindProbe(cameraPosition, cmd(), lightingProgram);
-
-		cmd().setUniformInt(lightingProgram, "pointLightShadowCubemap", 1);
+		probeManager->bindProbe(cameraPosition, cmd());
 
 		// Perform lighting on the terrain (turn IBL off)
 		iblParams.computeIBL = 0;
@@ -189,10 +180,9 @@ namespace engine
 		return passOutput;
 	}
 
-	void DeferredLightingPass::BindShadowmap(rhi::CommandBuffer& cmdBuf, rhi::ProgramHandle program, ShadowmapPassOutput& shadowmapData)
+	void DeferredLightingPass::BindShadowmap(rhi::CommandBuffer& cmdBuf, ShadowmapPassOutput& shadowmapData)
 	{
-		cmdBuf.bindTextureUnit(shadowmapData.depthTexture->getRHIHandle(), 0);
-		cmdBuf.setUniformInt(program, "dirLightShadowmap", 0);
+		cmdBuf.bindTextureUnit(shadowmapData.depthTexture->getRHIHandle(), TextureUnit::DirLightShadowmap);
 		
 		// 阴影数据通过 Lighting UBO 传递
 		if (auto* uboMgr = getUBOManager()) {

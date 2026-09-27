@@ -88,21 +88,21 @@ layout (std140, binding = 4) uniform IBLParams {
 
 // ===== Texture samplers (remain as individual uniforms) =====
 // GBuffer
-uniform sampler2D albedoTexture;
-uniform sampler2D normalTexture;
-uniform sampler2D materialInfoTexture;
-uniform sampler2D ssaoTexture;
-uniform sampler2D depthTexture;
+layout(binding = 6) uniform sampler2D albedoTexture;
+layout(binding = 7) uniform sampler2D normalTexture;
+layout(binding = 8) uniform sampler2D materialInfoTexture;
+layout(binding = 9) uniform sampler2D ssaoTexture;
+layout(binding = 10) uniform sampler2D depthTexture;
 
 // IBL
-uniform samplerCube irradianceMap;
-uniform samplerCube prefilterMap;
-uniform sampler2D brdfLUT;
+layout(binding = 1) uniform samplerCube irradianceMap;
+layout(binding = 2) uniform samplerCube prefilterMap;
+layout(binding = 3) uniform sampler2D brdfLUT;
 
 // Shadow
-uniform sampler2D dirLightShadowmap;
-uniform sampler2D spotLightShadowmap;
-uniform samplerCube pointLightShadowCubemap;
+layout(binding = 0) uniform sampler2D dirLightShadowmap;
+layout(binding = 11) uniform sampler2D spotLightShadowmap;
+layout(binding = 12) uniform samplerCube pointLightShadowCubemap;
 
 // Light radiance calculations
 vec3 CalculateDirectionalLightRadiance(vec3 albedo, vec3 normal, float metallic, float roughness, vec3 fragPos, vec3 fragToViewNorm, vec3 baseReflectivity);

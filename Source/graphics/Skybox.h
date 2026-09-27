@@ -15,7 +15,6 @@ namespace engine {
 		Skybox(const std::vector<std::string>& filePaths);
 		~Skybox();
 
-		void Draw(ICamera* camera);
 		void Draw(rhi::CommandBuffer& cmd, ICamera* camera);
 
 		Cubemap* getSkyboxCubemap() { return m_SkyboxCubemap; }

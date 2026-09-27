@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "Terrain.h"
 #include <ui/DebugPane.h>
+#include "graphics/UniformBufferManager.h"
+#include "graphics/TextureBindings.h"
 
 
 namespace engine {
@@ -162,137 +164,37 @@ namespace engine {
 		delete m_Mesh;
 	}
 
-	void Terrain::Draw(Shader* shader, RenderPassType pass) const {
-		if (!m_isVisible) return;
-
-		// Texture unit 0 is reserved for the directional light shadowmap
-		// Texture unit 1 is reserved for the spot light shadowmap
-		// Texture unit 2 is reserved for the point light shadowmap
-		if (pass != RenderPassType::ShadowmapPassType) {
-			int currentTextureUnit = 3;
-
-			// Textures
-			m_Textures[0]->bind(currentTextureUnit);
-			shader->setUniform("material.texture_albedo1", currentTextureUnit++);
-			m_Textures[1]->bind(currentTextureUnit);
-			shader->setUniform("material.texture_albedo2", currentTextureUnit++);
-			m_Textures[2]->bind(currentTextureUnit);
-			shader->setUniform("material.texture_albedo3", currentTextureUnit++);
-			m_Textures[3]->bind(currentTextureUnit);
-			shader->setUniform("material.texture_albedo4", currentTextureUnit++);
-
-			m_Textures[4]->bind(currentTextureUnit);
-			shader->setUniform("material.texture_normal1", currentTextureUnit++);
-			m_Textures[5]->bind(currentTextureUnit);
-			shader->setUniform("material.texture_normal2", currentTextureUnit++);
-			m_Textures[6]->bind(currentTextureUnit);
-			shader->setUniform("material.texture_normal3", currentTextureUnit++);
-			m_Textures[7]->bind(currentTextureUnit);
-			shader->setUniform("material.texture_normal4", currentTextureUnit++);
-
-			m_Textures[8]->bind(currentTextureUnit);
-			shader->setUniform("material.texture_roughness1", currentTextureUnit++);
-			m_Textures[9]->bind(currentTextureUnit);
-			shader->setUniform("material.texture_roughness2", currentTextureUnit++);
-			m_Textures[10]->bind(currentTextureUnit);
-			shader->setUniform("material.texture_roughness3", currentTextureUnit++);
-			m_Textures[11]->bind(currentTextureUnit);
-			shader->setUniform("material.texture_roughness4", currentTextureUnit++);
-
-			m_Textures[12]->bind(currentTextureUnit);
-			shader->setUniform("material.texture_metallic1", currentTextureUnit++);
-			m_Textures[13]->bind(currentTextureUnit);
-			shader->setUniform("material.texture_metallic2", currentTextureUnit++);
-			m_Textures[14]->bind(currentTextureUnit);
-			shader->setUniform("material.texture_metallic3", currentTextureUnit++);
-			m_Textures[15]->bind(currentTextureUnit);
-			shader->setUniform("material.texture_metallic4", currentTextureUnit++);
-
-			m_Textures[16]->bind(currentTextureUnit);
-			shader->setUniform("material.texture_AO1", currentTextureUnit++);
-			m_Textures[17]->bind(currentTextureUnit);
-			shader->setUniform("material.texture_AO2", currentTextureUnit++);
-			m_Textures[18]->bind(currentTextureUnit);
-			shader->setUniform("material.texture_AO3", currentTextureUnit++);
-			m_Textures[19]->bind(currentTextureUnit);
-			shader->setUniform("material.texture_AO4", currentTextureUnit++);
-
-			m_Textures[20]->bind(currentTextureUnit);
-			shader->setUniform("material.blendmap", currentTextureUnit++);
-
-			// Normal matrix
-			glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(m_ModelMatrix)));
-			shader->setUniform("normalMatrix", normalMatrix);
-
-			// Tiling amount
-			shader->setUniform("material.tilingAmount", m_TextureTilingAmount);
-		}
-
-
-		shader->setUniform("model", m_ModelMatrix);
-		m_Mesh->Draw();
-	}
-
 	void Terrain::Draw(rhi::CommandBuffer& cmd, rhi::ProgramHandle program, RenderPassType pass) const {
 		if (!m_isVisible) return;
 
-		if (pass != RenderPassType::ShadowmapPassType) {
-			int currentTextureUnit = 3;
+		// 阴影 pass 也需要正确的 model 矩阵，调用方不负责写 PerObject
+		if (auto* uboMgr = getUBOManager()) {
+			if (pass != RenderPassType::ShadowmapPassType) {
+				glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(m_ModelMatrix)));
+				uboMgr->preparePerObject(m_ModelMatrix, normalMatrix);
+			}
+			else {
+				uboMgr->preparePerObject(m_ModelMatrix);
+			}
+			cmd.updateBuffer(uboMgr->getPerObjectHandle(), &uboMgr->getPerObjectData(), sizeof(UBOPerObject));
+			cmd.bindUBO(UBOBinding::PerObject, uboMgr->getPerObjectHandle(), sizeof(UBOPerObject));
 
-			cmd.bindTextureUnit(m_Textures[0]->getRHIHandle(), currentTextureUnit);
-			cmd.setUniformInt(program, "material.texture_albedo1", currentTextureUnit++);
-			cmd.bindTextureUnit(m_Textures[1]->getRHIHandle(), currentTextureUnit);
-			cmd.setUniformInt(program, "material.texture_albedo2", currentTextureUnit++);
-			cmd.bindTextureUnit(m_Textures[2]->getRHIHandle(), currentTextureUnit);
-			cmd.setUniformInt(program, "material.texture_albedo3", currentTextureUnit++);
-			cmd.bindTextureUnit(m_Textures[3]->getRHIHandle(), currentTextureUnit);
-			cmd.setUniformInt(program, "material.texture_albedo4", currentTextureUnit++);
-
-			cmd.bindTextureUnit(m_Textures[4]->getRHIHandle(), currentTextureUnit);
-			cmd.setUniformInt(program, "material.texture_normal1", currentTextureUnit++);
-			cmd.bindTextureUnit(m_Textures[5]->getRHIHandle(), currentTextureUnit);
-			cmd.setUniformInt(program, "material.texture_normal2", currentTextureUnit++);
-			cmd.bindTextureUnit(m_Textures[6]->getRHIHandle(), currentTextureUnit);
-			cmd.setUniformInt(program, "material.texture_normal3", currentTextureUnit++);
-			cmd.bindTextureUnit(m_Textures[7]->getRHIHandle(), currentTextureUnit);
-			cmd.setUniformInt(program, "material.texture_normal4", currentTextureUnit++);
-
-			cmd.bindTextureUnit(m_Textures[8]->getRHIHandle(), currentTextureUnit);
-			cmd.setUniformInt(program, "material.texture_roughness1", currentTextureUnit++);
-			cmd.bindTextureUnit(m_Textures[9]->getRHIHandle(), currentTextureUnit);
-			cmd.setUniformInt(program, "material.texture_roughness2", currentTextureUnit++);
-			cmd.bindTextureUnit(m_Textures[10]->getRHIHandle(), currentTextureUnit);
-			cmd.setUniformInt(program, "material.texture_roughness3", currentTextureUnit++);
-			cmd.bindTextureUnit(m_Textures[11]->getRHIHandle(), currentTextureUnit);
-			cmd.setUniformInt(program, "material.texture_roughness4", currentTextureUnit++);
-
-			cmd.bindTextureUnit(m_Textures[12]->getRHIHandle(), currentTextureUnit);
-			cmd.setUniformInt(program, "material.texture_metallic1", currentTextureUnit++);
-			cmd.bindTextureUnit(m_Textures[13]->getRHIHandle(), currentTextureUnit);
-			cmd.setUniformInt(program, "material.texture_metallic2", currentTextureUnit++);
-			cmd.bindTextureUnit(m_Textures[14]->getRHIHandle(), currentTextureUnit);
-			cmd.setUniformInt(program, "material.texture_metallic3", currentTextureUnit++);
-			cmd.bindTextureUnit(m_Textures[15]->getRHIHandle(), currentTextureUnit);
-			cmd.setUniformInt(program, "material.texture_metallic4", currentTextureUnit++);
-
-			cmd.bindTextureUnit(m_Textures[16]->getRHIHandle(), currentTextureUnit);
-			cmd.setUniformInt(program, "material.texture_AO1", currentTextureUnit++);
-			cmd.bindTextureUnit(m_Textures[17]->getRHIHandle(), currentTextureUnit);
-			cmd.setUniformInt(program, "material.texture_AO2", currentTextureUnit++);
-			cmd.bindTextureUnit(m_Textures[18]->getRHIHandle(), currentTextureUnit);
-			cmd.setUniformInt(program, "material.texture_AO3", currentTextureUnit++);
-			cmd.bindTextureUnit(m_Textures[19]->getRHIHandle(), currentTextureUnit);
-			cmd.setUniformInt(program, "material.texture_AO4", currentTextureUnit++);
-
-			cmd.bindTextureUnit(m_Textures[20]->getRHIHandle(), currentTextureUnit);
-			cmd.setUniformInt(program, "material.blendmap", currentTextureUnit++);
-
-			glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(m_ModelMatrix)));
-			cmd.setUniformMat3(program, "normalMatrix", normalMatrix);
-			cmd.setUniformFloat(program, "material.tilingAmount", m_TextureTilingAmount);
+			if (pass != RenderPassType::ShadowmapPassType) {
+				// 地形 shader 只读取 tilingAmount
+				UBOMaterialParams materialParams{};
+				materialParams.tilingAmount = m_TextureTilingAmount;
+				cmd.updateBuffer(uboMgr->getMaterialParamsHandle(), &materialParams, sizeof(UBOMaterialParams));
+				cmd.bindUBO(UBOBinding::MaterialParams, uboMgr->getMaterialParamsHandle(), sizeof(UBOMaterialParams));
+			}
 		}
 
-		cmd.setUniformMat4(program, "model", m_ModelMatrix);
+		if (pass != RenderPassType::ShadowmapPassType) {
+			static_assert(std::tuple_size_v<decltype(m_Textures)> == TextureUnit::TerrainTextureCount);
+			for (uint32_t i = 0; i < TextureUnit::TerrainTextureCount; ++i) {
+				cmd.bindTextureUnit(m_Textures[i]->getRHIHandle(), TextureUnit::TerrainBase + i);
+			}
+		}
+
 		m_Mesh->Draw(cmd);
 	}
 

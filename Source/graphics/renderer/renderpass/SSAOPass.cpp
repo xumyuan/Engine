@@ -4,6 +4,7 @@
 #include <graphics/Window.h>
 #include <graphics/renderer/ModelRenderer.h>
 #include <graphics/UniformBufferManager.h>
+#include <graphics/TextureBindings.h>
 #include <utils/loaders/ShaderLoader.h>
 
 namespace engine
@@ -144,16 +145,11 @@ namespace engine
 		}
 
 		// 绑定 GBuffer 纹理
-		rhi::ProgramHandle ssaoProgram = m_SSAOShader->getProgramHandle();
-		cmd().bindTextureUnit(gBufferOutput.normalTexture->getRHIHandle(), 0);
-		cmd().setUniformInt(ssaoProgram, "gNormal", 0);
-
-		cmd().bindTextureUnit(gBufferOutput.depthStencilTexture->getRHIHandle(), 1);
-		cmd().setUniformInt(ssaoProgram, "gDepth", 1);
+		cmd().bindTextureUnit(gBufferOutput.normalTexture->getRHIHandle(), TextureUnit::SSAONormal);
+		cmd().bindTextureUnit(gBufferOutput.depthStencilTexture->getRHIHandle(), TextureUnit::SSAODepth);
 
 		// 绑定噪声纹理
-		cmd().bindTextureUnit(m_NoiseTexture.getRHIHandle(), 2);
-		cmd().setUniformInt(ssaoProgram, "texNoise", 2);
+		cmd().bindTextureUnit(m_NoiseTexture.getRHIHandle(), TextureUnit::SSAONoise);
 
 		// 绘制全屏四边形
 		ModelRenderer::drawNdcPlane(cmd());
@@ -174,8 +170,7 @@ namespace engine
 		blurPipeline.program = m_SSAOBlurShader->getProgramHandle();
 		cmd().bindPipeline(blurPipeline);
 
-		cmd().bindTextureUnit(m_SSAORT.getColorTexture()->getRHIHandle(), 0);
-		cmd().setUniformInt(m_SSAOBlurShader->getProgramHandle(), "ssaoInput", 0);
+		cmd().bindTextureUnit(m_SSAORT.getColorTexture()->getRHIHandle(), TextureUnit::PostProcessInput);
 
 		ModelRenderer::drawNdcPlane(cmd());
 		cmd().endRenderPass();

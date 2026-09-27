@@ -2,7 +2,6 @@
 #include "OpenGLShaderCompiler.h"
 #include "utils/FileUtils.h"
 #include <GL/glew.h>
-#include <glm/gtc/type_ptr.hpp>
 #include <cassert>
 #include <spdlog/spdlog.h>
 
@@ -1173,66 +1172,6 @@ void OpenGLDevice::flush() {
 
 void OpenGLDevice::finish() {
     glFinish();
-}
-
-// ============================================================================
-// Uniform 设置（通过 ProgramHandle）
-// 在命令队列 dispatch 时调用，确保 program 是当前激活的
-// ============================================================================
-
-// 工具函数：获取 uniform location（不缓存，因为由 OpenGLShaderProgram 负责缓存）
-static GLint getUniformLocationFor(GLuint programId, const char* name) {
-    return glGetUniformLocation(programId, name);
-}
-
-void OpenGLDevice::setUniform(ProgramHandle program, const char* name, int value) {
-    GLuint glId = resolveProgram(program);
-    if (glId == 0) return;
-    // bindPipeline 已确保 program 被 use，这里直接设置
-    GLint loc = getUniformLocationFor(glId, name);
-    if (loc >= 0) glUniform1i(loc, value);
-}
-
-void OpenGLDevice::setUniform(ProgramHandle program, const char* name, float value) {
-    GLuint glId = resolveProgram(program);
-    if (glId == 0) return;
-    GLint loc = getUniformLocationFor(glId, name);
-    if (loc >= 0) glUniform1f(loc, value);
-}
-
-void OpenGLDevice::setUniform(ProgramHandle program, const char* name, const glm::vec2& value) {
-    GLuint glId = resolveProgram(program);
-    if (glId == 0) return;
-    GLint loc = getUniformLocationFor(glId, name);
-    if (loc >= 0) glUniform2fv(loc, 1, glm::value_ptr(value));
-}
-
-void OpenGLDevice::setUniform(ProgramHandle program, const char* name, const glm::vec3& value) {
-    GLuint glId = resolveProgram(program);
-    if (glId == 0) return;
-    GLint loc = getUniformLocationFor(glId, name);
-    if (loc >= 0) glUniform3fv(loc, 1, glm::value_ptr(value));
-}
-
-void OpenGLDevice::setUniform(ProgramHandle program, const char* name, const glm::vec4& value) {
-    GLuint glId = resolveProgram(program);
-    if (glId == 0) return;
-    GLint loc = getUniformLocationFor(glId, name);
-    if (loc >= 0) glUniform4fv(loc, 1, glm::value_ptr(value));
-}
-
-void OpenGLDevice::setUniform(ProgramHandle program, const char* name, const glm::mat3& value) {
-    GLuint glId = resolveProgram(program);
-    if (glId == 0) return;
-    GLint loc = getUniformLocationFor(glId, name);
-    if (loc >= 0) glUniformMatrix3fv(loc, 1, GL_FALSE, glm::value_ptr(value));
-}
-
-void OpenGLDevice::setUniform(ProgramHandle program, const char* name, const glm::mat4& value) {
-    GLuint glId = resolveProgram(program);
-    if (glId == 0) return;
-    GLint loc = getUniformLocationFor(glId, name);
-    if (loc >= 0) glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(value));
 }
 
 void OpenGLDevice::bindDefaultFramebuffer(uint32_t width, uint32_t height) {

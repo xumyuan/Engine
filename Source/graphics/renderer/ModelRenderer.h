@@ -19,10 +19,6 @@ namespace engine {
 		void submitOpaque(RenderableModel* renderable);
 		void submitTransparent(RenderableModel* renderable);
 
-		void flushOpaque(Shader* shader, RenderPassType pass);
-		void flushTransparent(Shader* shader, RenderPassType pass);
-
-		// 命令缓冲版本
 		void flushOpaque(rhi::CommandBuffer& cmd, rhi::ProgramHandle program, RenderPassType pass);
 		void flushTransparent(rhi::CommandBuffer& cmd, rhi::ProgramHandle program, RenderPassType pass);
 
@@ -35,7 +31,6 @@ namespace engine {
 	 static Cube* NDC_Cube;
 
 	private:
-		void setupModelMatrix(RenderableModel* renderable, Shader* shader, RenderPassType pass);
 		void setupModelMatrix(RenderableModel* renderable, rhi::CommandBuffer& cmd, rhi::ProgramHandle program, RenderPassType pass);
 
 

@@ -25,9 +25,7 @@ namespace engine {
 		void addProbe(LightProbe* probe);
 		void addProbe(ReflectionProbe* probe);
 
-		// Assumes shader is bound
-		void bindProbe(glm::vec3& renderPosition, Shader* shader);
-		void bindProbe(glm::vec3& renderPosition, rhi::CommandBuffer& cmd, rhi::ProgramHandle program);
+		void bindProbe(glm::vec3& renderPosition, rhi::CommandBuffer& cmd);
 	private:
 		ProbeBlendSetting m_ProbeBlendSetting;
 		std::vector<LightProbe*> m_LightProbes;

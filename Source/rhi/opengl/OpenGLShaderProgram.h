@@ -3,7 +3,6 @@
 #include "rhi/include/RHIShaderProgram.h"
 #include "rhi/include/RHITypes.h"
 #include <GL/glew.h>
-#include <unordered_map>
 
 namespace engine {
 namespace rhi {
@@ -11,7 +10,7 @@ namespace rhi {
 class RHIDevice;
 
 // OpenGL 后端的着色器程序实现
-// 封装 GL program 对象，提供 uniform 设置和 program 激活
+// 封装 GL program 对象，提供 program 激活；数据通过 UBO、纹理通过 shader 中的 layout(binding) 绑定
 // 析构时自动通过 RHIDevice 销毁底层 GL program
 class OpenGLShaderProgram final : public RHIShaderProgram {
 public:
@@ -31,25 +30,13 @@ public:
     void use() override;
     void unuse() override;
 
-    void setUniform(const char* name, float value) override;
-    void setUniform(const char* name, int value) override;
-    void setUniform(const char* name, const glm::vec2& value) override;
-    void setUniform(const char* name, const glm::vec3& value) override;
-    void setUniform(const char* name, const glm::vec4& value) override;
-    void setUniform(const char* name, const glm::ivec4& value) override;
-    void setUniform(const char* name, const glm::mat3& value) override;
-    void setUniform(const char* name, const glm::mat4& value) override;
 
     ProgramHandle getProgramHandle() const override { return mProgramHandle; }
 
     // ---------- OpenGL 特有查询 ----------
     GLuint getGLProgramId() const { return mGLProgramId; }
 
-    // 清空 uniform location 缓存（program 重新链接后需要调用）
-    void invalidateUniformCache();
-
 private:
-    GLint getUniformLocation(const char* name);
     // 首次使用时等待编译结果；失败的 program 不能交给 glUseProgram
     bool ensureReady();
 
@@ -57,9 +44,6 @@ private:
     GLuint mGLProgramId = 0;
     RHIDevice* mDevice = nullptr;
     ProgramStatus mStatus = ProgramStatus::Pending;
-
-    // uniform location 缓存，避免每次都调用 glGetUniformLocation
-    std::unordered_map<std::string, GLint> mUniformLocationCache;
 };
 
 } // namespace rhi

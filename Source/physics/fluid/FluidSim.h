@@ -52,7 +52,6 @@ namespace engine {
 
 		void init();
 
-		void drawParticle(FPSCamera* camera);
 		void drawParticle(rhi::CommandBuffer& cmd, FPSCamera* camera);
 
 		void startSim();

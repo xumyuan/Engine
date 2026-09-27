@@ -29,13 +29,6 @@ namespace engine {
 			}
 		}
 
-		/// @brief 绘制模型（假设 shader 已绑定）
-		void draw(Shader* shader, RenderPassType pass) const {
-			if (m_Model) {
-				m_Model->Draw(shader, pass);
-			}
-		}
-
 		// ── Getters ──
 		Model* getModel() const { return m_Model; }
 		bool isStatic() const { return m_IsStatic; }

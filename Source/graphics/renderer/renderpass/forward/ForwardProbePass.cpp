@@ -6,6 +6,7 @@
 #include <graphics/renderer/renderpass/forward/ForwardLightingPass.h>
 #include <graphics/renderer/renderpass/ShadowmapPass.h>
 #include <graphics/UniformBufferManager.h>
+#include <graphics/TextureBindings.h>
 #include <utils/loaders/ShaderLoader.h>
 
 namespace engine {
@@ -157,8 +158,7 @@ namespace engine {
 		convPipeline.depthTest = false;
 		cmd().bindPipeline(convPipeline);
 
-		cmd().bindTextureUnit(m_SceneCaptureCubemap.getRHIHandle(), 0);
-		cmd().setUniformInt(m_ConvolutionShader->getProgramHandle(), "sceneCaptureCubemap", 0);
+		cmd().bindTextureUnit(m_SceneCaptureCubemap.getRHIHandle(), TextureUnit::SceneCaptureCubemap);
 
 		// PerFrame UBO 更新 projection
 		if (auto* uboMgr = getUBOManager()) {
@@ -250,8 +250,7 @@ namespace engine {
 		samplePipeline.depthTest = false;
 		cmd().bindPipeline(samplePipeline);
 
-		cmd().bindTextureUnit(m_SceneCaptureCubemap.getRHIHandle(), 0);
-		cmd().setUniformInt(m_ImportanceSamplingShader->getProgramHandle(), "sceneCaptureCubemap", 0);
+		cmd().bindTextureUnit(m_SceneCaptureCubemap.getRHIHandle(), TextureUnit::SceneCaptureCubemap);
 
 		// PerFrame UBO 更新
 		if (auto* uboMgr = getUBOManager()) {

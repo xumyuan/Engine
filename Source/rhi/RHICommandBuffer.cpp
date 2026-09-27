@@ -133,48 +133,6 @@ void CommandBuffer::dispatchImmediate(const RenderCommand& cmd) {
             break;
 
         // --- 步骤 5: 高层操作命令 ---
-        case CommandType::SetUniformInt:
-            m_ImmediateDevice->setUniform(
-                cmd.setUniformInt.program,
-                cmd.setUniformInt.name,
-                cmd.setUniformInt.value);
-            break;
-        case CommandType::SetUniformFloat:
-            m_ImmediateDevice->setUniform(
-                cmd.setUniformFloat.program,
-                cmd.setUniformFloat.name,
-                cmd.setUniformFloat.value);
-            break;
-        case CommandType::SetUniformVec2:
-            m_ImmediateDevice->setUniform(
-                cmd.setUniformVec2.program,
-                cmd.setUniformVec2.name,
-                cmd.setUniformVec2.value);
-            break;
-        case CommandType::SetUniformVec3:
-            m_ImmediateDevice->setUniform(
-                cmd.setUniformVec3.program,
-                cmd.setUniformVec3.name,
-                cmd.setUniformVec3.value);
-            break;
-        case CommandType::SetUniformVec4:
-            m_ImmediateDevice->setUniform(
-                cmd.setUniformVec4.program,
-                cmd.setUniformVec4.name,
-                cmd.setUniformVec4.value);
-            break;
-        case CommandType::SetUniformMat3:
-            m_ImmediateDevice->setUniform(
-                cmd.setUniformMat3.program,
-                cmd.setUniformMat3.name,
-                cmd.setUniformMat3.value);
-            break;
-        case CommandType::SetUniformMat4:
-            m_ImmediateDevice->setUniform(
-                cmd.setUniformMat4.program,
-                cmd.setUniformMat4.name,
-                cmd.setUniformMat4.value);
-            break;
         case CommandType::BindTextureUnit:
             m_ImmediateDevice->bindTextureToUnit(
                 cmd.bindTextureUnit.handle,

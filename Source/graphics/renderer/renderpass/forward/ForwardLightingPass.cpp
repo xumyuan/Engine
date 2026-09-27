@@ -7,6 +7,7 @@
 
 #include <utils/loaders/ShaderLoader.h>
 #include <graphics/UniformBufferManager.h>
+#include <graphics/TextureBindings.h>
 
 namespace engine
 {
@@ -81,23 +82,21 @@ namespace engine
 				uboMgr->getLightingHandle(), sizeof(UBOLighting));
 		}
 		// Shadowmap code
-		bindShadowmap(cmd(), modelProgram, shadowmapData);
+		bindShadowmap(cmd(), shadowmapData);
 		// IBL code
 		UBOIBLParams iblParams{};
 		iblParams.reflectionProbeMipCount = REFLECTION_PROBE_MIP_COUNT;
 		if (useIBL) {
 			iblParams.computeIBL = 1;
 			glm::vec3 renderPos(0.0f, 0.0f, 0.0f);
-			probeManager->bindProbe(renderPos, cmd(), modelProgram);
+			probeManager->bindProbe(renderPos, cmd());
 		}
 		else {
 			iblParams.computeIBL = 0;
 			Skybox* skyboxForBind = m_RenderScene.skybox;
 			if (skyboxForBind && skyboxForBind->getSkyboxCubemap()) {
-				cmd().bindTextureUnit(skyboxForBind->getSkyboxCubemap()->getRHIHandle(), 1);
-				cmd().setUniformInt(modelProgram, "irradianceMap", 1);
-				cmd().bindTextureUnit(skyboxForBind->getSkyboxCubemap()->getRHIHandle(), 2);
-				cmd().setUniformInt(modelProgram, "prefilterMap", 2);
+				cmd().bindTextureUnit(skyboxForBind->getSkyboxCubemap()->getRHIHandle(), TextureUnit::IrradianceMap);
+				cmd().bindTextureUnit(skyboxForBind->getSkyboxCubemap()->getRHIHandle(), TextureUnit::PrefilterMap);
 			}
 		}
 		if (uboMgr) {
@@ -114,22 +113,16 @@ namespace engine
 		terrainPipeline.program = m_TerrainShader->getProgramHandle();
 		cmd().bindPipeline(terrainPipeline);
 
-		// Terrain PerObject UBO
+		// PerObject / MaterialParams 由 Terrain::Draw 自己写入
 		rhi::ProgramHandle terrainProgram = m_TerrainShader->getProgramHandle();
-		glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), terrain->getPosition());
 		if (uboMgr) {
-			uboMgr->preparePerObject(modelMatrix);
-			cmd().updateBuffer(uboMgr->getPerObjectHandle(),
-				&uboMgr->getPerObjectData(), sizeof(UBOPerObject));
-			cmd().bindUBO(UBOBinding::PerObject,
-				uboMgr->getPerObjectHandle(), sizeof(UBOPerObject));
 			UBOClipPlane clipPlane{};
 			clipPlane.usesClipPlane = 0;
 			cmd().updateBuffer(uboMgr->getCustomHandle(), &clipPlane, sizeof(UBOClipPlane));
 			cmd().bindUBO(UBOBinding::CustomParams,
 				uboMgr->getCustomHandle(), sizeof(UBOClipPlane));
 		}
-		bindShadowmap(cmd(), terrainProgram, shadowmapData);
+		bindShadowmap(cmd(), shadowmapData);
 		terrain->Draw(cmd(), terrainProgram, m_RenderPassType);
 
 		FPSCamera* fpscamera = dynamic_cast<FPSCamera*>(camera);
@@ -149,6 +142,12 @@ namespace engine
 		transparentPipeline.stencilEnable = false;
 		transparentPipeline.cullMode = rhi::CullMode::None;
 		cmd().bindPipeline(transparentPipeline);
+		// binding 4 在地形（ClipPlane）和流体（FluidParams）之间共用，透明物体前需恢复 IBLParams
+		if (uboMgr) {
+			cmd().updateBuffer(uboMgr->getCustomHandle(), &iblParams, sizeof(UBOIBLParams));
+			cmd().bindUBO(UBOBinding::CustomParams,
+				uboMgr->getCustomHandle(), sizeof(UBOIBLParams));
+		}
 		modelRenderer->flushTransparent(cmd(), modelProgram, m_RenderPassType);
 
 		// 通过命令缓冲录制 endRenderPass
@@ -164,9 +163,8 @@ namespace engine
 		return passOutput;
 	}
 
-	void ForwardLightingPass::bindShadowmap(rhi::CommandBuffer& cmdBuf, rhi::ProgramHandle program, ShadowmapPassOutput& shadowmapData) {
-		cmdBuf.bindTextureUnit(shadowmapData.depthTexture->getRHIHandle(), 0);
-		cmdBuf.setUniformInt(program, "dirLightShadowmap", 0);
+	void ForwardLightingPass::bindShadowmap(rhi::CommandBuffer& cmdBuf, ShadowmapPassOutput& shadowmapData) {
+		cmdBuf.bindTextureUnit(shadowmapData.depthTexture->getRHIHandle(), TextureUnit::DirLightShadowmap);
 		
 		// 阴影数据通过 Lighting UBO 传递
 		if (auto* uboMgr = getUBOManager()) {

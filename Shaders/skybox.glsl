@@ -32,7 +32,7 @@ out vec4 FragColor;
 
 in vec3 SampleDirection;
 
-uniform samplerCube skyboxCubemap;
+layout(binding = 0) uniform samplerCube skyboxCubemap;
 
 void main() {
 	FragColor = texture(skyboxCubemap, SampleDirection);

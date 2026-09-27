@@ -23,7 +23,6 @@ namespace engine {
 		Model(Mesh&& mesh);
 		Model(std::vector<Mesh>&& meshes);
 
-		void Draw(Shader* shader, RenderPassType pass) const;
 		void Draw(rhi::CommandBuffer& cmd, rhi::ProgramHandle program, RenderPassType pass) const;
 		inline std::vector<Mesh>& getMeshes() { return m_Meshes; }
 	private:

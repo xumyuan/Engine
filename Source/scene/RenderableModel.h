@@ -11,8 +11,6 @@ namespace engine {
 		RenderableModel(const glm::vec3& position, const glm::vec3& scale, const glm::vec3& rotationAxis, float radianRotation, Model* model, RenderableModel* parent, bool m_IsStatic = false, bool transparent = false);
 		~RenderableModel();
 
-		// Assumes shader is already bound by the renderer
-		void draw(Shader* shader, RenderPassType pass) const;
 		void draw(rhi::CommandBuffer& cmd, rhi::ProgramHandle program, RenderPassType pass) const;
 
 		void addChild(RenderableModel* child);

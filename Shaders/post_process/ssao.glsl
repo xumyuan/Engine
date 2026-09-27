@@ -19,9 +19,9 @@ out float FragColor;
 
 in vec2 TexCoords;
 
-uniform sampler2D gNormal;
-uniform sampler2D gDepth;
-uniform sampler2D texNoise;
+layout(binding = 0) uniform sampler2D gNormal;
+layout(binding = 1) uniform sampler2D gDepth;
+layout(binding = 2) uniform sampler2D texNoise;
 
 layout (std140, binding = 0) uniform PerFrame {
 	mat4 view;

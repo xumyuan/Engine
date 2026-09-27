@@ -5,6 +5,7 @@
 #include "rhi/include/RHIContext.h"
 #include "graphics/UniformBufferManager.h"
 #include "graphics/UniformBufferData.h"
+#include "graphics/TextureBindings.h"
 
 namespace engine {
 
@@ -100,52 +101,16 @@ namespace engine {
 		}
 	}
 
-	void Skybox::Draw(ICamera* camera) {
-		// 通过 PipelineState 设置 skybox 渲染状态
+	void Skybox::Draw(rhi::CommandBuffer& cmd, ICamera* camera) {
 		rhi::PipelineState pipeline;
 		pipeline.program = m_SkyboxShader->getProgramHandle();
 		pipeline.depthTest = true;
 		pipeline.depthFunc = rhi::CompareOp::LessEqual;
 		pipeline.depthWrite = false;  // skybox 不写深度
 		pipeline.cullMode = rhi::CullMode::Back;
-		m_Device->bindPipeline(pipeline);
-
-		// Pass the texture to the shader
-		m_SkyboxCubemap->bind(0);
-		m_SkyboxShader->setUniform("skyboxCubemap", 0);
-
-		// PerFrame UBO 更新（skybox 只需 view + projection）
-		if (auto* uboMgr = getUBOManager()) {
-			uboMgr->updatePerFrame(camera->getViewMatrix(), camera->getProjectionMatrix(),
-				glm::vec3(0.0f));
-			uboMgr->bindPerFrame();
-		}
-
-		m_Device->bindRenderPrimitive(m_RenderPrimitive);
-		m_Device->draw(36, 0);
-
-		// 恢复深度函数和深度写入
-		rhi::PipelineState restorePipeline;
-		restorePipeline.depthTest = true;
-		restorePipeline.depthFunc = rhi::CompareOp::Less;
-		restorePipeline.depthWrite = true;
-		restorePipeline.cullMode = rhi::CullMode::Back;
-		m_Device->bindPipeline(restorePipeline);
-
-		m_SkyboxCubemap->unbind();
-	}
-
-	void Skybox::Draw(rhi::CommandBuffer& cmd, ICamera* camera) {
-		rhi::PipelineState pipeline;
-		pipeline.program = m_SkyboxShader->getProgramHandle();
-		pipeline.depthTest = true;
-		pipeline.depthFunc = rhi::CompareOp::LessEqual;
-		pipeline.depthWrite = false;
-		pipeline.cullMode = rhi::CullMode::Back;
 		cmd.bindPipeline(pipeline);
 
-		cmd.bindTextureUnit(m_SkyboxCubemap->getRHIHandle(), 0);
-		cmd.setUniformInt(m_SkyboxShader->getProgramHandle(), "skyboxCubemap", 0);
+		cmd.bindTextureUnit(m_SkyboxCubemap->getRHIHandle(), TextureUnit::SkyboxCubemap);
 
 		if (auto* uboMgr = getUBOManager()) {
 			uboMgr->preparePerFrame(camera->getViewMatrix(), camera->getProjectionMatrix(),

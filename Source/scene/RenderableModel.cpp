@@ -36,11 +36,6 @@ namespace engine {
 		m_Children.clear();
 	}
 
-	void RenderableModel::draw(Shader *shader, RenderPassType pass) const {
-		if (m_Model)
-			m_Model->Draw(shader, pass);
-	}
-
 	void RenderableModel::draw(rhi::CommandBuffer& cmd, rhi::ProgramHandle program, RenderPassType pass) const {
 		if (m_Model)
 			m_Model->Draw(cmd, program, pass);

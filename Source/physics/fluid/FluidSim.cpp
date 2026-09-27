@@ -8,6 +8,7 @@
 #include <utils/loaders/ShaderLoader.h>
 #include <graphics/camera/FPSCamera.h>
 #include "rhi/include/RHIContext.h"
+#include "graphics/UniformBufferManager.h"
 
 namespace engine {
 
@@ -125,61 +126,6 @@ namespace engine {
 		m_Device->updateBuffer(m_VertexBuffer, bufData);
 	}
 
-	void FluidSim::drawParticle(FPSCamera* camera) {
-		{
-			std::unique_lock<std::mutex> lock(m_pbf->getPosMutex());
-			if (m_condVar.wait_for(lock, std::chrono::milliseconds(1), [this] { return dataReady; })) {
-				subPosData();
-				dataReady = false;
-			}
-		}
-
-
-		float aspect = static_cast<float>(WINDOW_X_RESOLUTION) / WINDOW_Y_RESOLUTION;
-		float fov = camera->getFOV();
-		glm::vec3 cameraPos = camera->getPosition();
-		glm::mat4 projectMat = camera->getProjectionMatrix();
-
-		glm::vec3 waterPos(0.0);
-
-		glm::mat4 modelMat = glm::translate(glm::mat4(1), waterPos);
-
-		const glm::vec3 lightPos = { 0.0f,1000.f,0.f };
-		const glm::vec3 lightColor = { 1.f,1.f,1.f };
-		glm::vec3 objectColor = { 0.267, 0.447, 0.769 };
-
-		float pointScale = 1.0f * 768.f / glm::tan(glm::radians(fov) * 0.5f);
-		float pointSize = 0.5f;
-
-		// 通过 PipelineState 设置 shader 和渲染状态
-		rhi::PipelineState pipeline;
-		pipeline.program = m_particleShader->getProgramHandle();
-		pipeline.depthTest = true;
-		pipeline.cullMode = rhi::CullMode::Back;
-		m_Device->bindPipeline(pipeline);
-
-		m_particleShader->setUniform("pointScale", pointScale);
-		m_particleShader->setUniform("pointSize", pointSize);
-		m_particleShader->setUniform("lightPos", lightPos);
-		m_particleShader->setUniform("lightColor", lightColor);
-		m_particleShader->setUniform("objectColor", objectColor);
-
-		m_particleShader->setUniform("projection", projectMat);
-		m_particleShader->setUniform("model", modelMat);
-		m_particleShader->setUniform("view", camera->getViewMatrix());
-		m_particleShader->setUniform("viewPos", cameraPos);
-
-		glEnable(GL_PROGRAM_POINT_SIZE);
-		glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
-
-		m_Device->bindRenderPrimitive(m_RenderPrimitive);
-		m_Device->drawArrays(rhi::PrimitiveType::Points,
-			static_cast<uint32_t>(m_particleNum));
-
-		glDisable(GL_PROGRAM_POINT_SIZE);
-		glDisable(GL_VERTEX_PROGRAM_POINT_SIZE);
-	}
-
 	void FluidSim::drawParticle(rhi::CommandBuffer& cmd, FPSCamera* camera) {
 		{
 			std::unique_lock<std::mutex> lock(m_pbf->getPosMutex());
@@ -189,10 +135,7 @@ namespace engine {
 			}
 		}
 
-		float aspect = static_cast<float>(WINDOW_X_RESOLUTION) / WINDOW_Y_RESOLUTION;
 		float fov = camera->getFOV();
-		glm::vec3 cameraPos = camera->getPosition();
-		glm::mat4 projectMat = camera->getProjectionMatrix();
 		glm::vec3 waterPos(0.0);
 		glm::mat4 modelMat = glm::translate(glm::mat4(1), waterPos);
 
@@ -211,15 +154,19 @@ namespace engine {
 		pipeline.cullMode = rhi::CullMode::Back;
 		cmd.bindPipeline(pipeline);
 
-		cmd.setUniformFloat(program, "pointScale", pointScale);
-		cmd.setUniformFloat(program, "pointSize", pointSize);
-		cmd.setUniformVec3(program, "lightPos", lightPos);
-		cmd.setUniformVec3(program, "lightColor", lightColor);
-		cmd.setUniformVec3(program, "objectColor", objectColor);
-		cmd.setUniformMat4(program, "projection", projectMat);
-		cmd.setUniformMat4(program, "model", modelMat);
-		cmd.setUniformMat4(program, "view", camera->getViewMatrix());
-		cmd.setUniformVec3(program, "viewPos", cameraPos);
+		// PerFrame（view / projection / viewPos）由调用方的 pass 写入
+		if (auto* uboMgr = getUBOManager()) {
+			uboMgr->preparePerObject(modelMat);
+			cmd.updateBuffer(uboMgr->getPerObjectHandle(), &uboMgr->getPerObjectData(), sizeof(UBOPerObject));
+			cmd.bindUBO(UBOBinding::PerObject, uboMgr->getPerObjectHandle(), sizeof(UBOPerObject));
+
+			UBOFluidParams fluidParams{};
+			fluidParams.lightPos = glm::vec4(lightPos, pointScale);
+			fluidParams.lightColor = glm::vec4(lightColor, pointSize);
+			fluidParams.objectColor = glm::vec4(objectColor, 0.0f);
+			cmd.updateBuffer(uboMgr->getCustomHandle(), &fluidParams, sizeof(UBOFluidParams));
+			cmd.bindUBO(UBOBinding::CustomParams, uboMgr->getCustomHandle(), sizeof(UBOFluidParams));
+		}
 
 		// 注意：GL_PROGRAM_POINT_SIZE 是 GL 特有状态，暂时保留直接调用
 		glEnable(GL_PROGRAM_POINT_SIZE);

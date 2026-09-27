@@ -14,9 +14,7 @@ namespace engine {
 
 		void generate();
 
-		// Assumes the shader is bound
-		void bind(Shader* shader);
-		void bind(rhi::CommandBuffer& cmd, rhi::ProgramHandle program);
+		void bind(rhi::CommandBuffer& cmd);
 
 		// Getters
 		inline Cubemap* getPrefilterMap() { return m_PrefilterMap; }

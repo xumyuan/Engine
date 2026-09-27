@@ -27,36 +27,5 @@ namespace engine {
 		}
 	}
 
-	void Shader::setUniform(const char* name, float value) {
-		if (m_Program) m_Program->setUniform(name, value);
-	}
-
-	void Shader::setUniform(const char* name, int value) {
-		if (m_Program) m_Program->setUniform(name, value);
-	}
-
-	void Shader::setUniform(const char* name, const glm::vec2& vector) {
-		if (m_Program) m_Program->setUniform(name, vector);
-	}
-
-	void Shader::setUniform(const char* name, const glm::vec3& vector) {
-		if (m_Program) m_Program->setUniform(name, vector);
-	}
-
-	void Shader::setUniform(const char* name, const glm::vec4& vector) {
-		if (m_Program) m_Program->setUniform(name, vector);
-	}
-
-	void Shader::setUniform(const char* name, const glm::ivec4& vector) {
-		if (m_Program) m_Program->setUniform(name, vector);
-	}
-
-	void Shader::setUniform(const char* name, const glm::mat4& matrix) {
-		if (m_Program) m_Program->setUniform(name, matrix);
-	}
-
-	void Shader::setUniform(const char* name, const glm::mat3& matrix) {
-		if (m_Program) m_Program->setUniform(name, matrix);
-	}
 
 }

@@ -139,37 +139,37 @@ layout (std140, binding = 3) uniform MaterialParams {
 
 // ===== Texture samplers (remain as individual uniforms) =====
 // Shadow
-uniform sampler2D dirLightShadowmap;
-uniform sampler2D spotLightShadowmap;
-uniform samplerCube pointLightShadowCubemap;
+layout(binding = 0) uniform sampler2D dirLightShadowmap;
+layout(binding = 11) uniform sampler2D spotLightShadowmap;
+layout(binding = 12) uniform samplerCube pointLightShadowCubemap;
 
 // Terrain material textures
-uniform sampler2D texture_albedo1;   // background texture
-uniform sampler2D texture_albedo2;   // r texture
-uniform sampler2D texture_albedo3;   // g texture
-uniform sampler2D texture_albedo4;   // b texture
+layout(binding = 13) uniform sampler2D texture_albedo1;   // background texture
+layout(binding = 14) uniform sampler2D texture_albedo2;   // r texture
+layout(binding = 15) uniform sampler2D texture_albedo3;   // g texture
+layout(binding = 16) uniform sampler2D texture_albedo4;   // b texture
 
-uniform sampler2D texture_normal1;   // background texture
-uniform sampler2D texture_normal2;   // r texture
-uniform sampler2D texture_normal3;   // g texture
-uniform sampler2D texture_normal4;   // b texture
+layout(binding = 17) uniform sampler2D texture_normal1;   // background texture
+layout(binding = 18) uniform sampler2D texture_normal2;   // r texture
+layout(binding = 19) uniform sampler2D texture_normal3;   // g texture
+layout(binding = 20) uniform sampler2D texture_normal4;   // b texture
 
-uniform sampler2D texture_roughness1; // background texture
-uniform sampler2D texture_roughness2; // r texture
-uniform sampler2D texture_roughness3; // g texture
-uniform sampler2D texture_roughness4; // b texture
+layout(binding = 21) uniform sampler2D texture_roughness1; // background texture
+layout(binding = 22) uniform sampler2D texture_roughness2; // r texture
+layout(binding = 23) uniform sampler2D texture_roughness3; // g texture
+layout(binding = 24) uniform sampler2D texture_roughness4; // b texture
 
-uniform sampler2D texture_metallic1; // background texture
-uniform sampler2D texture_metallic2; // r texture
-uniform sampler2D texture_metallic3; // g texture
-uniform sampler2D texture_metallic4; // b texture
+layout(binding = 25) uniform sampler2D texture_metallic1; // background texture
+layout(binding = 26) uniform sampler2D texture_metallic2; // r texture
+layout(binding = 27) uniform sampler2D texture_metallic3; // g texture
+layout(binding = 28) uniform sampler2D texture_metallic4; // b texture
 
-uniform sampler2D texture_AO1;      // background texture
-uniform sampler2D texture_AO2;      // r texture
-uniform sampler2D texture_AO3;      // g texture
-uniform sampler2D texture_AO4;      // b texture
+layout(binding = 29) uniform sampler2D texture_AO1;      // background texture
+layout(binding = 30) uniform sampler2D texture_AO2;      // r texture
+layout(binding = 31) uniform sampler2D texture_AO3;      // g texture
+layout(binding = 32) uniform sampler2D texture_AO4;      // b texture
 
-uniform sampler2D blendmap;
+layout(binding = 33) uniform sampler2D blendmap;
 
 // Light radiance calculations
 vec3 CalculateDirectionalLightRadiance(vec3 albedo, vec3 normal, float metallic, float roughness, vec3 fragToViewNorm, vec3 baseReflectivity);

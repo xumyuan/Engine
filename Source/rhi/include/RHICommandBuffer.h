@@ -43,13 +43,6 @@ enum class CommandType : uint8_t {
     Finish,
 
     // --- 步骤 5: 高层操作命令 ---
-    SetUniformInt,      // Shader::setUniform(name, int) — 纹理单元绑定等
-    SetUniformFloat,    // Shader::setUniform(name, float)
-    SetUniformVec2,     // Shader::setUniform(name, vec2)
-    SetUniformVec3,     // Shader::setUniform(name, vec3)
-    SetUniformVec4,     // Shader::setUniform(name, vec4)
-    SetUniformMat3,     // Shader::setUniform(name, mat3)
-    SetUniformMat4,     // Shader::setUniform(name, mat4)
     BindTextureUnit,    // Texture::bind(unit) — 将纹理绑定到指定纹理单元
     UpdateBuffer,       // 更新 UBO 数据（UBOManager::updateXXX）
     BindUBO,            // 绑定 UBO 到 binding point（UBOManager::bindXXX）
@@ -157,51 +150,6 @@ struct CmdPushDebugGroup {
 // 步骤 5: 高层操作命令参数结构
 // ===================================================================
 
-// Uniform 名称固定长度（shader uniform 名称通常不超过 48 字符）
-static constexpr uint32_t UNIFORM_NAME_MAX = 48;
-
-struct CmdSetUniformInt {
-    ProgramHandle program;
-    char          name[UNIFORM_NAME_MAX];
-    int           value;
-};
-
-struct CmdSetUniformFloat {
-    ProgramHandle program;
-    char          name[UNIFORM_NAME_MAX];
-    float         value;
-};
-
-struct CmdSetUniformVec2 {
-    ProgramHandle program;
-    char          name[UNIFORM_NAME_MAX];
-    glm::vec2     value;
-};
-
-struct CmdSetUniformVec3 {
-    ProgramHandle program;
-    char          name[UNIFORM_NAME_MAX];
-    glm::vec3     value;
-};
-
-struct CmdSetUniformVec4 {
-    ProgramHandle program;
-    char          name[UNIFORM_NAME_MAX];
-    glm::vec4     value;
-};
-
-struct CmdSetUniformMat3 {
-    ProgramHandle program;
-    char          name[UNIFORM_NAME_MAX];
-    glm::mat3     value;
-};
-
-struct CmdSetUniformMat4 {
-    ProgramHandle program;
-    char          name[UNIFORM_NAME_MAX];
-    glm::mat4     value;
-};
-
 struct CmdBindTextureUnit {
     TextureHandle handle;
     uint32_t      unit;       // 纹理单元编号
@@ -259,13 +207,6 @@ struct RenderCommand {
         CmdResolve              resolve;
         CmdPushDebugGroup       pushDebugGroup;
         // 步骤 5: 高层操作命令
-        CmdSetUniformInt        setUniformInt;
-        CmdSetUniformFloat      setUniformFloat;
-        CmdSetUniformVec2       setUniformVec2;
-        CmdSetUniformVec3       setUniformVec3;
-        CmdSetUniformVec4       setUniformVec4;
-        CmdSetUniformMat3       setUniformMat3;
-        CmdSetUniformMat4       setUniformMat4;
         CmdBindTextureUnit      bindTextureUnit;
         CmdUpdateBuffer         updateBuffer;
         CmdBindUBO              bindUBO;
@@ -283,7 +224,6 @@ struct RenderCommand {
 //   CommandBuffer cmdBuf;
 //   cmdBuf.beginRenderPass(target, params);
 //   cmdBuf.bindPipeline(state);
-//   cmdBuf.setUniformInt(program, "texture0", 0);
 //   cmdBuf.bindTextureUnit(texHandle, 0);
 //   cmdBuf.draw(indexCount, 0);
 //   cmdBuf.endRenderPass();
@@ -475,71 +415,6 @@ public:
     }
 
     // ========== 步骤 5: 高层操作命令录制 ==========
-
-    // --- SetUniform 系列 ---
-
-    void setUniformInt(ProgramHandle program, const char* name, int value) {
-        auto& cmd = emplaceCommand(CommandType::SetUniformInt);
-        cmd.setUniformInt.program = program;
-        cmd.setUniformInt.value = value;
-        std::strncpy(cmd.setUniformInt.name, name, UNIFORM_NAME_MAX - 1);
-        cmd.setUniformInt.name[UNIFORM_NAME_MAX - 1] = '\0';
-        dispatchImmediate(cmd);
-    }
-
-    void setUniformFloat(ProgramHandle program, const char* name, float value) {
-        auto& cmd = emplaceCommand(CommandType::SetUniformFloat);
-        cmd.setUniformFloat.program = program;
-        cmd.setUniformFloat.value = value;
-        std::strncpy(cmd.setUniformFloat.name, name, UNIFORM_NAME_MAX - 1);
-        cmd.setUniformFloat.name[UNIFORM_NAME_MAX - 1] = '\0';
-        dispatchImmediate(cmd);
-    }
-
-    void setUniformVec2(ProgramHandle program, const char* name, const glm::vec2& value) {
-        auto& cmd = emplaceCommand(CommandType::SetUniformVec2);
-        cmd.setUniformVec2.program = program;
-        cmd.setUniformVec2.value = value;
-        std::strncpy(cmd.setUniformVec2.name, name, UNIFORM_NAME_MAX - 1);
-        cmd.setUniformVec2.name[UNIFORM_NAME_MAX - 1] = '\0';
-        dispatchImmediate(cmd);
-    }
-
-    void setUniformVec3(ProgramHandle program, const char* name, const glm::vec3& value) {
-        auto& cmd = emplaceCommand(CommandType::SetUniformVec3);
-        cmd.setUniformVec3.program = program;
-        cmd.setUniformVec3.value = value;
-        std::strncpy(cmd.setUniformVec3.name, name, UNIFORM_NAME_MAX - 1);
-        cmd.setUniformVec3.name[UNIFORM_NAME_MAX - 1] = '\0';
-        dispatchImmediate(cmd);
-    }
-
-    void setUniformVec4(ProgramHandle program, const char* name, const glm::vec4& value) {
-        auto& cmd = emplaceCommand(CommandType::SetUniformVec4);
-        cmd.setUniformVec4.program = program;
-        cmd.setUniformVec4.value = value;
-        std::strncpy(cmd.setUniformVec4.name, name, UNIFORM_NAME_MAX - 1);
-        cmd.setUniformVec4.name[UNIFORM_NAME_MAX - 1] = '\0';
-        dispatchImmediate(cmd);
-    }
-
-    void setUniformMat3(ProgramHandle program, const char* name, const glm::mat3& value) {
-        auto& cmd = emplaceCommand(CommandType::SetUniformMat3);
-        cmd.setUniformMat3.program = program;
-        cmd.setUniformMat3.value = value;
-        std::strncpy(cmd.setUniformMat3.name, name, UNIFORM_NAME_MAX - 1);
-        cmd.setUniformMat3.name[UNIFORM_NAME_MAX - 1] = '\0';
-        dispatchImmediate(cmd);
-    }
-
-    void setUniformMat4(ProgramHandle program, const char* name, const glm::mat4& value) {
-        auto& cmd = emplaceCommand(CommandType::SetUniformMat4);
-        cmd.setUniformMat4.program = program;
-        cmd.setUniformMat4.value = value;
-        std::strncpy(cmd.setUniformMat4.name, name, UNIFORM_NAME_MAX - 1);
-        cmd.setUniformMat4.name[UNIFORM_NAME_MAX - 1] = '\0';
-        dispatchImmediate(cmd);
-    }
 
     // --- 纹理绑定到纹理单元 ---
 

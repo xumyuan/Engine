@@ -17,7 +17,7 @@ namespace engine
 
 		LightingPassOutput executeRenderPass(ShadowmapPassOutput& shadowmapData, ICamera* camera, bool useIBL);
 	private:
-		void bindShadowmap(rhi::CommandBuffer& cmdBuf, rhi::ProgramHandle program, ShadowmapPassOutput& shadowmapData);
+		void bindShadowmap(rhi::CommandBuffer& cmdBuf, ShadowmapPassOutput& shadowmapData);
 	private:
 		RenderTarget* m_RT = nullptr;
 		bool m_OwnsRT = false;

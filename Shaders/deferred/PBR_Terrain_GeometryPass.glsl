@@ -64,27 +64,27 @@ layout (std140, binding = 3) uniform MaterialParams {
 };
 
 // Terrain texture samplers
-uniform sampler2D texture_albedo1;
-uniform sampler2D texture_albedo2;
-uniform sampler2D texture_albedo3;
-uniform sampler2D texture_albedo4;
-uniform sampler2D texture_normal1;
-uniform sampler2D texture_normal2;
-uniform sampler2D texture_normal3;
-uniform sampler2D texture_normal4;
-uniform sampler2D texture_roughness1;
-uniform sampler2D texture_roughness2;
-uniform sampler2D texture_roughness3;
-uniform sampler2D texture_roughness4;
-uniform sampler2D texture_metallic1;
-uniform sampler2D texture_metallic2;
-uniform sampler2D texture_metallic3;
-uniform sampler2D texture_metallic4;
-uniform sampler2D texture_AO1;
-uniform sampler2D texture_AO2;
-uniform sampler2D texture_AO3;
-uniform sampler2D texture_AO4;
-uniform sampler2D blendmap;
+layout(binding = 13) uniform sampler2D texture_albedo1;
+layout(binding = 14) uniform sampler2D texture_albedo2;
+layout(binding = 15) uniform sampler2D texture_albedo3;
+layout(binding = 16) uniform sampler2D texture_albedo4;
+layout(binding = 17) uniform sampler2D texture_normal1;
+layout(binding = 18) uniform sampler2D texture_normal2;
+layout(binding = 19) uniform sampler2D texture_normal3;
+layout(binding = 20) uniform sampler2D texture_normal4;
+layout(binding = 21) uniform sampler2D texture_roughness1;
+layout(binding = 22) uniform sampler2D texture_roughness2;
+layout(binding = 23) uniform sampler2D texture_roughness3;
+layout(binding = 24) uniform sampler2D texture_roughness4;
+layout(binding = 25) uniform sampler2D texture_metallic1;
+layout(binding = 26) uniform sampler2D texture_metallic2;
+layout(binding = 27) uniform sampler2D texture_metallic3;
+layout(binding = 28) uniform sampler2D texture_metallic4;
+layout(binding = 29) uniform sampler2D texture_AO1;
+layout(binding = 30) uniform sampler2D texture_AO2;
+layout(binding = 31) uniform sampler2D texture_AO3;
+layout(binding = 32) uniform sampler2D texture_AO4;
+layout(binding = 33) uniform sampler2D blendmap;
 
 in mat3 TBN;
 in vec2 TexCoords;

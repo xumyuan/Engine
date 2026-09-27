@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "ProbeManager.h"
 #include "graphics/UniformBufferManager.h"
+#include "graphics/TextureBindings.h"
 
 namespace engine {
 
@@ -31,73 +32,32 @@ namespace engine {
 		m_ReflectionProbes.push_back(probe);
 	}
 
-	void ProbeManager::bindProbe(glm::vec3& renderPosition, Shader* shader) {
+	void ProbeManager::bindProbe(glm::vec3& renderPosition, rhi::CommandBuffer& cmd) {
+		rhi::TextureHandle skyboxCubemap = m_Skybox->getSkyboxCubemap()->getRHIHandle();
+
 		// If simple blending is enabled just use the closest probe
 		if (m_ProbeBlendSetting == PROBES_SIMPLE) {
-			// Light Probes
 			if (m_LightProbes.size() > 0) {
-				m_LightProbes[0]->bind(shader);
+				m_LightProbes[0]->bind(cmd);
 			}
 			else {
-				// Fallback to skybox
-				m_Skybox->getSkyboxCubemap()->bind(1);
-				shader->setUniform("irradianceMap", 1);
+				cmd.bindTextureUnit(skyboxCubemap, TextureUnit::IrradianceMap);
 			}
 
-			// Reflection Probes
+			// reflectionProbeMipCount 通过 IBLParams UBO 由调用方设置
 			if (m_ReflectionProbes.size() > 0) {
-				m_ReflectionProbes[0]->bind(shader);
+				m_ReflectionProbes[0]->bind(cmd);
 			}
 			else {
-				// Fallback to skybox — reflectionProbeMipCount 通过 IBLParams UBO 传递
-				// （调用方会在之后通过 updateIBLParams 设置完整的 IBLParams）
-				m_Skybox->getSkyboxCubemap()->bind(2);
-				shader->setUniform("prefilterMap", 2);
-				ReflectionProbe::getBRDFLUT()->bind(3);
-				shader->setUniform("brdfLUT", 3);
+				cmd.bindTextureUnit(skyboxCubemap, TextureUnit::PrefilterMap);
+				cmd.bindTextureUnit(ReflectionProbe::getBRDFLUT()->getRHIHandle(), TextureUnit::BrdfLUT);
 			}
 		}
 		// If probes are disabled just use the skybox
 		else if (m_ProbeBlendSetting == PROBES_DISABLED) {
-			// Light Probes
-			m_Skybox->getSkyboxCubemap()->bind(1);
-			shader->setUniform("irradianceMap", 1);
-
-			// Reflection Probes — reflectionProbeMipCount 通过 IBLParams UBO 传递
-			m_Skybox->getSkyboxCubemap()->bind(2);
-			shader->setUniform("prefilterMap", 2);
-			ReflectionProbe::getBRDFLUT()->bind(3);
-			shader->setUniform("brdfLUT", 3);
-		}
-	}
-
-	void ProbeManager::bindProbe(glm::vec3& renderPosition, rhi::CommandBuffer& cmd, rhi::ProgramHandle program) {
-		if (m_ProbeBlendSetting == PROBES_SIMPLE) {
-			if (m_LightProbes.size() > 0) {
-				m_LightProbes[0]->bind(cmd, program);
-			}
-			else {
-				cmd.bindTextureUnit(m_Skybox->getSkyboxCubemap()->getRHIHandle(), 1);
-				cmd.setUniformInt(program, "irradianceMap", 1);
-			}
-
-			if (m_ReflectionProbes.size() > 0) {
-				m_ReflectionProbes[0]->bind(cmd, program);
-			}
-			else {
-				cmd.bindTextureUnit(m_Skybox->getSkyboxCubemap()->getRHIHandle(), 2);
-				cmd.setUniformInt(program, "prefilterMap", 2);
-				cmd.bindTextureUnit(ReflectionProbe::getBRDFLUT()->getRHIHandle(), 3);
-				cmd.setUniformInt(program, "brdfLUT", 3);
-			}
-		}
-		else if (m_ProbeBlendSetting == PROBES_DISABLED) {
-			cmd.bindTextureUnit(m_Skybox->getSkyboxCubemap()->getRHIHandle(), 1);
-			cmd.setUniformInt(program, "irradianceMap", 1);
-			cmd.bindTextureUnit(m_Skybox->getSkyboxCubemap()->getRHIHandle(), 2);
-			cmd.setUniformInt(program, "prefilterMap", 2);
-			cmd.bindTextureUnit(ReflectionProbe::getBRDFLUT()->getRHIHandle(), 3);
-			cmd.setUniformInt(program, "brdfLUT", 3);
+			cmd.bindTextureUnit(skyboxCubemap, TextureUnit::IrradianceMap);
+			cmd.bindTextureUnit(skyboxCubemap, TextureUnit::PrefilterMap);
+			cmd.bindTextureUnit(ReflectionProbe::getBRDFLUT()->getRHIHandle(), TextureUnit::BrdfLUT);
 		}
 	}
 }

@@ -13,15 +13,10 @@ namespace engine {
 		Material(Texture* albedoMap = nullptr, Texture* normalMap = nullptr, Texture* metallicMap = nullptr, Texture* roughnessMap = nullptr,
 			Texture* ambientOcclusionMap = nullptr, Texture* emissionMap = nullptr);
 
-		// 旧接口（per-uniform），保留兼容
-		void BindMaterialInformation(Shader* shader) const;
-		
-		// UBO 接口：填充 UBOMaterialParams 并绑定纹理，sampler uniform 仍通过 shader 设置
+		// 标量参数写入 MaterialParams UBO（binding 3）
 		void fillMaterialUBO(UBOMaterialParams& params) const;
-		void bindMaterialTextures(Shader* shader) const;
-
-		// 命令缓冲版本：通过 CommandBuffer 录制纹理绑定和 uniform 设置
-		void bindMaterialTextures(rhi::CommandBuffer& cmd, rhi::ProgramHandle program) const;
+		// 纹理绑定到 TextureBindings.h 中的固定单元，未就绪的纹理退回默认纹理
+		void bindMaterialTextures(rhi::CommandBuffer& cmd) const;
 
 		void processMaterial(const SceneInfo::ModelInfo& modelinfo);
 

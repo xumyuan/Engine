@@ -18,28 +18,6 @@ namespace engine {
 		m_Meshes = std::move(meshes);
 	}
 
-	void Model::Draw(Shader* shader, RenderPassType pass) const {
-		// 仅在光照通道期间绑定网格物体材质信息
-		for (unsigned int i = 0; i < m_Meshes.size(); ++i) {
-			if (pass != RenderPassType::ShadowmapPassType) {
-				auto* uboMgr = getUBOManager();
-				if (uboMgr) {
-					// UBO 路径：填充材质参数到 UBO binding 3
-					auto& matParams = uboMgr->getMaterialParamsData();
-					m_Meshes[i].m_Material.fillMaterialUBO(matParams);
-					uboMgr->updateMaterialParams();
-					uboMgr->bindMaterialParams();
-					// 纹理 sampler 仍需通过 shader uniform 设置
-					m_Meshes[i].m_Material.bindMaterialTextures(shader);
-				} else {
-					// 降级路径
-					m_Meshes[i].m_Material.BindMaterialInformation(shader);
-				}
-			}
-			m_Meshes[i].Draw();
-		}
-	}
-
 	void Model::Draw(rhi::CommandBuffer& cmd, rhi::ProgramHandle program, RenderPassType pass) const {
 		for (unsigned int i = 0; i < m_Meshes.size(); ++i) {
 			if (pass != RenderPassType::ShadowmapPassType) {
@@ -52,7 +30,7 @@ namespace engine {
 						&matParams, sizeof(UBOMaterialParams));
 					cmd.bindUBO(UBOBinding::MaterialParams,
 						uboMgr->getMaterialParamsHandle(), sizeof(UBOMaterialParams));
-					m_Meshes[i].m_Material.bindMaterialTextures(cmd, program);
+					m_Meshes[i].m_Material.bindMaterialTextures(cmd);
 				}
 			}
 			m_Meshes[i].Draw(cmd);

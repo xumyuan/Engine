@@ -93,13 +93,13 @@ layout (std140, binding = 3) uniform MaterialParams {
 };
 
 // Texture samplers remain as individual uniforms
-uniform sampler2D texture_albedo;
-uniform sampler2D texture_normal;
-uniform sampler2D texture_metallic;
-uniform sampler2D texture_roughness;
-uniform sampler2D texture_ao;
-uniform sampler2D texture_displacement;
-uniform sampler2D texture_emission;
+layout(binding = 4) uniform sampler2D texture_albedo;
+layout(binding = 5) uniform sampler2D texture_normal;
+layout(binding = 6) uniform sampler2D texture_metallic;
+layout(binding = 7) uniform sampler2D texture_roughness;
+layout(binding = 8) uniform sampler2D texture_ao;
+layout(binding = 9) uniform sampler2D texture_displacement;
+layout(binding = 10) uniform sampler2D texture_emission;
 
 // Functions
 vec3 UnpackNormal(vec3 textureNormal);

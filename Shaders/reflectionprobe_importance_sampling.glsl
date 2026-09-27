@@ -29,7 +29,7 @@ out vec4 FragColor;
 
 in vec3 SampleDirection;
 
-uniform samplerCube sceneCaptureCubemap;
+layout(binding = 0) uniform samplerCube sceneCaptureCubemap;
 
 layout (std140, binding = 4) uniform ProbeParams {
 	float roughness;
