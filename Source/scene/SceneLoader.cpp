@@ -15,7 +15,6 @@
 #include "utils/json/JsonType.h"
 #include "utils/json/JsonUtils.h"
 
-#include "thread/ThreadPool.h"
 #include "utils/loaders/TextureLoader.h"
 
 namespace engine {
@@ -45,8 +44,7 @@ namespace engine {
 			spdlog::error("Error: {}", e.what());
 		}
 
-		// 等待线程池中的异步任务（如纹理加载）完成
-		thread_pool.wait();
+		TextureLoader::waitForPendingLoads();
 		TextureLoader::processMainThreadTasks();
 	}
 

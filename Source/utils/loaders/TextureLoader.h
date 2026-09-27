@@ -15,6 +15,8 @@ namespace engine {
 
 		static Cubemap* loadCubemapTexture(const std::string& right, const std::string& left, const std::string& top, const std::string& bottom, const std::string& back, const std::string& front, CubemapSettings* settings = nullptr);
 
+		// 等待已提交的后台解码任务结束（不包含主线程上传）
+		static void waitForPendingLoads();
 		static void processMainThreadTasks();
 
 		inline static Texture* getDefaultAlbedo() { return s_DefaultAlbedo; }

@@ -16,6 +16,11 @@ namespace engine {
 	std::queue<std::function<void()>> TextureLoader::mainThreadTasks;
 	std::mutex TextureLoader::taskMutex;
 
+	static TaskGroup& pendingLoads() {
+		static TaskGroup group(globalThreadPool());
+		return group;
+	}
+
 	// 将 stbi 通道数转为 ChannelLayout
 	static ChannelLayout channelsFromCount(int numComponents) {
 		switch (numComponents) {
@@ -37,13 +42,13 @@ namespace engine {
 		Texture* texture = (settings != nullptr) ? new Texture(*settings) : new Texture();
 		m_TextureCache[path] = texture;
 		
-		thread_pool.addTask(new TextureLoadTask([=]() {
+		pendingLoads().run([=]() {
 			// Load the texture
 			int width, height, numComponents;
 			unsigned char* data = stbi_load(path.c_str(), &width, &height, &numComponents, 0);
 			if (!data) {
 				spdlog::error("texture load fail - path:{0}", path);
-				return nullptr;
+				return;
 			}
 
 			ChannelLayout channels = channelsFromCount(numComponents);
@@ -57,8 +62,12 @@ namespace engine {
 				);
 			}
 			
-			}));
+			});
 		return m_TextureCache[path];
+	}
+
+	void TextureLoader::waitForPendingLoads() {
+		pendingLoads().wait();
 	}
 
 	Cubemap* TextureLoader::loadCubemapTexture(const std::string& right, const std::string& left, const std::string& top, const std::string& bottom, const std::string& back, const std::string& front, CubemapSettings* settings) {

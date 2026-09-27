@@ -70,7 +70,7 @@ public:
         }
 
         // 多任务时使用 std::async 并行执行
-        // （未来可以切换为使用全局 thread_pool，但 std::async 已经足够好）
+        // （可以改用 executeWithThreadPool，但 std::async 已经足够好）
         std::vector<std::future<void>> futures;
         futures.reserve(jobCount);
 
@@ -101,16 +101,15 @@ public:
             return;
         }
 
-        // 使用全局 thread_pool 分发任务
+        TaskGroup group(globalThreadPool());
         for (size_t i = 0; i < jobCount; ++i) {
             m_Results[i].reset();
-            thread_pool.addTask(new TextureLoadTask([this, i]() {
+            group.run([this, i]() {
                 m_Jobs[i](m_Results[i]);
-            }));
+            });
         }
 
-        // 等待所有任务完成
-        thread_pool.wait();
+        group.wait();
     }
 
     // 获取录制结果
