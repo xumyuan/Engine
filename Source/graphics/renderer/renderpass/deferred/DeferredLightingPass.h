@@ -9,13 +9,14 @@ namespace engine
 {
 	class Shader;
 	class ICamera;
+	class LightMarkerRenderer;
 
 	class DeferredLightingPass : public RenderPass {
 	public:
 		DeferredLightingPass(const RenderScene& renderScene);
 		virtual ~DeferredLightingPass() override;
 
-		LightingPassOutput ExecuteLightingPass(ShadowmapPassOutput& inputShadowmapData, GeometryPassOutput& inputGbuffer, PreLightingPassOutput& preLightingOutput, ICamera* camera, bool useIBL);
+		LightingPassOutput ExecuteLightingPass(ShadowmapPassOutput& inputShadowmapData, GeometryPassOutput& inputGbuffer, PreLightingPassOutput& preLightingOutput, ICamera* camera, bool useIBL, LightMarkerRenderer* markers = nullptr);
 	private:
 		void BindShadowmap(rhi::CommandBuffer& cmdBuf, ShadowmapPassOutput& shadowmapData);
 	private:

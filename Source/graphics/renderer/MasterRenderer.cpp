@@ -3,6 +3,7 @@
 
 #include <gl/glew.h>
 #include <ui/RuntimePane.h>
+#include "ui/DebugPane.h"
 #include "rhi/include/RHIContext.h"
 #include "physics/fluid/FluidSim.h"
 
@@ -75,6 +76,7 @@ namespace engine
 		// 每帧更新渲染场景快照（场景数据可能在帧间变化）
 		m_RenderScene = m_ActiveScene->extractRenderScene();
 		if (m_RenderScene.fluid) m_RenderScene.fluid->updateSimulation(m_SimulationCommands);
+		auto* lightMarkers = DebugPane::getLightMarkersEnabled() ? &m_LightMarkers : nullptr;
 
 #if FORWARD_RENDER
 		BEGIN_EVENT("Forward render");
@@ -84,7 +86,7 @@ namespace engine
 		END_EVENT();
 		BEGIN_EVENT("Light");
 		// Lighting Pass（仅录制命令）
-		LightingPassOutput lightingOutput = m_LightingPass.executeRenderPass(shadowmapOutput, m_RenderScene.camera, true);
+		LightingPassOutput lightingOutput = m_LightingPass.executeRenderPass(shadowmapOutput, m_RenderScene.camera, true, lightMarkers);
 		END_EVENT();
 		BEGIN_EVENT("PostProcess");
 		// 后处理 Pass（仅录制命令）
@@ -102,7 +104,7 @@ namespace engine
 		PreLightingPassOutput ssaoOutput = m_SSAOPass.executeSSAOPass(m_RenderScene.camera, geometryOutput);
 		END_EVENT();
 		BEGIN_EVENT("LightingPass");
-		LightingPassOutput deferredLightingOutput = m_DeferredLightingPass.ExecuteLightingPass(shadowmapOutput, geometryOutput, ssaoOutput, m_RenderScene.camera, true);
+		LightingPassOutput deferredLightingOutput = m_DeferredLightingPass.ExecuteLightingPass(shadowmapOutput, geometryOutput, ssaoOutput, m_RenderScene.camera, true, lightMarkers);
 		END_EVENT();
 		BEGIN_EVENT("FluidPass");
 		LightingPassOutput fluidOutput = m_FluidPass.executeRenderPass(deferredLightingOutput, geometryOutput, m_RenderScene.camera);

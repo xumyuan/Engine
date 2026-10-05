@@ -7,6 +7,7 @@
 
 namespace engine
 {
+	class LightMarkerRenderer;
 
 	class ForwardLightingPass : public RenderPass
 	{
@@ -15,7 +16,7 @@ namespace engine
 		ForwardLightingPass(const RenderScene& renderScene, RenderTarget* customRT);
 		virtual ~ForwardLightingPass() override;
 
-		LightingPassOutput executeRenderPass(ShadowmapPassOutput& shadowmapData, ICamera* camera, bool useIBL);
+		LightingPassOutput executeRenderPass(ShadowmapPassOutput& shadowmapData, ICamera* camera, bool useIBL, LightMarkerRenderer* markers = nullptr);
 	private:
 		void bindShadowmap(rhi::CommandBuffer& cmdBuf, ShadowmapPassOutput& shadowmapData);
 	private:

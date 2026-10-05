@@ -5,6 +5,7 @@ namespace engine {
 
 	glm::vec3* DebugPane::s_CameraPosition = nullptr;
 	bool DebugPane::s_WireframeMode = false;
+	bool DebugPane::s_LightMarkersEnabled = true;
 	float* DebugPane::s_GammaCorrectionValue = nullptr;
 	float* DebugPane::s_ExposureValue = nullptr;
 	bool* DebugPane::s_FxaaEnabled = nullptr;
@@ -15,6 +16,7 @@ namespace engine {
 	}
 
 	void DebugPane::setupPaneObjects() {
+		ImGui::Checkbox("Light markers", &s_LightMarkersEnabled);
 		if (s_FxaaEnabled != nullptr)
 			ImGui::Checkbox("FXAA", s_FxaaEnabled);
 		if (s_renderTerrain !=nullptr)

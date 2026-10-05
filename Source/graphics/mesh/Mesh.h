@@ -32,7 +32,7 @@ namespace engine {
 		void LoadData(bool interleaved = true);
 
 		void Draw() const;
-		void Draw(rhi::CommandBuffer& cmd) const;
+		void Draw(rhi::CommandBuffer& cmd, uint32_t instanceCount = 1) const;
 
 		inline void setPositions(std::vector<glm::vec3>& positions) { m_Positions = positions; }
 		inline void setUVs(std::vector<glm::vec2>& uvs) { m_UVs = uvs; }

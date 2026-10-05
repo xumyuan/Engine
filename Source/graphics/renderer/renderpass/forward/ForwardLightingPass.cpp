@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "ForwardLightingPass.h"
+#include "graphics/renderer/LightMarkerRenderer.h"
 
 #include "physics/fluid/FluidSim.h"
 #include "graphics/Window.h"
@@ -35,7 +36,7 @@ namespace engine
 		}
 	}
 
-	LightingPassOutput ForwardLightingPass::executeRenderPass(ShadowmapPassOutput& shadowmapData, ICamera* camera, bool useIBL) {
+	LightingPassOutput ForwardLightingPass::executeRenderPass(ShadowmapPassOutput& shadowmapData, ICamera* camera, bool useIBL, LightMarkerRenderer* markers) {
 		// 通过命令缓冲录制 beginRenderPass
 		rhi::RenderPassParams passParams;
 		passParams.viewport = { 0, 0, m_RT->getWidth(), m_RT->getHeight() };
@@ -130,6 +131,7 @@ namespace engine
 			fluid->drawParticle(cmd(), dynamic_cast<FPSCamera*>(camera));
 		}
 		skybox->Draw(cmd(), camera);
+		if (markers) markers->draw(cmd(), m_RT->isMultisampled());
 
 		// 切换回 model shader 渲染透明物体（需要开启 blend、关闭 face cull）
 		rhi::PipelineState transparentPipeline = pipeline;

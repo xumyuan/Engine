@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "DeferredLightingPass.h"
+#include "graphics/renderer/LightMarkerRenderer.h"
 
 #include <graphics/Window.h>
 #include <graphics/Shader.h>
@@ -26,7 +27,7 @@ namespace engine
 		delete m_RT;
 	}
 
-	LightingPassOutput DeferredLightingPass::ExecuteLightingPass(ShadowmapPassOutput& inputShadowmapData, GeometryPassOutput& inputGbuffer, PreLightingPassOutput& preLightingOutput, ICamera* camera, bool useIBL)
+	LightingPassOutput DeferredLightingPass::ExecuteLightingPass(ShadowmapPassOutput& inputShadowmapData, GeometryPassOutput& inputGbuffer, PreLightingPassOutput& preLightingOutput, ICamera* camera, bool useIBL, LightMarkerRenderer* markers)
 	{
 		// 通过命令缓冲录制 beginRenderPass
 		rhi::RenderPassParams passParams;
@@ -166,6 +167,7 @@ namespace engine
 		Skybox* skybox = m_RenderScene.skybox;
 		skybox->Draw(cmd(), camera);
 		cmd().popDebugGroup();
+		if (markers) markers->draw(cmd(), false);
 
 		// 通过命令缓冲录制 endRenderPass
 		cmd().endRenderPass();

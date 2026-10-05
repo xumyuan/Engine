@@ -8,7 +8,6 @@
 #include "scene/components/SkyboxComponent.h"
 #include "scene/components/LightComponent.h"
 #include "graphics/mesh/Model.h"
-#include "graphics/mesh/common/Sphere.h"
 #include "graphics/Skybox.h"
 #include "physics/fluid/FluidSim.h"
 
@@ -143,41 +142,18 @@ namespace engine {
 			scene.addSceneNode(spotLightNode);
 		}
 
-		// 创建点光源 SceneNode + LightComponent + MeshComponent（光球模型）
+		// Point lights only own lighting data; the renderer supplies debug markers.
 		for (auto& pointLight : lightsInfo.pointLightList) {
 			if (pointLight.isActive) {
 				auto* pointLightNode = new SceneNode("PointLight");
 				pointLightNode->setPosition(pointLight.position);
-				pointLightNode->setScale(glm::vec3(5.0f));
 
 				auto* pointComp = new LightComponent(LightType::Point);
 				pointComp->setLightColor(pointLight.lightColor);
 				pointComp->setActive(true);
 				pointLightNode->addComponent(pointComp);
 
-				// 创建光球模型
-				Sphere* lightSphere = new Sphere(10, 10);
-				Model* lightSphereModel = new Model(std::move(*lightSphere));
-
-				// 设置材质为光源颜色
-				auto& material = lightSphereModel->getMeshes()[0].getMaterial();
-				material.SetAlbedoColour(glm::vec4(pointLight.lightColor, 1.0f));
-				material.SetEmissionColour(glm::vec4(pointLight.lightColor, 1.0f));
-
-				pointLightNode->addComponent(new MeshComponent(lightSphereModel, true, false));
 				scene.addSceneNode(pointLightNode);
-
-				// [向后兼容] 为旧渲染管线添加 RenderableModel
-				scene.addRenderableModel(new RenderableModel(
-					pointLight.position,
-					glm::vec3(5.0f, 5.0f, 5.0f),
-					glm::vec3(0.0f, 1.0f, 0.0f),
-					0.0f,
-					nullptr,
-					nullptr,
-					true,
-					false
-				));
 			}
 		}
 	}

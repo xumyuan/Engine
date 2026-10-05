@@ -12,6 +12,7 @@
 #include <utils/Timer.h>
 #include <graphics/UniformBufferManager.h>
 #include <rhi/include/RHICommandQueue.h>
+#include "graphics/renderer/LightMarkerRenderer.h"
 
 namespace engine
 {
@@ -70,6 +71,7 @@ namespace engine
 
 		// 屏幕空间流体（延迟渲染路径，光照之后、后处理之前）
 		FluidRenderPass m_FluidPass;
+		LightMarkerRenderer m_LightMarkers;
 
 
 		Timer m_Timer;

@@ -99,15 +99,15 @@ namespace engine {
 		}
 	}
 
-	void Mesh::Draw(rhi::CommandBuffer& cmd) const {
-		if (!static_cast<bool>(m_RenderPrimitive)) return;
+	void Mesh::Draw(rhi::CommandBuffer& cmd, uint32_t instanceCount) const {
+		if (!static_cast<bool>(m_RenderPrimitive) || instanceCount == 0) return;
 
 		cmd.bindRenderPrimitive(m_RenderPrimitive);
 		if (m_Indices.size() > 0) {
-			cmd.draw(static_cast<uint32_t>(m_Indices.size()), 0);
+			cmd.draw(static_cast<uint32_t>(m_Indices.size()), 0, instanceCount);
 		} else {
 			cmd.drawArrays(rhi::PrimitiveType::Triangles,
-				static_cast<uint32_t>(m_Positions.size()));
+				static_cast<uint32_t>(m_Positions.size()), 0, instanceCount);
 		}
 	}
 

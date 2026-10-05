@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "LightCollector.h"
 
 #include <cstring>
@@ -32,7 +31,7 @@ namespace engine {
 			case LightType::Point:
 				if (numPoint < MAX_POINT_LIGHTS) {
 					// 点光源位置从节点的 Transform 获取
-					glm::vec3 position = node->getPosition();
+					glm::vec3 position = glm::vec3(node->getWorldTransform()[3]);
 					ubo.pointLights[numPoint].position = glm::vec4(position, light->getIntensity());
 					ubo.pointLights[numPoint].lightColour = glm::vec4(light->getLightColor(), light->getAttenuationRadius());
 					numPoint++;
@@ -42,7 +41,7 @@ namespace engine {
 			case LightType::Spot:
 				if (numSpot < MAX_SPOT_LIGHTS) {
 					// 聚光灯位置从节点的 Transform 获取
-					glm::vec3 position = node->getPosition();
+					glm::vec3 position = glm::vec3(node->getWorldTransform()[3]);
 					ubo.spotLights[numSpot].position = glm::vec4(position, light->getIntensity());
 					ubo.spotLights[numSpot].direction = glm::vec4(light->getDirection(), light->getAttenuationRadius());
 					ubo.spotLights[numSpot].lightColour = glm::vec4(light->getLightColor(), light->getCutOff());

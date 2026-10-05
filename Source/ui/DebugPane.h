@@ -15,6 +15,7 @@ namespace engine {
 		static inline void bindGammaCorrectionValue(float* ptr) { s_GammaCorrectionValue = ptr; }
 		static inline void bindExposureValue(float* ptr) { s_ExposureValue = ptr; }
 		static inline bool getWireframeMode() { return s_WireframeMode; }
+		static inline bool getLightMarkersEnabled() { return s_LightMarkersEnabled; }
 		static inline void setWireframeMode(bool choice) { s_WireframeMode = choice; }
 		static inline void bindRenderTerrain(bool* ptr) { s_renderTerrain = ptr; }
 	private:
@@ -24,6 +25,7 @@ namespace engine {
 		static float* s_ExposureValue;
 
 		static bool s_WireframeMode;
+		static bool s_LightMarkersEnabled;
 
 		// fxaa 开关
 		static bool* s_FxaaEnabled;

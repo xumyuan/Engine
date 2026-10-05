@@ -99,6 +99,12 @@ GPU 路径使用固定 0.01 秒时间步，每帧最多追赶 4 步。预测、�
 
 compute 参数在创建时固定，CPU 的 `getPositions()` / `getVelocities()` / `getNeighborList()` 不反映 GPU 当前状态。GPU 每轮应用修正并重建邻域、修正后限制边界，因此与现有 CPU 求解器不保证逐粒子数值一致。macOS 原生 OpenGL 最高为 4.1，无法运行 compute 路径；当前引擎窗口本身要求 OpenGL 4.5，需在支持该版本的环境验证运行效果。
 
+## 光源标记
+
+主视图默认以半径 0.5 的无光照小球显示已收集的点光源和聚光灯，Debug Controls 中的 `Light markers` 可切换显示。标记直接读取 Lighting UBO 的世界位置和颜色，所有灯共用一个球网格并以一次实例化绘制提交；修改灯光后无需维护另一份模型变换。
+
+小球使用归一化后的灯光颜色和独立显示亮度，避免 HDR 光源颜色经色调映射后全部变白。标记受场景深度遮挡但不写深度，不进入阴影、G-buffer 或环境探针捕获，也不改变实际照明。方向光没有有限位置，因此不绘制灯球。
+
 ## RHI 测试
 
 ```bash
@@ -106,7 +112,7 @@ compute 参数在创建时固定，CPU 的 `getPositions()` / `getVelocities()` 
 Engine.exe --test-rhi
 ```
 
-不需要图形上下文的 compute 命令与资源测试（仅依赖 GLM）：
+不需要图形上下文的 compute 命令、资源与灯光收集测试（仅依赖 GLM）：
 
 ```bash
 cmake -S Tests -B out/build/compute-tests -DCMAKE_TOOLCHAIN_FILE="$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
@@ -114,4 +120,4 @@ cmake --build out/build/compute-tests --config Debug
 ctest --test-dir out/build/compute-tests -C Debug --output-on-failure
 ```
 
-测试覆盖即时/延迟命令一致性、每轮网格重建与屏障、非整工作组粒子数以及初始化失败后的资源释放；不替代真实 GPU 上的数值和视觉验证。
+测试覆盖即时/延迟命令一致性、每轮网格重建与屏障、非整工作组粒子数以及初始化失败后的资源释放；灯光测试覆盖父节点变换、位置/颜色编辑、启停与数量上限。不替代真实 GPU 上的数值和视觉验证。

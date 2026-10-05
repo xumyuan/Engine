@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "SceneNode.h"
 
 #include <glm/gtc/matrix_transform.hpp>
