@@ -22,10 +22,10 @@
         "directionalLight":{
             "isActive":true,
             "direction":[-1.0, -1.0, -1.0],
-            "lightColor":[10.25, 10.25, 10.25]
+            "lightColor":[4.0, 3.8, 3.5]
         },
         "spotLight":{
-            "isActive": true,
+            "isActive": false,
             "lightColor": [100.0, 100.0, 100.0],
             "position": [0.0, 0.0, 0.0],
             "direction": [1.0, 0.0, 0.0],
@@ -35,13 +35,33 @@
         "pointLight": [
             {
                 "isActive": true,
-                "position": [300.0, 300.0, 300.0],
-                "lightColor": [120.0, 95.0, 120.0]
+                "position": [80.0, 137.0, 77.0],
+                "lightColor": [300.0, 210.0, 135.0]
             },
             {
                 "isActive": true,
-                "position": [800.0, 200.0, 0.0],
-                "lightColor": [120.0, 77.0, 100.0]
+                "position": [117.0, 137.0, 77.0],
+                "lightColor": [300.0, 210.0, 135.0]
+            },
+            {
+                "isActive": true,
+                "position": [154.0, 137.0, 77.0],
+                "lightColor": [300.0, 210.0, 135.0]
+            },
+            {
+                "isActive": true,
+                "position": [80.0, 137.0, 119.0],
+                "lightColor": [180.0, 230.0, 300.0]
+            },
+            {
+                "isActive": true,
+                "position": [117.0, 137.0, 119.0],
+                "lightColor": [180.0, 230.0, 300.0]
+            },
+            {
+                "isActive": true,
+                "position": [154.0, 137.0, 119.0],
+                "lightColor": [180.0, 230.0, 300.0]
             }
         ]
     }
