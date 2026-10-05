@@ -67,7 +67,7 @@ inline void setNormalMatrix(UBOPerObject& ubo, const glm::mat3& normalMatrix) {
 // UBO 2: Lighting — 灯光数据
 // ============================================================================
 #define MAX_DIR_LIGHTS 3
-#define MAX_POINT_LIGHTS 6
+#define MAX_POINT_LIGHTS 9
 #define MAX_SPOT_LIGHTS 6
 
 struct alignas(16) UBODirLight {
@@ -110,13 +110,14 @@ struct alignas(16) UBOShadowDataPointLight {
 struct alignas(16) UBOLighting {
     glm::ivec4 numDirPointSpotLights;                // offset 0   (16 bytes)
     UBODirLight dirLights[MAX_DIR_LIGHTS];            // offset 16  (96 bytes)
-    UBOPointLight pointLights[MAX_POINT_LIGHTS];      // offset 112 (192 bytes)
-    UBOSpotLight spotLights[MAX_SPOT_LIGHTS];          // offset 304 (384 bytes)
-    UBOShadowData dirLightShadowData;                 // offset 688 (80 bytes)
-    UBOShadowData spotLightShadowData;                // offset 768 (80 bytes)
-    UBOShadowDataPointLight pointLightShadowData;     // offset 848 (16 bytes)
-    // Total: 864 bytes
+    UBOPointLight pointLights[MAX_POINT_LIGHTS];      // offset 112 (288 bytes)
+    UBOSpotLight spotLights[MAX_SPOT_LIGHTS];          // offset 400 (384 bytes)
+    UBOShadowData dirLightShadowData;                 // offset 784 (80 bytes)
+    UBOShadowData spotLightShadowData;                // offset 864 (80 bytes)
+    UBOShadowDataPointLight pointLightShadowData;     // offset 944 (16 bytes)
+    // Total: 960 bytes
 };
+static_assert(sizeof(UBOLighting) == 960, "UBOLighting size mismatch with std140 layout");
 
 // ============================================================================
 // UBO 3: MaterialParams — 材质标量参数 (纹理 sampler 保持独立 uniform)

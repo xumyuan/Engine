@@ -21,7 +21,7 @@ struct SpotLight { vec4 position; vec4 direction; vec4 lightColour; vec4 params;
 layout(std140, binding = 2) uniform Lighting {
     ivec4 numDirPointSpotLights;
     DirLight dirLights[3];
-    PointLight pointLights[6];
+    PointLight pointLights[9];
     SpotLight spotLights[6];
 };
 
@@ -32,7 +32,7 @@ layout(std140, binding = 4) uniform MarkerParams {
 layout(location = 0) flat out vec3 markerColor;
 
 void main() {
-    int pointCount = clamp(numDirPointSpotLights.y, 0, 6);
+    int pointCount = clamp(numDirPointSpotLights.y, 0, 9);
     vec4 lightPosition;
     vec3 lightColor;
     if (gl_InstanceID < pointCount) {

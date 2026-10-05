@@ -90,7 +90,7 @@ struct ShadowDataPointLight {
 };
 
 #define MAX_DIR_LIGHTS 3
-#define MAX_POINT_LIGHTS 6
+#define MAX_POINT_LIGHTS 9
 #define MAX_SPOT_LIGHTS 6
 const float PI = 3.14159265359;
 

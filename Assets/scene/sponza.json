@@ -62,6 +62,21 @@
                 "isActive": true,
                 "position": [154.0, 137.0, 119.0],
                 "lightColor": [180.0, 230.0, 300.0]
+            },
+            {
+                "isActive": true,
+                "position": [80.0, 139.0, 98.0],
+                "lightColor": [450.0, 420.0, 380.0]
+            },
+            {
+                "isActive": true,
+                "position": [117.0, 139.0, 98.0],
+                "lightColor": [450.0, 420.0, 380.0]
+            },
+            {
+                "isActive": true,
+                "position": [154.0, 139.0, 98.0],
+                "lightColor": [450.0, 420.0, 380.0]
             }
         ]
     }
