@@ -7,23 +7,47 @@
     },
     "configurePresets": [
         {
-            "name": "default",
-            "displayName": "Visual Studio 2022 (x64)",
-            "generator": "Visual Studio 17 2022",
-            "binaryDir": "${sourceDir}/Build",
-            "architecture": {
-                "value": "x64",
-                "strategy": "set"
+            "name": "windows-base",
+            "hidden": true,
+            "binaryDir": "${sourceDir}/out/build/${presetName}",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
             },
+            "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
             "cacheVariables": {
-                "CMAKE_TOOLCHAIN_FILE": {
-                    "value": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-                    "type": "FILEPATH"
-                },
                 "VCPKG_TARGET_TRIPLET": "x64-windows",
                 "VCPKG_MANIFEST_MODE": "ON",
-                "VCPKG_OVERLAY_PORTS": "${sourceDir}/ports",
-                "VCPKG_INSTALLED_DIR": "${sourceDir}/vcpkg_installed"
+                "VCPKG_INSTALLED_DIR": "${sourceDir}/out/build/${presetName}/vcpkg_installed"
+            }
+        },
+        {
+            "name": "default",
+            "inherits": "windows-base",
+            "displayName": "Visual Studio 2022 (x64)",
+            "generator": "Visual Studio 17 2022",
+            "architecture": "x64",
+            "toolset": "v143,host=x64",
+            "cacheVariables": {
+                "CMAKE_CONFIGURATION_TYPES": "Debug;Release;RelWithDebInfo"
+            }
+        },
+        {
+            "name": "clangd",
+            "inherits": "windows-base",
+            "displayName": "clangd database (Ninja, MSVC x64, Debug)",
+            "description": "Run from an x64 Native Tools Command Prompt for VS 2022 with Ninja on PATH.",
+            "generator": "Ninja",
+            "architecture": {
+                "value": "x64",
+                "strategy": "external"
+            },
+            "cacheVariables": {
+                "CMAKE_CXX_COMPILER": "cl",
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "CMAKE_DISABLE_PRECOMPILE_HEADERS": "ON"
             }
         }
     ],
@@ -37,6 +61,38 @@
             "name": "release",
             "configurePreset": "default",
             "configuration": "Release"
+        },
+        {
+            "name": "relwithdebinfo",
+            "configurePreset": "default",
+            "configuration": "RelWithDebInfo"
+        },
+        {
+            "name": "clangd",
+            "configurePreset": "clangd"
+        }
+    ],
+    "workflowPresets": [
+        {
+            "name": "debug",
+            "steps": [
+                { "type": "configure", "name": "default" },
+                { "type": "build", "name": "debug" }
+            ]
+        },
+        {
+            "name": "release",
+            "steps": [
+                { "type": "configure", "name": "default" },
+                { "type": "build", "name": "release" }
+            ]
+        },
+        {
+            "name": "relwithdebinfo",
+            "steps": [
+                { "type": "configure", "name": "default" },
+                { "type": "build", "name": "relwithdebinfo" }
+            ]
         }
     ]
 }

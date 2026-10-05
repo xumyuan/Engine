@@ -11,12 +11,9 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # ============================================================================
 # 输出目录 (兼容多配置生成器如 VS)
 # ============================================================================
-foreach(CONFIG_TYPE Debug Release RelWithDebInfo MinSizeRel)
-    string(TOUPPER ${CONFIG_TYPE} CONFIG_UPPER)
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${CONFIG_UPPER} ${CMAKE_SOURCE_DIR}/Bin/${CONFIG_TYPE}-x64/Engine)
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${CONFIG_UPPER} ${CMAKE_SOURCE_DIR}/Bin/${CONFIG_TYPE}-x64/Engine)
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${CONFIG_UPPER} ${CMAKE_SOURCE_DIR}/Bin/${CONFIG_TYPE}-x64/Engine)
-endforeach()
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin/$<CONFIG>")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib/$<CONFIG>")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib/$<CONFIG>")
 
 # ============================================================================
 # 查找 vcpkg 依赖
