@@ -16,8 +16,8 @@ namespace engine
 		m_SSAOBlurRT(Window::getWidth(), Window::getHeight())
 	{
 		// 加载着色器
-		m_SSAOShader = ShaderLoader::loadShader("Shaders/post_process/ssao.glsl");
-		m_SSAOBlurShader = ShaderLoader::loadShader("Shaders/post_process/ssao_blur.glsl");
+		m_SSAOShader = ShaderLoader::loadShader("Source/Shaders/post_process/ssao.glsl");
+		m_SSAOBlurShader = ShaderLoader::loadShader("Source/Shaders/post_process/ssao_blur.glsl");
 
 		// 创建 SSAO RenderTarget（单通道，存储 AO 值）
 		m_SSAORT.addColorTexture(rhi::TextureFormat::R8).build();

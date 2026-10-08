@@ -13,7 +13,7 @@ namespace engine {
 	Skybox::Skybox(const std::vector<std::string>& filePaths) {
 		m_Device = getRHIDevice();
 
-		m_SkyboxShader = ShaderLoader::loadShader("Shaders/skybox.glsl");
+		m_SkyboxShader = ShaderLoader::loadShader("Source/Shaders/skybox.glsl");
 		CubemapSettings srgbCubemap;
 		srgbCubemap.IsSRGB = true;
 		m_SkyboxCubemap = TextureLoader::loadCubemapTexture(filePaths[0], filePaths[1], filePaths[2], filePaths[3], filePaths[4], filePaths[5], &srgbCubemap);

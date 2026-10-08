@@ -19,10 +19,10 @@ namespace engine {
 		m_SmoothRTB(Window::getWidth(), Window::getHeight()),
 		m_CompositeRT(Window::getWidth(), Window::getHeight())
 	{
-		m_DepthShader = ShaderLoader::loadShader("Shaders/fluid/ssf_depth.glsl");
-		m_ThicknessShader = ShaderLoader::loadShader("Shaders/fluid/ssf_thickness.glsl");
-		m_SmoothShader = ShaderLoader::loadShader("Shaders/fluid/ssf_smooth.glsl");
-		m_CompositeShader = ShaderLoader::loadShader("Shaders/fluid/ssf_composite.glsl");
+		m_DepthShader = ShaderLoader::loadShader("Source/Shaders/fluid/ssf_depth.glsl");
+		m_ThicknessShader = ShaderLoader::loadShader("Source/Shaders/fluid/ssf_thickness.glsl");
+		m_SmoothShader = ShaderLoader::loadShader("Source/Shaders/fluid/ssf_smooth.glsl");
+		m_CompositeShader = ShaderLoader::loadShader("Source/Shaders/fluid/ssf_composite.glsl");
 
 		// 深度附件只用于保留最近的粒子表面，不需要采样
 		m_DepthRT.addColorTexture(rhi::TextureFormat::R32F)

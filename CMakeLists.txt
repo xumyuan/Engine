@@ -36,16 +36,32 @@ file(GLOB_RECURSE ENGINE_SOURCES CONFIGURE_DEPENDS
     "Source/*.cpp"
     "Source/*.h"
 )
+set(ENGINE_SHADER_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Source/Shaders")
+file(GLOB_RECURSE ENGINE_SHADERS CONFIGURE_DEPENDS
+    "${ENGINE_SHADER_SOURCE_DIR}/*.glsl"
+)
+set_source_files_properties(${ENGINE_SHADERS} PROPERTIES HEADER_FILE_ONLY TRUE)
 
 # ============================================================================
 # 按目录结构生成 VS 筛选器 (source_group)
 # ============================================================================
-source_group(TREE ${CMAKE_SOURCE_DIR}/Source PREFIX "Source" FILES ${ENGINE_SOURCES})
+source_group(TREE ${CMAKE_SOURCE_DIR}/Source PREFIX "Source" FILES ${ENGINE_SOURCES} ${ENGINE_SHADERS})
 
 # ============================================================================
 # 创建可执行目标
 # ============================================================================
-add_executable(${PROJECT_NAME} ${ENGINE_SOURCES})
+add_executable(${PROJECT_NAME} ${ENGINE_SOURCES} ${ENGINE_SHADERS})
+
+# Synchronize shaders even when no C++ files need rebuilding.
+add_custom_target(${PROJECT_NAME}Shaders
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${ENGINE_SHADER_SOURCE_DIR}"
+        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/Shaders"
+    DEPENDS ${ENGINE_SHADERS}
+    COMMENT "Synchronizing shaders to the runtime directory"
+    VERBATIM
+)
+add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}Shaders)
 
 # ============================================================================
 # 包含目录

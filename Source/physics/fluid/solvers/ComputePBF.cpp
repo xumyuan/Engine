@@ -35,7 +35,7 @@ bool ComputePBF::initialize(rhi::BufferHandle positions, const std::vector<glm::
     }
 
     auto compiler = m_device.createShaderCompiler();
-    m_program = compiler->loadAndCompile(std::string(PROJECT_ROOT_DIR) + "/Shaders/fluid/pbf_compute.glsl");
+    m_program = compiler->loadAndCompile(std::string(PROJECT_ROOT_DIR) + "/Source/Shaders/fluid/pbf_compute.glsl");
     if (!m_program || !m_device.waitProgram(m_program->getProgramHandle())) return false;
 
     m_params.counts = glm::uvec4(static_cast<uint32_t>(velocities.size()), 0, static_cast<uint32_t>(cellCount), 0);

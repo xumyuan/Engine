@@ -15,7 +15,7 @@ namespace engine
 {
 	DeferredLightingPass::DeferredLightingPass(const RenderScene& renderScene) : RenderPass(renderScene,RenderPassType::LightingPassType)
 	{
-		m_LightingShader = ShaderLoader::loadShader("Shaders/deferred/PBR_LightingPass.glsl");
+		m_LightingShader = ShaderLoader::loadShader("Source/Shaders/deferred/PBR_LightingPass.glsl");
 
 		m_RT = new RenderTarget(Window::getWidth(), Window::getHeight());
 		m_RT->addColorTexture(rhi::TextureFormat::RGBA16F)

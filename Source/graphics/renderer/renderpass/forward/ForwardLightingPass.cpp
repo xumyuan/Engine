@@ -15,8 +15,8 @@ namespace engine
 
 	ForwardLightingPass::ForwardLightingPass(const RenderScene& renderScene) : RenderPass(renderScene, RenderPassType::LightingPassType), m_OwnsRT(true)
 	{
-		m_ModelShader = ShaderLoader::loadShader("Shaders/forward/pbr_model.glsl");
-		m_TerrainShader = ShaderLoader::loadShader("Shaders/forward/pbr_terrain.glsl");
+		m_ModelShader = ShaderLoader::loadShader("Source/Shaders/forward/pbr_model.glsl");
+		m_TerrainShader = ShaderLoader::loadShader("Source/Shaders/forward/pbr_terrain.glsl");
 		uint8_t samples = MSAA_SAMPLE_AMOUNT > 1 ? static_cast<uint8_t>(MSAA_SAMPLE_AMOUNT) : 1;
 		m_RT = new RenderTarget(Window::getWidth(), Window::getHeight(), samples);
 
@@ -26,8 +26,8 @@ namespace engine
 
 	ForwardLightingPass::ForwardLightingPass(const RenderScene& renderScene, RenderTarget* customRT) : RenderPass(renderScene, RenderPassType::LightingPassType), m_RT(customRT), m_OwnsRT(false)
 	{
-		m_ModelShader = ShaderLoader::loadShader("Shaders/forward/pbr_model.glsl");
-		m_TerrainShader = ShaderLoader::loadShader("Shaders/forward/pbr_terrain.glsl");
+		m_ModelShader = ShaderLoader::loadShader("Source/Shaders/forward/pbr_model.glsl");
+		m_TerrainShader = ShaderLoader::loadShader("Source/Shaders/forward/pbr_terrain.glsl");
 	}
 
 	ForwardLightingPass::~ForwardLightingPass() {

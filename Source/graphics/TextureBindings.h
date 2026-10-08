@@ -7,7 +7,7 @@ namespace engine {
 // ============================================================================
 // 纹理单元编号
 // ============================================================================
-// 与 shader 中 sampler 的 layout(binding = N) 一一对应；GLSL 没有 #include，修改编号时需同步修改 Shaders/ 下对应的 shader
+// 与 shader 中 sampler 的 layout(binding = N) 一一对应；GLSL 没有 #include，修改编号时需同步修改 Source/Shaders/ 下对应的 shader
 // 同一个 shader 内编号不能重复，同一编号上也不能同时出现不同类型的 sampler（GL 会在绘制时报 GL_INVALID_OPERATION）
 namespace TextureUnit {
 
@@ -48,7 +48,7 @@ namespace TextureUnit {
     static constexpr uint32_t SSAODepth              = 1;
     static constexpr uint32_t SSAONoise              = 2;
 
-    // ----- 屏幕空间流体（Shaders/fluid/ssf_*.glsl）-----
+    // ----- 屏幕空间流体（Source/Shaders/fluid/ssf_*.glsl）-----
     static constexpr uint32_t SSFSceneDepth          = 0;  // ssf_depth / ssf_thickness：遮挡剔除
     static constexpr uint32_t SSFSmoothInput         = 0;  // ssf_smooth
     static constexpr uint32_t SSFSceneColor          = 0;  // ssf_composite

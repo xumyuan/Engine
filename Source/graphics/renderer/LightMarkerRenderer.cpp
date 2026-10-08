@@ -8,7 +8,7 @@
 namespace engine {
 
 LightMarkerRenderer::LightMarkerRenderer()
-    : m_Shader(ShaderLoader::loadShader("Shaders/light_marker.glsl")) {}
+    : m_Shader(ShaderLoader::loadShader("Source/Shaders/light_marker.glsl")) {}
 
 void LightMarkerRenderer::draw(rhi::CommandBuffer& cmd, bool multisampled) {
     auto* uniforms = getUBOManager();

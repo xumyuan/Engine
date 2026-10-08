@@ -16,7 +16,7 @@ namespace engine {
 	FluidSim::FluidSim(size_t pnum, Boundary boundary, FluidBackend backend) :m_maxParticleNum(pnum)
 	{
 		m_Device = getRHIDevice();
-		m_particleShader = ShaderLoader::loadShader("Shaders/fluid/particle_draw.glsl");
+		m_particleShader = ShaderLoader::loadShader("Source/Shaders/fluid/particle_draw.glsl");
 
 		// ── 创建 dynamic Vertex Buffer ──
 		rhi::BufferDesc vbDesc;

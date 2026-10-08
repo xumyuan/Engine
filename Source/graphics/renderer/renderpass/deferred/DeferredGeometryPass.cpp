@@ -11,8 +11,8 @@ namespace engine {
 	DeferredGeometryPass::DeferredGeometryPass(const RenderScene& renderScene) : RenderPass(renderScene, RenderPassType::GeometryPassType),
 		m_GBufferRT(Window::getWidth(), Window::getHeight())
 	{
-		m_ModelShader = ShaderLoader::loadShader("Shaders/deferred/PBR_Model_GeometryPass.glsl");
-		m_TerrainShader = ShaderLoader::loadShader("Shaders/deferred/PBR_Terrain_GeometryPass.glsl");
+		m_ModelShader = ShaderLoader::loadShader("Source/Shaders/deferred/PBR_Model_GeometryPass.glsl");
+		m_TerrainShader = ShaderLoader::loadShader("Source/Shaders/deferred/PBR_Terrain_GeometryPass.glsl");
 
 		initGBuffer();
 	}

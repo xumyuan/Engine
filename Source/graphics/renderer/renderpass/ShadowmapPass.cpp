@@ -9,14 +9,14 @@ namespace engine
 
 	ShadowmapPass::ShadowmapPass(const RenderScene& renderScene) : RenderPass(renderScene, RenderPassType::ShadowmapPassType), m_OwnsRT(true)
 	{
-		m_ShadowmapShader = ShaderLoader::loadShader("Shaders/shadowmap.glsl");
+		m_ShadowmapShader = ShaderLoader::loadShader("Source/Shaders/shadowmap.glsl");
 		m_RT = new RenderTarget(SHADOWMAP_RESOLUTION_X, SHADOWMAP_RESOLUTION_Y);
 		m_RT->addDepthStencilTexture(DepthStencilFormat::DepthOnly).build();
 	}
 
 	ShadowmapPass::ShadowmapPass(const RenderScene& renderScene, RenderTarget* customRT) : RenderPass(renderScene, RenderPassType::ShadowmapPassType), m_RT(customRT), m_OwnsRT(false)
 	{
-		m_ShadowmapShader = ShaderLoader::loadShader("Shaders/shadowmap.glsl");
+		m_ShadowmapShader = ShaderLoader::loadShader("Source/Shaders/shadowmap.glsl");
 	}
 
 	ShadowmapPass::~ShadowmapPass() {

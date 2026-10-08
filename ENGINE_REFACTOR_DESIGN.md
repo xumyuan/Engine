@@ -1081,7 +1081,7 @@ out/install/Engine/
 ```cmake
 install(TARGETS Engine RUNTIME DESTINATION .)
 install(DIRECTORY "${PROJECT_SOURCE_DIR}/Assets" DESTINATION .)
-install(DIRECTORY "${PROJECT_SOURCE_DIR}/Shaders" DESTINATION .)
+install(DIRECTORY "${PROJECT_SOURCE_DIR}/Source/Shaders" DESTINATION .)
 ```
 
 - [ ] Windows runtime DLL 使用 CMake runtime dependency set 或 vcpkg app-local 产物安装；不能假定目标机器 PATH 包含本机 vcpkg。

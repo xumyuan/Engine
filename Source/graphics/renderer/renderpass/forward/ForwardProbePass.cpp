@@ -42,11 +42,11 @@ namespace engine {
 		}
 		cmd().popDebugGroup();
 
-		m_ConvolutionShader = ShaderLoader::loadShader("Shaders/lightprobe_convolution.glsl");
+		m_ConvolutionShader = ShaderLoader::loadShader("Source/Shaders/lightprobe_convolution.glsl");
 
-		m_ImportanceSamplingShader = ShaderLoader::loadShader("Shaders/reflectionprobe_importance_sampling.glsl");
+		m_ImportanceSamplingShader = ShaderLoader::loadShader("Source/Shaders/reflectionprobe_importance_sampling.glsl");
 
-		m_BrdfIntegrationShader = ShaderLoader::loadShader("Shaders/prebrdf.glsl");
+		m_BrdfIntegrationShader = ShaderLoader::loadShader("Source/Shaders/prebrdf.glsl");
 	}
 
 	ForwardProbePass::~ForwardProbePass() {}
