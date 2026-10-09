@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "Terrain.h"
 #include <ui/DebugPane.h>
+
+#include <imgui.h>
 #include "graphics/UniformBufferManager.h"
 #include "graphics/TextureBindings.h"
 
@@ -9,7 +11,9 @@ namespace engine {
 	Terrain::Terrain(const glm::vec3& worldPosition) : m_Position(worldPosition)
 	{
 		m_isVisible = false;
-		DebugPane::bindRenderTerrain(&m_isVisible);
+		m_DebugSection = DebugPane::addSection("Terrain", [this]() {
+			ImGui::Checkbox("Visible", &m_isVisible);
+		}, 20);
 
 		m_TextureTilingAmount = 8;
 		m_ModelMatrix = glm::translate(glm::mat4(1), worldPosition);
@@ -161,6 +165,7 @@ namespace engine {
 	}
 
 	Terrain::~Terrain() {
+		DebugPane::removeSection(m_DebugSection);
 		delete m_Mesh;
 	}
 

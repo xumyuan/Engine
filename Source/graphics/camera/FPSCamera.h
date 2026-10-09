@@ -1,7 +1,6 @@
 #pragma once
 
 #include "graphics/Window.h"
-#include "ui/DebugPane.h"
 #include "graphics/camera/ICamera.h"
 
 namespace engine {
@@ -33,11 +32,13 @@ namespace engine {
 		float m_MovementSpeed;
 		float m_MouseSensitivity;
 		float m_FOV;
+		int m_DebugSection = 0;
 	public:
 		// Vector Constuctor
 		FPSCamera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH);
 		// Scalar Constructor
 		FPSCamera(float xPos, float yPos, float zPos, float xUp, float yUp, float zUp, float yaw, float pitch);
+		~FPSCamera() override;
 
 		virtual glm::mat4 getViewMatrix() override;
 		virtual glm::mat4 getProjectionMatrix() override;
@@ -58,6 +59,7 @@ namespace engine {
 		inline virtual const glm::vec3& getUp() const override { return m_Up; }
 	private:
 		void updateCameraVectors();
+		void registerDebugSection();
 	};
 
 }

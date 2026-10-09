@@ -65,7 +65,7 @@ int main(int argc, char* argv[]) {
 
 	// 准备ui
 	engine::RuntimePane runtimePane(glm::vec2(256.0f, 90.0f));
-	engine::DebugPane debugPane(glm::vec2(256.0f, 115.0f));
+	engine::DebugPane debugPane(glm::vec2(300.0f, 420.0f));
 
 	// 场景和各 RenderPass 构造时已提交全部 shader，这里统一等待驱动并行编译完成
 	engine::ShaderLoader::finishPendingCompiles();

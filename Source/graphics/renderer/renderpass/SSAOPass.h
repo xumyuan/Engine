@@ -16,6 +16,7 @@ namespace engine
 		PreLightingPassOutput executeSSAOPass(ICamera* camera, GeometryPassOutput& gBufferOutput);
 
 		inline Texture* getSSAOTexture() { return m_SSAOBlurRT.getColorTexture(); }
+		inline bool isEnabled() const { return m_Enabled; }
 
 	private:
 		void generateSampleKernel();
@@ -41,6 +42,8 @@ namespace engine
 		static const int NOISE_SIZE = 4;
 
 		// SSAO 参数
+		int m_DebugSection = 0;
+		bool m_Enabled = true;
 		float m_Radius = 0.5f;
 		float m_Bias = 0.025f;
 		float m_Power = 1.0f;

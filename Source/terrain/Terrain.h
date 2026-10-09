@@ -35,6 +35,7 @@ namespace engine {
 		std::array<Texture*, 21> m_Textures; 
 
 		// visible
+		int m_DebugSection = 0;
 		bool m_isVisible;
 	};
 

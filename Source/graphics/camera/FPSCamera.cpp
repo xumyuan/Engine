@@ -1,7 +1,10 @@
 #include "pch.h"
 #include "FPSCamera.h"
 
+#include <ui/DebugPane.h>
+
 #include <GLFW/glfw3.h>
+#include <imgui.h>
 
 namespace engine {
 
@@ -14,8 +17,7 @@ namespace engine {
 		m_Yaw = yaw;
 		m_Pitch = pitch;
 		updateCameraVectors();
-
-		DebugPane::bindCameraPositionValue(&m_Position);
+		registerDebugSection();
 	}
 
 	FPSCamera::FPSCamera(float xPos, float yPos, float zPos, float xUp, float yUp, float zUp, float yaw, float pitch)
@@ -26,6 +28,19 @@ namespace engine {
 		m_Yaw = yaw;
 		m_Pitch = pitch;
 		updateCameraVectors();
+		registerDebugSection();
+	}
+
+	FPSCamera::~FPSCamera()
+	{
+		DebugPane::removeSection(m_DebugSection);
+	}
+
+	void FPSCamera::registerDebugSection()
+	{
+		m_DebugSection = DebugPane::addSection("Camera", [this]() {
+			ImGui::Text("Pos  x:%.1f  y:%.1f  z:%.1f", m_Position.x, m_Position.y, m_Position.z);
+		}, 10, true);
 	}
 
 	glm::mat4 FPSCamera::getViewMatrix() {

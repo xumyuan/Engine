@@ -5,7 +5,10 @@
 #include <graphics/renderer/ModelRenderer.h>
 #include <graphics/UniformBufferManager.h>
 #include <graphics/TextureBindings.h>
+#include <ui/DebugPane.h>
 #include <utils/loaders/ShaderLoader.h>
+
+#include <imgui.h>
 
 namespace engine
 {
@@ -28,10 +31,24 @@ namespace engine
 		// 生成采样核和噪声纹理
 		generateSampleKernel();
 		generateNoiseTexture();
+
+		m_DebugSection = DebugPane::addSection("SSAO", [this]() {
+			ImGui::Checkbox("Enabled", &m_Enabled);
+			ImGui::SliderFloat("Radius", &m_Radius, 0.05f, 2.0f, "%.3f");
+			if (ImGui::IsItemHovered())
+				ImGui::SetTooltip("View-space sample radius");
+			ImGui::SliderFloat("Bias", &m_Bias, 0.0f, 0.2f, "%.4f");
+			if (ImGui::IsItemHovered())
+				ImGui::SetTooltip("Depth bias. Raise it if flat surfaces look speckled");
+			ImGui::SliderFloat("Power", &m_Power, 0.5f, 4.0f, "%.2f");
+			if (ImGui::IsItemHovered())
+				ImGui::SetTooltip("Contrast of the occlusion");
+		}, 30, true);
 	}
 
 	SSAOPass::~SSAOPass()
 	{
+		DebugPane::removeSection(m_DebugSection);
 	}
 
 	float SSAOPass::lerp(float a, float b, float t)
@@ -101,6 +118,9 @@ namespace engine
 
 	PreLightingPassOutput SSAOPass::executeSSAOPass(ICamera* camera, GeometryPassOutput& gBufferOutput)
 	{
+		if (!m_Enabled)
+			return {};
+
 		// ========== SSAO Pass ==========
 		cmd().pushDebugGroup("SSAO");
 

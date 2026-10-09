@@ -34,6 +34,7 @@ namespace engine
 		RenderTarget m_GammaCorrectTarget;
 
 		// fxaa
+		int m_DebugSection = 0;
 		bool m_FxaaEnabled = true;
 		Shader* m_FxaaShader;
 

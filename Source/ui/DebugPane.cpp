@@ -1,40 +1,69 @@
 #include "pch.h"
 #include "DebugPane.h"
 
+#include <algorithm>
+
 namespace engine {
 
-	glm::vec3* DebugPane::s_CameraPosition = nullptr;
+	namespace {
+
+		struct DebugSection {
+			int id = 0;
+			int order = 0;
+			bool openByDefault = false;
+			std::string name;
+			DebugPane::DrawFn draw;
+		};
+
+		std::vector<DebugSection> g_Sections;
+		int g_NextSectionId = 0;
+
+	}
+
 	bool DebugPane::s_WireframeMode = false;
 	bool DebugPane::s_LightMarkersEnabled = true;
-	float* DebugPane::s_GammaCorrectionValue = nullptr;
-	float* DebugPane::s_ExposureValue = nullptr;
-	bool* DebugPane::s_FxaaEnabled = nullptr;
-	bool* DebugPane::s_renderTerrain = nullptr;
 
 	DebugPane::DebugPane(const glm::vec2& panePosition) : Pane(std::string("Debug Controls"), panePosition)
 	{
 	}
 
-	void DebugPane::setupPaneObjects() {
-		ImGui::Checkbox("Light markers", &s_LightMarkersEnabled);
-		if (s_FxaaEnabled != nullptr)
-			ImGui::Checkbox("FXAA", s_FxaaEnabled);
-		if (s_renderTerrain !=nullptr)
-			ImGui::Checkbox("Terrain", s_renderTerrain);
+	int DebugPane::addSection(const char* name, DrawFn draw, int order, bool openByDefault) {
+		DebugSection section;
+		section.id = ++g_NextSectionId;
+		section.order = order;
+		section.openByDefault = openByDefault;
+		section.name = name ? name : "";
+		section.draw = std::move(draw);
+		const int id = section.id;
 
-		if (s_GammaCorrectionValue != nullptr)
-			ImGui::SliderFloat("Gamma", s_GammaCorrectionValue, 0.5f, 3.0f, "%.2f");
-		if (s_ExposureValue != nullptr)
-			ImGui::SliderFloat("Exposure", s_ExposureValue, 0.1f, 5.0f, "%.2f");
-		if (s_CameraPosition != nullptr)
-			ImGui::Text("Camera Pos x:%.1f y:%.1f z:%.1f", s_CameraPosition->x, s_CameraPosition->y, s_CameraPosition->z);
-
-
-#if DEBUG_ENABLED
-		ImGui::Text("Hit \"P\" to show/hide the cursor");
-		ImGui::Checkbox("Wireframe Mode", &s_WireframeMode);
-#endif
+		auto it = std::upper_bound(g_Sections.begin(), g_Sections.end(), order,
+			[](int value, const DebugSection& existing) { return value < existing.order; });
+		g_Sections.insert(it, std::move(section));
+		return id;
 	}
 
+	void DebugPane::removeSection(int id) {
+		if (id == 0)
+			return;
+		std::erase_if(g_Sections, [id](const DebugSection& section) { return section.id == id; });
+	}
+
+	void DebugPane::setupPaneObjects() {
+		if (ImGui::CollapsingHeader("View", ImGuiTreeNodeFlags_DefaultOpen)) {
+			ImGui::Checkbox("Light markers", &s_LightMarkersEnabled);
+#if DEBUG_ENABLED
+			ImGui::Checkbox("Wireframe Mode", &s_WireframeMode);
+			ImGui::Text("Hit \"P\" to show/hide the cursor");
+#endif
+		}
+
+		for (const DebugSection& section : g_Sections) {
+			ImGui::PushID(section.id);
+			const ImGuiTreeNodeFlags flags = section.openByDefault ? ImGuiTreeNodeFlags_DefaultOpen : 0;
+			if (ImGui::CollapsingHeader(section.name.c_str(), flags) && section.draw)
+				section.draw();
+			ImGui::PopID();
+		}
+	}
 
 }

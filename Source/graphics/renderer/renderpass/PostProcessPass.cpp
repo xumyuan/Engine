@@ -3,6 +3,8 @@
 
 #include <graphics/Window.h>
 #include <ui/DebugPane.h>
+
+#include <imgui.h>
 #include <utils/DebugEvent.h>
 #include <utils/loaders/ShaderLoader.h>
 #include <graphics/UniformBufferManager.h>
@@ -27,12 +29,17 @@ namespace engine
 			.addDepthStencilTexture(DepthStencilFormat::DepthOnly, false).build();
 		m_FullRenderTarget.addColorTexture(rhi::TextureFormat::RGBA16F).build();
 
-		DebugPane::bindGammaCorrectionValue(&m_GammaCorrection);
-		DebugPane::bindExposureValue(&m_Exposure);
-		DebugPane::bindFxaaEnabled(&m_FxaaEnabled);
+		m_DebugSection = DebugPane::addSection("Post Process", [this]() {
+			ImGui::Checkbox("FXAA", &m_FxaaEnabled);
+			ImGui::SliderFloat("Gamma", &m_GammaCorrection, 0.5f, 3.0f, "%.2f");
+			ImGui::SliderFloat("Exposure", &m_Exposure, 0.1f, 5.0f, "%.2f");
+		}, 40, true);
 	}
 
-	PostProcessPass::~PostProcessPass() {}
+	PostProcessPass::~PostProcessPass()
+	{
+		DebugPane::removeSection(m_DebugSection);
+	}
 
 	void PostProcessPass::executeRenderPass(LightingPassOutput& lightingOutput) {
 		// 如果输入是多重采样的，通过 blit 解析
@@ -128,14 +135,19 @@ namespace engine
 		pipeline.cullMode = rhi::CullMode::Back;
 		cmd().bindPipeline(pipeline);
 
-		// FXAA 使用 PerFrame UBO 的 texelSize
+		// fxaa.glsl 从 PostProcessParams（binding 4）读取 texel_size。
+		// gamma 刚把这份 UBO 的 texel_size 写成 0，这里按目标分辨率覆写。
 		if (auto* uboMgr = getUBOManager()) {
-			uboMgr->preparePerFrame(glm::mat4(1.0f), glm::mat4(1.0f), glm::vec3(0.0f),
-				glm::vec2(Window::getWidth(), Window::getHeight()));
-			cmd().updateBuffer(uboMgr->getPerFrameHandle(),
-				&uboMgr->getPerFrameData(), sizeof(UBOPerFrame));
-			cmd().bindUBO(UBOBinding::PerFrame,
-				uboMgr->getPerFrameHandle(), sizeof(UBOPerFrame));
+			UBOPostProcessParams ppParams{};
+			ppParams.gamma_inverse = 1.0f / m_GammaCorrection;
+			ppParams.exposure = m_Exposure;
+			const float width = static_cast<float>(target->getWidth());
+			const float height = static_cast<float>(target->getHeight());
+			if (width > 0.0f && height > 0.0f)
+				ppParams.texel_size = glm::vec2(1.0f / width, 1.0f / height);
+			cmd().updateBuffer(uboMgr->getCustomHandle(), &ppParams, sizeof(UBOPostProcessParams));
+			cmd().bindUBO(UBOBinding::CustomParams,
+				uboMgr->getCustomHandle(), sizeof(UBOPostProcessParams));
 		}
 
 		cmd().bindTextureUnit(texture->getRHIHandle(), TextureUnit::PostProcessInput);
