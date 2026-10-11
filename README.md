@@ -50,7 +50,7 @@ cmake --workflow --preset relwithdebinfo
 
 VS 是多配置生成器，三种构建类型共享 `out/build/default` 的工程缓存，产物分别位于 `bin/Debug`、`bin/Release`、`bin/RelWithDebInfo`；静态库和导入库位于对应的 `lib/<配置>`。可直接打开 `out/build/default/Engine.sln` 开发调试。
 
-GLSL 源码位于 `Source/Shaders/`，在 IDE 中按目录显示，不参与 C++ 编译。每次构建都会将其同步到对应的 `bin/<配置>/Shaders/`，仅修改 shader 时也会更新副本。开发运行仍从源码目录加载 shader；输出目录中的副本用于后续资源打包。
+GLSL 源码位于 `Source/shaders/`，在 IDE 中按目录显示，不参与 C++ 编译。开发运行直接从源码目录加载 shader；构建时不再复制 shader 到输出目录。
 
 ### clangd
 
@@ -76,7 +76,7 @@ cmake --build --preset clangd
 Engine/
 ├── Assets/          # 纹理、模型等资源文件
 ├── Source/           # 源代码
-│   ├── Shaders/      # GLSL 着色器
+│   ├── shaders/      # GLSL 着色器
 │   ├── graphics/     # 渲染、窗口、相机、Shader
 │   ├── rhi/          # 渲染硬件接口抽象层
 │   │   ├── include/  # RHI 公共接口

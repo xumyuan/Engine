@@ -1046,7 +1046,7 @@ endif()
 2. 环境变量 `ENGINE_RESOURCE_ROOT`。
 3. 可执行文件所在目录。
 
-根目录必须包含 `Assets/config.json` 和 `Shaders/`；允许 `--scene <path>` 覆盖配置场景路径。相对场景路径、原 JSON 中 `Assets/...` 模型路径、Shader 路径都相对资源根解析；模型内相对纹理路径仍相对模型文件目录解析。
+根目录必须包含 `Assets/config.json` 和 `shaders/`；允许 `--scene <path>` 覆盖配置场景路径。相对场景路径、原 JSON 中 `Assets/...` 模型路径、Shader 路径都相对资源根解析；模型内相对纹理路径仍相对模型文件目录解析。
 
 ```cpp
 class ResourcePaths {
@@ -1075,13 +1075,13 @@ out/install/Engine/
   Assets/scene/...
   Assets/textures/...
   Assets/3D_Models/...
-  Shaders/...
+  shaders/...
 ```
 
 ```cmake
 install(TARGETS Engine RUNTIME DESTINATION .)
 install(DIRECTORY "${PROJECT_SOURCE_DIR}/Assets" DESTINATION .)
-install(DIRECTORY "${PROJECT_SOURCE_DIR}/Source/Shaders" DESTINATION .)
+install(DIRECTORY "${PROJECT_SOURCE_DIR}/Source/shaders" DESTINATION .)
 ```
 
 - [ ] Windows runtime DLL 使用 CMake runtime dependency set 或 vcpkg app-local 产物安装；不能假定目标机器 PATH 包含本机 vcpkg。
