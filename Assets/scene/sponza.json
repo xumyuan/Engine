@@ -29,8 +29,8 @@
     "lighting":{
         "directionalLight":{
             "isActive":true,
-            "direction":[-1.0, -1.0, -1.0],
-            "lightColor":[4.0, 3.8, 3.5]
+            "direction":[-0.8, -0.55, -0.25],
+            "lightColor":[1.2, 1.15, 1.1]
         },
         "spotLight":{
             "isActive": false,
