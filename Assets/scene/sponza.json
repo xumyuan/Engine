@@ -1,4 +1,9 @@
 {
+    "camera": {
+        "position": [105.716, 136.20, 98.0],
+        "yaw": 0.0,
+        "pitch": 0.0
+    },
     "modelList":[
         {
             "modelPath":"Assets/3D_Models/Sponza/sponza.obj",

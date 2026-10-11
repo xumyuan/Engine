@@ -4,6 +4,13 @@
 namespace engine {
 	struct SceneInfo
 	{
+		struct CameraInfo
+		{
+			glm::vec3 position{ 105.716f, 136.20f, 98.0f };
+			float yaw = 0.0f;
+			float pitch = 0.0f;
+		};
+
 		struct ModelInfo
 		{
 			std::string modelPath;
@@ -66,6 +73,7 @@ namespace engine {
 			std::string backend = "cpu";
 		};
 
+		CameraInfo cameraInfo;
 		std::vector<ModelInfo> modelInfoList;
 		SkyboxInfo skyboxInfo;
 		LightsInfo lightsInfo;

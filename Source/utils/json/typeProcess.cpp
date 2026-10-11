@@ -21,6 +21,38 @@ namespace glm {
 
 namespace engine {
 	using json = nlohmann::json;
+	void from_json(const json& j, SceneInfo::CameraInfo& c) {
+		if (!j.is_object()) {
+			throw std::invalid_argument("camera must be an object");
+		}
+		if (j.contains("position")) {
+			const auto& position = j.at("position");
+			if (!position.is_array() || position.size() != 3) {
+				throw std::invalid_argument("camera.position must contain exactly 3 numbers");
+			}
+			for (const auto& coordinate : position) {
+				if (!coordinate.is_number()) {
+					throw std::invalid_argument("camera.position must contain exactly 3 numbers");
+				}
+			}
+			position.get_to(c.position);
+		}
+		for (const char* angle : { "yaw", "pitch" }) {
+			if (j.contains(angle) && !j.at(angle).is_number()) {
+				throw std::invalid_argument(std::string("camera.") + angle + " must be a number");
+			}
+		}
+		c.yaw = j.value("yaw", c.yaw);
+		c.pitch = j.value("pitch", c.pitch);
+		if (!std::isfinite(c.position.x) || !std::isfinite(c.position.y) ||
+			!std::isfinite(c.position.z) || !std::isfinite(c.yaw) || !std::isfinite(c.pitch)) {
+			throw std::invalid_argument("camera position and angles must be finite");
+		}
+		if (c.pitch < -89.0f || c.pitch > 89.0f) {
+			throw std::invalid_argument("camera.pitch must be between -89 and 89 degrees");
+		}
+	}
+
 	void from_json(const json& j, SceneInfo::ModelInfo& m) {
 		j.at("modelPath").get_to(m.modelPath);
 		j.at("position").get_to(m.position);
@@ -115,6 +147,10 @@ namespace engine {
 	}
 
 	void from_json(const json& j, SceneInfo& s) {
+		if (j.contains("camera")) {
+			j.at("camera").get_to(s.cameraInfo);
+		}
+
 		// 解析模型列表，可选字段
 		if (j.contains("modelList")) {
 			j.at("modelList").get_to(s.modelInfoList);

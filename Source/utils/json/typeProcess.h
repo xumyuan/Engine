@@ -11,6 +11,7 @@ namespace glm {
 
 namespace engine {
 	// 为自定义类型添加JSON序列化支持
+	void from_json(const nlohmann::json& j, SceneInfo::CameraInfo& c);
 	void from_json(const nlohmann::json& j, SceneInfo::ModelInfo& m);
 	void from_json(const nlohmann::json& j, SceneInfo::SkyboxInfo& s);
 	void from_json(const nlohmann::json& j, SceneInfo::LightsInfo::DirectionalLight& d);

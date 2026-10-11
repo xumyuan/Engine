@@ -29,6 +29,8 @@ namespace engine {
 
 			// 由于所有字段都是可选的，我们只需要验证JSON是否有效
 			SceneInfo sceneInfo = j.get<SceneInfo>();
+			const auto& camera = sceneInfo.cameraInfo;
+			scene.getCamera()->setPose(camera.position, camera.yaw, camera.pitch);
 
 			// 按职责分别加载各类数据
 			loadModels(scene, sceneInfo);

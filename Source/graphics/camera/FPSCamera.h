@@ -47,6 +47,7 @@ namespace engine {
 		void processKeyboard(Camera_Movement direction, float deltaTime);
 		void processMouseMovement(float xOffset, float yOffset, bool constrainPitch);
 		void processMouseScroll(float yOffset);
+		void setPose(const glm::vec3& position, float yaw, float pitch);
 
 		// Getters
 		inline float getYaw() const { return m_Yaw; }

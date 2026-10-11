@@ -43,6 +43,13 @@ namespace engine {
 		}, 10, true);
 	}
 
+	void FPSCamera::setPose(const glm::vec3& position, float yaw, float pitch) {
+		m_Position = position;
+		m_Yaw = yaw;
+		m_Pitch = pitch;
+		updateCameraVectors();
+	}
+
 	glm::mat4 FPSCamera::getViewMatrix() {
 		return glm::lookAt(m_Position, m_Position + m_Front, m_Up);
 	}
