@@ -27,7 +27,16 @@ configure.bat --clangd
 
 :: 重置 CMake 缓存后重新配置
 configure.bat --clean
+
+:: 强制重新配置，保留已有 CMake 缓存
+configure.bat --force
 ```
+
+脚本通过系统自带的 Windows PowerShell 5.1 执行，不加载个人 profile。首次运行正常配置；后续运行会检查 CMake 配置输入、presets、vcpkg manifest/overlay、工具环境和生成文件，未发生变化时跳过 CMake 和 vcpkg 检查，并显示各 preset 与总耗时。修改已有 C++/shader 文件内容不会触发重新配置；新增或删除参与 CMake glob 的文件会触发。两个 preset 独立记录状态，重复使用 `--clangd` 也可以跳过已完成的配置。
+
+`--force` 用于主动刷新配置，例如更新 Visual Studio/SDK 或修改脚本未追踪的外部环境后。状态保存在各 preset 的输出目录中；状态损坏或缺失时自动退回完整配置。脚本会阻止自身并发运行，失败的配置不会被记录为成功。
+
+配置脚本的回归检查可通过 `powershell -NoProfile -File scripts/Test-Configure.ps1` 运行，使用临时目录模拟配置，不需要安装 VS/vcpkg。附加 `-CMakeExecutable "C:\path\to\cmake.exe"` 可验证真实 CMake 文件 API 和 `--fresh` 行为。
 
 `--clean` 使用 CMake 的 `--fresh`，重置所请求 preset 的 CMake 缓存和 `CMakeFiles`，不删除整个输出目录或已安装的依赖。组合使用 `--clean --clangd` 会重置两个 preset。配置失败时脚本返回非零退出码。
 
