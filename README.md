@@ -92,9 +92,27 @@ Engine/
 └── CMakePresets.json # CMake 预设
 ```
 
+## 场景相机
+
+场景文件使用一个文件作为场景入口，并按职责分成 `camera`、`environment`、`lighting`、`entities` 和 `systems` 五个区域。模型实例放在 `entities`，天空盒放在 `environment.skybox`，流体放在 `systems.fluid`。这样可以保持场景整体可复制，同时避免所有配置堆在同一层。
+
+在场景 JSON 中设置可选的 `camera` 对象：
+
+```json
+"camera": {
+    "position": [105.716, 136.20, 98.0],
+    "yaw": 0.0,
+    "pitch": 0.0
+}
+```
+
+`position` 是世界坐标，`yaw`、`pitch` 的单位是度。`yaw = 0` 朝向 +X，`yaw = -90` 朝向 -Z；正的 `pitch` 向上看，范围为 [-89, 89]。
+对象及各字段均可省略，省略时使用上例的默认值，保持旧场景的初始视角。位置必须包含三个有限数值，角度也必须为有限数值；无效配置会按现有场景加载流程记录错误并停止加载。
+`Assets/scene/sponza.json` 和 `Assets/scene/sponza_fluid.json` 已显式配置相机。配置在加载场景时生效，修改文件后需要重新加载场景或重启引擎。
+
 ## 流体模拟后端
 
-场景 JSON 的 `fluid.backend` 可设为 `"cpu"`（默认，后台线程 PBF）或 `"compute"`（GPU PBF）。
+场景 JSON 的 `systems.fluid.backend` 可设为 `"cpu"`（默认，后台线程 PBF）或 `"compute"`（GPU PBF）。
 `Assets/scene/sponza_fluid.json` 已启用 compute，要求 OpenGL 4.3+；设备不支持、资源规模超限或着色器编译失败时会记录警告并回退到 CPU。
 
 GPU 路径使用固定 0.01 秒时间步，每帧最多追赶 4 步。预测、网格邻域搜索、3 轮密度约束与位置修正、XSPH 粘性全部在 GPU 上执行；位置缓冲直接用于前向粒子和屏幕空间流体绘制，没有逐帧 CPU 回读或位置上传。`autoStart`、`startSimulation()` 和 `stopSimulation()` 同样适用。

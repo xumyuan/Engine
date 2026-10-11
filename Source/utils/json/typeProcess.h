@@ -19,6 +19,8 @@ namespace engine {
 	void from_json(const nlohmann::json& j, SceneInfo::LightsInfo::PointLight& p);
 	void from_json(const nlohmann::json& j, SceneInfo::LightsInfo& l);
 	void from_json(const nlohmann::json& j, SceneInfo::FluidInfo& f);
+	void from_json(const nlohmann::json& j, SceneInfo::EnvironmentInfo& e);
+	void from_json(const nlohmann::json& j, SceneInfo::SystemsInfo& s);
 	void from_json(const nlohmann::json& j, SceneInfo& s);
 }
 

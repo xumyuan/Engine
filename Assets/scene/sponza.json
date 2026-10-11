@@ -1,10 +1,11 @@
 {
+    "version": 1,
     "camera": {
         "position": [105.716, 136.20, 98.0],
         "yaw": 0.0,
         "pitch": 0.0
     },
-    "modelList":[
+    "entities":[
         {
             "modelPath":"Assets/3D_Models/Sponza/sponza.obj",
             "position":[120.0, 130.0, 100.0],
@@ -15,15 +16,17 @@
             "isTransparent":false
         }
     ],
-    "skybox":{
+    "environment":{
+      "skybox":{
         "right":"Assets/skybox/right.png",
         "left":"Assets/skybox/left.png",
         "top":"Assets/skybox/top.png",
         "bottom":"Assets/skybox/bottom.png",
         "back":"Assets/skybox/back.png",
         "front":"Assets/skybox/front.png"
+      }
     },
-    "lights":{
+    "lighting":{
         "directionalLight":{
             "isActive":true,
             "direction":[-1.0, -1.0, -1.0],

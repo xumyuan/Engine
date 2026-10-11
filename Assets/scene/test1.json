@@ -1,5 +1,6 @@
 {
-    "modelList":[
+    "version": 1,
+    "entities":[
         {
             "modelPath":"res/3D_Models/Cerberus_Gun/Cerberus_LP.FBX",
             "position":[120.0, 130.0, 100.0],
@@ -17,12 +18,14 @@
             }
         }
     ],
-    "skybox":{
+    "environment":{
+      "skybox":{
         "right":"res/skybox/right.png",
         "left":"res/skybox/left.png",
         "top":"res/skybox/top.png",
         "bottom":"res/skybox/bottom.png",
         "back":"res/skybox/back.png",
         "front":"res/skybox/front.png"
+      }
     }
 }

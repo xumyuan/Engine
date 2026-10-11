@@ -4,6 +4,8 @@
 namespace engine {
 	struct SceneInfo
 	{
+		int version = 1;
+
 		struct CameraInfo
 		{
 			glm::vec3 position{ 105.716f, 136.20f, 98.0f };
@@ -35,26 +37,26 @@ namespace engine {
 		{
 			struct DirectionalLight
 			{
-				bool isActive;
-				glm::vec3 direction;
-				glm::vec3 lightColor;
+				bool isActive = false;
+				glm::vec3 direction{ 0.0f, -1.0f, 0.0f };
+				glm::vec3 lightColor{ 1.0f };
 			};
 
 			struct SpotLight
 			{
-				bool isActive;
-				glm::vec3 lightColor;
-				glm::vec3 position;
-				glm::vec3 direction;
-				float cutOff;
-				float outerCutOff;
+				bool isActive = false;
+				glm::vec3 lightColor{ 1.0f };
+				glm::vec3 position{ 0.0f };
+				glm::vec3 direction{ 0.0f, 0.0f, -1.0f };
+				float cutOff = 12.5f;
+				float outerCutOff = 15.0f;
 			};
 
 			struct PointLight
 			{
-				bool isActive;
-				glm::vec3 position;
-				glm::vec3 lightColor;
+				bool isActive = false;
+				glm::vec3 position{ 0.0f };
+				glm::vec3 lightColor{ 1.0f };
 			};
 
 			DirectionalLight directionalLight;
@@ -73,10 +75,20 @@ namespace engine {
 			std::string backend = "cpu";
 		};
 
-		CameraInfo cameraInfo;
-		std::vector<ModelInfo> modelInfoList;
-		SkyboxInfo skyboxInfo;
-		LightsInfo lightsInfo;
-		FluidInfo fluidInfo;
+		struct EnvironmentInfo
+		{
+			SkyboxInfo skybox;
+		};
+
+		struct SystemsInfo
+		{
+			FluidInfo fluid;
+		};
+
+		CameraInfo camera;
+		EnvironmentInfo environment;
+		LightsInfo lighting;
+		SystemsInfo systems;
+		std::vector<ModelInfo> entities;
 	};
 }

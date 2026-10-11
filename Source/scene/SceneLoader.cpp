@@ -29,7 +29,7 @@ namespace engine {
 
 			// 由于所有字段都是可选的，我们只需要验证JSON是否有效
 			SceneInfo sceneInfo = j.get<SceneInfo>();
-			const auto& camera = sceneInfo.cameraInfo;
+			const auto& camera = sceneInfo.camera;
 			scene.getCamera()->setPose(camera.position, camera.yaw, camera.pitch);
 
 			// 按职责分别加载各类数据
@@ -52,7 +52,7 @@ namespace engine {
 	}
 
 	void SceneLoader::loadModels(Scene3D& scene, const SceneInfo& sceneInfo) {
-		auto& modelList = sceneInfo.modelInfoList;
+		auto& modelList = sceneInfo.entities;
 		if (modelList.empty()) return;
 
 		for (auto& modelInfo : modelList) {
@@ -94,7 +94,7 @@ namespace engine {
 	}
 
 	void SceneLoader::loadSkybox(Scene3D& scene, const SceneInfo& sceneInfo) {
-		auto& skyboxInfo = sceneInfo.skyboxInfo;
+		auto& skyboxInfo = sceneInfo.environment.skybox;
 		auto& skyboxFilePaths = skyboxInfo.skyboxFilePaths;
 
 		if (skyboxFilePaths.empty()) return;
@@ -117,7 +117,7 @@ namespace engine {
 	}
 
 	void SceneLoader::loadLights(Scene3D& scene, const SceneInfo& sceneInfo) {
-		auto& lightsInfo = sceneInfo.lightsInfo;
+		auto& lightsInfo = sceneInfo.lighting;
 
 		// 创建方向光 SceneNode + LightComponent
 		if (lightsInfo.directionalLight.isActive) {
@@ -161,7 +161,7 @@ namespace engine {
 	}
 
 	void SceneLoader::loadFluid(Scene3D& scene, const SceneInfo& sceneInfo) {
-		const auto& fluidInfo = sceneInfo.fluidInfo;
+		const auto& fluidInfo = sceneInfo.systems.fluid;
 		if (!fluidInfo.isActive) return;
 
 		// FluidSim::init 在 x/z 方向各留 1 个粒子间距的边距，且只在 z 方向前 1/3 生成粒子（溃坝初始状态）

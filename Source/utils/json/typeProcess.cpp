@@ -146,29 +146,51 @@ namespace engine {
 		}
 	}
 
-	void from_json(const json& j, SceneInfo& s) {
-		if (j.contains("camera")) {
-			j.at("camera").get_to(s.cameraInfo);
-		}
-
-		// 解析模型列表，可选字段
-		if (j.contains("modelList")) {
-			j.at("modelList").get_to(s.modelInfoList);
-		}
-		
-		// 解析天空盒信息，可选字段
+	void from_json(const json& j, SceneInfo::EnvironmentInfo& e) {
 		if (j.contains("skybox")) {
-			j.at("skybox").get_to(s.skyboxInfo);
+			j.at("skybox").get_to(e.skybox);
 		}
-		
-		// 解析灯光信息，可选字段
-		if (j.contains("lights")) {
-			j.at("lights").get_to(s.lightsInfo);
+	}
+
+	void from_json(const json& j, SceneInfo::SystemsInfo& s) {
+		if (j.contains("fluid")) {
+			j.at("fluid").get_to(s.fluid);
+		}
+	}
+
+	void from_json(const json& j, SceneInfo& s) {
+		s.version = j.value("version", 1);
+
+		if (j.contains("camera")) {
+			j.at("camera").get_to(s.camera);
 		}
 
-		// 解析流体模拟信息，可选字段
-		if (j.contains("fluid")) {
-			j.at("fluid").get_to(s.fluidInfo);
+		// 新格式：按场景职责分组。
+		if (j.contains("entities")) {
+			j.at("entities").get_to(s.entities);
+		}
+		if (j.contains("environment")) {
+			j.at("environment").get_to(s.environment);
+		}
+		if (j.contains("lighting")) {
+			j.at("lighting").get_to(s.lighting);
+		}
+		if (j.contains("systems")) {
+			j.at("systems").get_to(s.systems);
+		}
+
+		// 旧格式兼容：允许旧场景逐步迁移到新结构。
+		if (!j.contains("entities") && j.contains("modelList")) {
+			j.at("modelList").get_to(s.entities);
+		}
+		if (!j.contains("environment") && j.contains("skybox")) {
+			j.at("skybox").get_to(s.environment.skybox);
+		}
+		if (!j.contains("lighting") && j.contains("lights")) {
+			j.at("lights").get_to(s.lighting);
+		}
+		if (!j.contains("systems") && j.contains("fluid")) {
+			j.at("fluid").get_to(s.systems.fluid);
 		}
 	}
 }

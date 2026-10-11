@@ -1,11 +1,14 @@
 {
-    "modelList":[],
-    "skybox":{
+    "version": 1,
+    "entities":[],
+    "environment":{
+      "skybox":{
         "right":"res/skybox/right.png",
         "left":"res/skybox/left.png",
         "top":"res/skybox/top.png",
         "bottom":"res/skybox/bottom.png",
         "back":"res/skybox/back.png",
         "front":"res/skybox/front.png"
+      }
     }
 }
