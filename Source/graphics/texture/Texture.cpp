@@ -105,6 +105,11 @@ namespace engine {
 
 	void Texture::generate2DTexture(unsigned int width, unsigned int height,
 		ChannelLayout channels, const void* data) {
+		generate2DTexture(width, height, channels, channelLayoutToUploadFormat(channels), data);
+	}
+
+	void Texture::generate2DTexture(unsigned int width, unsigned int height,
+		ChannelLayout channels, rhi::TextureFormat srcFormat, const void* data) {
 		m_Width = width;
 		m_Height = height;
 		m_IsMultisample = false;
@@ -123,8 +128,6 @@ namespace engine {
 			m_RHIHandle = m_Device->createTexture(desc);
 
 			if (data) {
-				// 使用源数据的实际通道格式（而非纹理内部格式）上传数据
-				rhi::TextureFormat srcFormat = channelLayoutToUploadFormat(channels);
 				m_Device->updateTexture(m_RHIHandle, 0, 0, 0, width, height, srcFormat, data, 0);
 			}
 

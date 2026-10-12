@@ -66,6 +66,10 @@ namespace engine {
 		void generate2DTexture(unsigned int width, unsigned int height,
 			ChannelLayout channels = ChannelLayout::RGBA,
 			const void* data = nullptr);
+		// srcFormat 描述 data 的实际像素类型（如 float 数据需传 RGBA32F）
+		void generate2DTexture(unsigned int width, unsigned int height,
+			ChannelLayout channels, rhi::TextureFormat srcFormat,
+			const void* data);
 
 		void generate2DMultisampleTexture(unsigned int width, unsigned int height);
 		void generateMips();

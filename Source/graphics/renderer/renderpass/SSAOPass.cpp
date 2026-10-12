@@ -113,7 +113,7 @@ namespace engine
 		noiseSettings.HasMips = false;
 		m_NoiseTexture.setTextureSettings(noiseSettings);
 		m_NoiseTexture.generate2DTexture(NOISE_SIZE, NOISE_SIZE, ChannelLayout::RGBA,
-			ssaoNoise.data());
+			rhi::TextureFormat::RGBA32F, ssaoNoise.data());
 	}
 
 	PreLightingPassOutput SSAOPass::executeSSAOPass(ICamera* camera, GeometryPassOutput& gBufferOutput)
