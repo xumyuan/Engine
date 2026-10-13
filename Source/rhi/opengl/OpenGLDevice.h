@@ -1,5 +1,6 @@
 #pragma once
 #include "rhi/include/RHIDevice.h"
+#include <GL/glew.h>
 #include <unordered_map>
 #include <string>
 #include <vector>

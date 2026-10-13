@@ -30,7 +30,7 @@
             "architecture": "x64",
             "toolset": "v143,host=x64",
             "cacheVariables": {
-                "CMAKE_CONFIGURATION_TYPES": "Debug;Release;RelWithDebInfo"
+                "CMAKE_CONFIGURATION_TYPES": "Debug;Development;Profile;Shipping;Release;RelWithDebInfo"
             }
         },
         {
@@ -66,6 +66,21 @@
             "name": "relwithdebinfo",
             "configurePreset": "default",
             "configuration": "RelWithDebInfo"
+        },
+        {
+            "name": "development",
+            "configurePreset": "default",
+            "configuration": "Development"
+        },
+        {
+            "name": "profile",
+            "configurePreset": "default",
+            "configuration": "Profile"
+        },
+        {
+            "name": "shipping",
+            "configurePreset": "default",
+            "configuration": "Shipping"
         },
         {
             "name": "clangd",

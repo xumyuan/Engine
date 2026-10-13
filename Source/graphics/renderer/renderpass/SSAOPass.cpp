@@ -121,8 +121,10 @@ namespace engine
 		if (!m_Enabled)
 			return {};
 
-		// ========== SSAO Pass ==========
-		cmd().pushDebugGroup("SSAO");
+		rhi::PipelineState ssaoPipeline;
+		{
+			// ========== SSAO Pass ==========
+			cmd().pushDebugGroup("SSAO");
 
 		// 通过命令缓冲录制 beginRenderPass
 		rhi::RenderPassParams ssaoParams;
@@ -132,7 +134,6 @@ namespace engine
 		cmd().beginRenderPass(m_SSAORT.getHandle(), ssaoParams);
 
 		// 构建 SSAO pass 的管线状态
-		rhi::PipelineState ssaoPipeline;
 		ssaoPipeline.program = m_SSAOShader->getProgramHandle();
 		ssaoPipeline.depthTest = false;
 		ssaoPipeline.blendEnable = false;
@@ -171,13 +172,15 @@ namespace engine
 		// 绑定噪声纹理
 		cmd().bindTextureUnit(m_NoiseTexture.getRHIHandle(), TextureUnit::SSAONoise);
 
-		// 绘制全屏四边形
-		ModelRenderer::drawNdcPlane(cmd());
-		cmd().endRenderPass();
-		cmd().popDebugGroup();
+			// 绘制全屏四边形
+			ModelRenderer::drawNdcPlane(cmd());
+			cmd().endRenderPass();
+			cmd().popDebugGroup();
+		}
 
-		// ========== Blur Pass ==========
-		cmd().pushDebugGroup("SSAO Blur");
+		{
+			// ========== Blur Pass ==========
+			cmd().pushDebugGroup("SSAO Blur");
 
 		rhi::RenderPassParams blurParams;
 		blurParams.viewport = { 0, 0, m_SSAOBlurRT.getWidth(), m_SSAOBlurRT.getHeight() };
@@ -192,9 +195,10 @@ namespace engine
 
 		cmd().bindTextureUnit(m_SSAORT.getColorTexture()->getRHIHandle(), TextureUnit::PostProcessInput);
 
-		ModelRenderer::drawNdcPlane(cmd());
-		cmd().endRenderPass();
-		cmd().popDebugGroup();
+			ModelRenderer::drawNdcPlane(cmd());
+			cmd().endRenderPass();
+			cmd().popDebugGroup();
+		}
 
 		// 返回结果
 		PreLightingPassOutput output;

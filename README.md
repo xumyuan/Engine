@@ -22,6 +22,12 @@
 :: 配置 VS2022 工程
 configure.bat
 
+:: 配置并构建指定项目配置
+configure.bat debug
+configure.bat development
+configure.bat profile
+configure.bat shipping
+
 :: 同时生成 clangd 编译数据库（需 x64 Native Tools Command Prompt）
 configure.bat --clangd
 
@@ -47,6 +53,12 @@ cmake --preset default            # 配置 VS2022 工程
 cmake --build --preset debug      # 编译 Debug
 cmake --build --preset release    # 编译 Release
 cmake --build --preset relwithdebinfo  # 编译带调试符号的优化版本
+
+# 项目配置
+cmake --build --preset debug        # 断点调试，关闭优化
+cmake --build --preset development  # 优化 + 符号，日常开发和调试性能
+cmake --build --preset profile      # 接近 Shipping 的优化，性能分析
+cmake --build --preset shipping     # 发布构建，最高优化
 ```
 
 也可以使用 workflow 一条命令完成配置和编译，本地与 CI 均使用相同入口：

@@ -245,6 +245,9 @@ bool OpenGLDevice::initialize() {
     // 点图元的尺寸由 shader 写 gl_PointSize 决定（粒子点精灵）
     glEnable(GL_PROGRAM_POINT_SIZE);
 
+    // Background shader compilation is opt-in because some NVIDIA drivers can
+    // crash while validating asynchronously compiled programs.
+#if defined(ENGINE_PARALLEL_SHADER_COMPILE)
     // 0xFFFFFFFF 表示由驱动决定编译线程数
 #if defined(GL_KHR_parallel_shader_compile)
     if (GLEW_KHR_parallel_shader_compile) {
@@ -257,6 +260,7 @@ bool OpenGLDevice::initialize() {
         glMaxShaderCompilerThreadsARB(0xFFFFFFFFu);
         mHasParallelCompile = true;
     }
+#endif
 #endif
 
     spdlog::info("[RHI-OpenGL] initialized, max texture size: {}, parallel shader compile: {}",

@@ -1,6 +1,19 @@
 cmake_minimum_required(VERSION 3.25)
 project(Engine LANGUAGES CXX)
 
+option(ENGINE_ENABLE_PARALLEL_SHADER_COMPILE "Enable driver background shader compilation" OFF)
+
+# Custom Visual Studio configurations must map to the configurations exported by
+# vcpkg packages. Without this, Profile/Development may select Debug DLLs.
+set(CMAKE_MAP_IMPORTED_CONFIG_DEVELOPMENT "RelWithDebInfo;Release")
+set(CMAKE_MAP_IMPORTED_CONFIG_PROFILE "Release")
+set(CMAKE_MAP_IMPORTED_CONFIG_SHIPPING "Release")
+set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO "Release")
+
+# Keep the engine runtime consistent across custom configurations. Only Debug
+# uses the debug CRT (/MDd); optimized configurations use the release CRT (/MD).
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+
 # ============================================================================
 # C++ 标准
 # ============================================================================
@@ -52,6 +65,20 @@ source_group(TREE ${CMAKE_SOURCE_DIR}/Source PREFIX "Source" FILES ${ENGINE_SOUR
 # ============================================================================
 add_executable(${PROJECT_NAME} ${ENGINE_SOURCES} ${ENGINE_SHADERS})
 
+# Copy the matching vcpkg runtime DLLs next to Engine.exe for Visual Studio F5
+# and direct launches. The helper selects debug/bin only for the Debug config.
+if(WIN32 AND VCPKG_INSTALLED_DIR AND VCPKG_TARGET_TRIPLET)
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND}
+            -DCONFIG=$<CONFIG>
+            -DVCPKG_INSTALLED_DIR=${VCPKG_INSTALLED_DIR}
+            -DVCPKG_TARGET_TRIPLET=${VCPKG_TARGET_TRIPLET}
+            -DDESTINATION=$<TARGET_FILE_DIR:${PROJECT_NAME}>
+            -P "${CMAKE_SOURCE_DIR}/scripts/Copy-VcpkgRuntime.cmake"
+        VERBATIM
+    )
+endif()
+
 # ============================================================================
 # 包含目录
 # ============================================================================
@@ -93,8 +120,12 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     _CRT_SECURE_NO_WARNINGS
     _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING
     PROJECT_ROOT_DIR="${CMAKE_SOURCE_DIR}"
+    $<$<BOOL:${ENGINE_ENABLE_PARALLEL_SHADER_COMPILE}>:ENGINE_PARALLEL_SHADER_COMPILE>
     $<$<CONFIG:Debug>:_DEBUG>
-    $<$<NOT:$<CONFIG:Debug>>:NDEBUG>
+    $<$<CONFIG:Debug>:DEBUG_ENABLED=1>
+    $<$<CONFIG:Development>:DEBUG_ENABLED=1>
+    $<$<NOT:$<OR:$<CONFIG:Debug>,$<CONFIG:Development>>>:NDEBUG>
+    $<$<CONFIG:Shipping>:ENGINE_SHIPPING_BUILD=1>
 )
 
 # ============================================================================
@@ -111,12 +142,17 @@ if(MSVC)
 
     # Release 优化选项
     target_compile_options(${PROJECT_NAME} PRIVATE
-        $<$<CONFIG:Release>:/Gy>
-        $<$<CONFIG:Release>:/Oi>
+        $<$<OR:$<CONFIG:Release>,$<CONFIG:Development>,$<CONFIG:Profile>,$<CONFIG:Shipping>>:/O2>
+        $<$<OR:$<CONFIG:Development>,$<CONFIG:Profile>>:/Zi>
+        $<$<OR:$<CONFIG:Release>,$<CONFIG:Development>,$<CONFIG:Profile>>:/Gy>
+        $<$<OR:$<CONFIG:Release>,$<CONFIG:Development>,$<CONFIG:Profile>>:/Oi>
+        $<$<CONFIG:Shipping>:/GL>
     )
     target_link_options(${PROJECT_NAME} PRIVATE
-        $<$<CONFIG:Release>:/OPT:REF>
-        $<$<CONFIG:Release>:/OPT:ICF>
+        $<$<OR:$<CONFIG:Release>,$<CONFIG:Development>,$<CONFIG:Profile>,$<CONFIG:Shipping>>:/OPT:REF>
+        $<$<OR:$<CONFIG:Release>,$<CONFIG:Development>,$<CONFIG:Profile>,$<CONFIG:Shipping>>:/OPT:ICF>
+        $<$<OR:$<CONFIG:Development>,$<CONFIG:Profile>>:/DEBUG>
+        $<$<CONFIG:Shipping>:/LTCG>
     )
 endif()
 
