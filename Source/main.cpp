@@ -72,7 +72,7 @@ int main(int argc, char* argv[]) {
 	renderer.init();
 
 	window.show();
-#if DEBUG_ENABLED
+#if defined(_DEBUG)
 	engine::Timer timer;
 #endif
 
@@ -97,7 +97,7 @@ int main(int argc, char* argv[]) {
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-#if DEBUG_ENABLED
+#if defined(_DEBUG)
 		glFinish();
 		timer.reset();
 #endif

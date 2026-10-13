@@ -122,6 +122,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     PROJECT_ROOT_DIR="${CMAKE_SOURCE_DIR}"
     $<$<BOOL:${ENGINE_ENABLE_PARALLEL_SHADER_COMPILE}>:ENGINE_PARALLEL_SHADER_COMPILE>
     $<$<CONFIG:Debug>:_DEBUG>
+    # 只在这里按配置打开。头文件里再 #define 会把 Release / Profile / Shipping 也盖成开启。
     $<$<CONFIG:Debug>:DEBUG_ENABLED=1>
     $<$<CONFIG:Development>:DEBUG_ENABLED=1>
     $<$<NOT:$<OR:$<CONFIG:Debug>,$<CONFIG:Development>>>:NDEBUG>
