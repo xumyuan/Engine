@@ -47,9 +47,9 @@ namespace engine {
 			return sceneInput;
 		}
 
-		fluid->uploadLatestPositions();
-
 		cmd().pushDebugGroup("Screen Space Fluid");
+
+		fluid->uploadLatestPositions();
 
 		// screenSize 用于 shader 中的像素换算（点精灵尺寸、滤波半径）
 		uboMgr->preparePerFrame(camera->getViewMatrix(), camera->getProjectionMatrix(), camera->getPosition(),

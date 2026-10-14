@@ -45,10 +45,12 @@ namespace engine
 		// 如果输入是多重采样的，通过 blit 解析
 		Texture* sourceColorTexture = lightingOutput.colorTexture;
 		if (lightingOutput.isMultisampled) {
+			cmd().pushDebugGroup("MSAA Resolve");
 			cmd().blit(lightingOutput.renderTarget, m_ResolveRT.getHandle(),
 				0, 0, lightingOutput.width, lightingOutput.height,
 				0, 0, m_ResolveRT.getWidth(), m_ResolveRT.getHeight(),
 				rhi::RHIDevice::BlitColor);
+			cmd().popDebugGroup();
 			sourceColorTexture = m_ResolveRT.getColorTexture();
 		}
 
@@ -69,6 +71,7 @@ namespace engine
 		}
 
 		// 输出到默认帧缓冲（屏幕）
+		cmd().pushDebugGroup("Present");
 		cmd().bindDefaultFramebuffer(Window::getWidth(), Window::getHeight());
 		cmd().clear(0x07);
 
@@ -82,10 +85,13 @@ namespace engine
 
 		cmd().bindTextureUnit(currentTexture->getRHIHandle(), TextureUnit::PostProcessInput);
 		ModelRenderer::drawNdcPlane(cmd());
+		cmd().popDebugGroup();
 	}
 
 
 	void PostProcessPass::gammaCorrect(RenderTarget* target, Texture* hdrTexture) {
+		cmd().pushDebugGroup("Tonemapping & Gamma");
+
 		// 通过命令缓冲录制 beginRenderPass
 		rhi::RenderPassParams params;
 		params.viewport = { 0, 0, target->getWidth(), target->getHeight() };
@@ -117,9 +123,12 @@ namespace engine
 
 		// 通过命令缓冲录制 endRenderPass
 		cmd().endRenderPass();
+		cmd().popDebugGroup();
 	}
 
 	void PostProcessPass::fxaa(RenderTarget* target, Texture* texture) {
+		cmd().pushDebugGroup("FXAA");
+
 		// 通过命令缓冲录制 beginRenderPass
 		rhi::RenderPassParams params;
 		params.viewport = { 0, 0, target->getWidth(), target->getHeight() };
@@ -156,6 +165,7 @@ namespace engine
 
 		// 通过命令缓冲录制 endRenderPass
 		cmd().endRenderPass();
+		cmd().popDebugGroup();
 	}
 
 }

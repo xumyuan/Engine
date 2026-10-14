@@ -100,16 +100,14 @@ namespace engine
 		BEGIN_EVENT("GeometryPass");
 		GeometryPassOutput geometryOutput = m_DeferredGeometryPass.ExecuteGeometryPass(m_RenderScene.camera, false);
 		END_EVENT();
-		BEGIN_EVENT("SSAOPass");
 		PreLightingPassOutput ssaoOutput = m_SSAOPass.executeSSAOPass(m_RenderScene.camera, geometryOutput);
-		END_EVENT();
 		BEGIN_EVENT("LightingPass");
 		LightingPassOutput deferredLightingOutput = m_DeferredLightingPass.ExecuteLightingPass(shadowmapOutput, geometryOutput, ssaoOutput, m_RenderScene.camera, true, lightMarkers);
 		END_EVENT();
-		BEGIN_EVENT("FluidPass");
 		LightingPassOutput fluidOutput = m_FluidPass.executeRenderPass(deferredLightingOutput, geometryOutput, m_RenderScene.camera);
-		END_EVENT();
+		BEGIN_EVENT("PostProcessPass");
 		m_PostProcessPass.executeRenderPass(fluidOutput);
+		END_EVENT();
 
 #endif // FORWARD_RENDER
 

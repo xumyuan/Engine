@@ -284,6 +284,8 @@ namespace engine
 		if (!m_Enabled)
 			return {};
 
+		cmd().pushDebugGroup("SSAOPass");
+
 		rhi::PipelineState ssaoPipeline;
 		{
 			cmd().pushDebugGroup(algorithmName());
@@ -347,6 +349,8 @@ namespace engine
 			cmd().endRenderPass();
 			cmd().popDebugGroup();
 		}
+
+		cmd().popDebugGroup();
 
 		// 返回结果
 		PreLightingPassOutput output;
