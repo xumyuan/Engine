@@ -23,15 +23,7 @@ layout(binding = 0) uniform sampler2D gNormal;
 layout(binding = 1) uniform sampler2D gDepth;
 layout(binding = 2) uniform sampler2D texNoise;
 
-layout (std140, binding = 0) uniform PerFrame {
-	mat4 view;
-	mat4 projection;
-	mat4 viewInverse;
-	mat4 projectionInverse;
-	vec4 viewPos;
-	vec2 screenSize;
-	vec2 texelSize;
-};
+#include "../common/depth_utils.glsl"
 
 layout (std140, binding = 4) uniform SSAOParams {
 	vec4 samples[64];
@@ -40,16 +32,6 @@ layout (std140, binding = 4) uniform SSAOParams {
 	float bias;
 	float power;
 };
-
-// 从深度重建视图空间位置
-vec3 reconstructViewPosition(vec2 uv, float depth)
-{
-    // NDC 坐标
-    vec4 clipPos = vec4(uv * 2.0 - 1.0, depth * 2.0 - 1.0, 1.0);
-    // 视图空间坐标
-    vec4 viewPosRecon = projectionInverse * clipPos;
-    return viewPosRecon.xyz / viewPosRecon.w;
-}
 
 void main()
 {

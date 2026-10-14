@@ -3,6 +3,8 @@
 #include "OpenGLShaderProgram.h"
 #include "utils/FileUtils.h"
 
+#include <filesystem>
+#include <unordered_set>
 #include <spdlog/spdlog.h>
 
 namespace engine {
@@ -29,11 +31,191 @@ ShaderStage OpenGLShaderCompiler::shaderStageFromString(const std::string& type)
 }
 
 // ============================================================================
+// 递归展开 #include "..."
+// ============================================================================
+
+namespace {
+
+constexpr int kMaxIncludeDepth = 32;
+
+// 扫描单行：更新多行注释状态，并判断该行是否为有效的 #include "path" 指令
+bool tryParseIncludeLine(std::string_view line, bool& inBlockComment, std::string& outIncludePath) {
+    size_t i = 0;
+    const size_t n = line.size();
+
+    // 跳过前导空白与注释，定位首个有效字符
+    while (i < n) {
+        if (inBlockComment) {
+            size_t endComment = line.find("*/", i);
+            if (endComment == std::string_view::npos) {
+                return false;
+            }
+            inBlockComment = false;
+            i = endComment + 2;
+            continue;
+        }
+        if (line[i] == ' ' || line[i] == '\t' || line[i] == '\r') {
+            ++i;
+            continue;
+        }
+        if (i + 1 < n && line[i] == '/' && line[i + 1] == '/') {
+            return false; // 整行剩余部分为单行注释
+        }
+        if (i + 1 < n && line[i] == '/' && line[i + 1] == '*') {
+            inBlockComment = true;
+            i += 2;
+            continue;
+        }
+        break;
+    }
+
+    // 记录首个有效字符位置，同时把本行剩余部分的块注释状态更新完
+    size_t firstTokenPos = i;
+    while (i < n) {
+        if (inBlockComment) {
+            size_t endComment = line.find("*/", i);
+            if (endComment == std::string_view::npos) break;
+            inBlockComment = false;
+            i = endComment + 2;
+        } else if (i + 1 < n && line[i] == '/' && line[i + 1] == '/') {
+            break;
+        } else if (i + 1 < n && line[i] == '/' && line[i + 1] == '*') {
+            inBlockComment = true;
+            i += 2;
+        } else {
+            ++i;
+        }
+    }
+
+    if (firstTokenPos >= n || line[firstTokenPos] != '#') {
+        return false;
+    }
+
+    size_t pos = firstTokenPos + 1;
+    while (pos < n && (line[pos] == ' ' || line[pos] == '\t')) {
+        ++pos;
+    }
+
+    constexpr std::string_view kIncludeToken = "include";
+    if (pos + kIncludeToken.size() > n ||
+        line.substr(pos, kIncludeToken.size()) != kIncludeToken) {
+        return false;
+    }
+    pos += kIncludeToken.size();
+
+    while (pos < n && (line[pos] == ' ' || line[pos] == '\t')) {
+        ++pos;
+    }
+
+    if (pos >= n || line[pos] != '"') {
+        return false;
+    }
+    size_t openQuote = pos;
+    size_t closeQuote = line.find('"', openQuote + 1);
+    if (closeQuote == std::string_view::npos || closeQuote <= openQuote + 1) {
+        return false;
+    }
+
+    outIncludePath.assign(line.substr(openQuote + 1, closeQuote - openQuote - 1));
+    return true;
+}
+
+std::string resolveIncludesImpl(const std::string& source,
+                                const std::filesystem::path& currentDir,
+                                std::unordered_set<std::string>& includedFiles,
+                                int depth) {
+    if (depth > kMaxIncludeDepth) {
+        spdlog::error("[OpenGLShaderCompiler] #include recursion depth exceeded {} in '{}'",
+                      kMaxIncludeDepth, currentDir.string());
+        return {};
+    }
+
+    // 若源码中根本没有 #include，直接返回，避免无谓拷贝
+    if (source.find("#include") == std::string::npos) {
+        return source;
+    }
+
+    std::string output;
+    output.reserve(source.size() + 512);
+
+    bool inBlockComment = false;
+    size_t lineStart = 0;
+    size_t lineNum = 1;
+
+    while (lineStart < source.size()) {
+        size_t lineEnd = source.find('\n', lineStart);
+        bool hasNewline = (lineEnd != std::string::npos);
+        size_t count = hasNewline ? (lineEnd - lineStart) : (source.size() - lineStart);
+        std::string_view lineView(source.data() + lineStart, count);
+
+        std::string includeRelPath;
+        if (tryParseIncludeLine(lineView, inBlockComment, includeRelPath)) {
+            std::filesystem::path resolved = currentDir.empty()
+                ? std::filesystem::path(includeRelPath)
+                : (currentDir / includeRelPath);
+            resolved = resolved.lexically_normal();
+
+            if (!std::filesystem::exists(resolved)) {
+                std::filesystem::path fallback =
+                    (std::filesystem::path("Source/shaders") / includeRelPath).lexically_normal();
+                if (std::filesystem::exists(fallback)) {
+                    resolved = std::move(fallback);
+                }
+            }
+
+            std::string canonicalKey = resolved.generic_string();
+            if (!includedFiles.contains(canonicalKey)) {
+                if (!std::filesystem::exists(resolved)) {
+                    spdlog::error("[OpenGLShaderCompiler] Failed to resolve #include \"{}\" (from '{}')",
+                                  includeRelPath, currentDir.string());
+                } else {
+                    includedFiles.insert(canonicalKey);
+                    std::string includedContent = FileUtils::readFile(resolved.string());
+                    std::string expanded = resolveIncludesImpl(
+                        includedContent, resolved.parent_path(), includedFiles, depth + 1);
+
+                    output += "#line 1\n";
+                    output += expanded;
+                    if (!expanded.empty() && expanded.back() != '\n') {
+                        output += '\n';
+                    }
+                    output += "#line " + std::to_string(lineNum + 1) + "\n";
+                }
+            } else {
+                // 同一 stage 已包含过该文件，输出空行保持行号不变
+                if (hasNewline) output += '\n';
+            }
+        } else {
+            output.append(lineView.data(), lineView.size());
+            if (hasNewline) output += '\n';
+        }
+
+        if (!hasNewline) break;
+        lineStart = lineEnd + 1;
+        ++lineNum;
+    }
+
+    return output;
+}
+
+} // namespace
+
+std::string OpenGLShaderCompiler::resolveIncludes(const std::string& source,
+                                                  const std::string& filePath) {
+    std::filesystem::path currentDir = filePath.empty()
+        ? std::filesystem::path("Source/shaders")
+        : std::filesystem::path(filePath).parent_path();
+    std::unordered_set<std::string> includedFiles;
+    return resolveIncludesImpl(source, currentDir, includedFiles, 0);
+}
+
+// ============================================================================
 // 预处理 #shader-type 标记
 // ============================================================================
 
 std::unordered_map<ShaderStage, std::string>
-OpenGLShaderCompiler::preprocessShaderSource(const std::string& source) {
+OpenGLShaderCompiler::preprocessShaderSource(const std::string& source,
+                                             const std::string& filePath) {
     std::unordered_map<ShaderStage, std::string> shaderSources;
 
     const char* shaderTypeToken = "#shader-type";
@@ -60,7 +242,7 @@ OpenGLShaderCompiler::preprocessShaderSource(const std::string& source) {
         }
 
         ShaderStage stage = shaderStageFromString(shaderType);
-        shaderSources[stage] = std::move(code);
+        shaderSources[stage] = resolveIncludes(code, filePath);
     }
 
     return shaderSources;
@@ -77,7 +259,7 @@ std::unique_ptr<RHIShaderProgram> OpenGLShaderCompiler::loadAndCompile(const std
         return nullptr;
     }
 
-    auto shaderSources = preprocessShaderSource(source);
+    auto shaderSources = preprocessShaderSource(source, filePath);
     if (shaderSources.empty()) {
         spdlog::error("[OpenGLShaderCompiler] No shader stages found in: {}", filePath);
         return nullptr;

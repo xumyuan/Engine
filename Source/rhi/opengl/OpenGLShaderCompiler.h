@@ -26,9 +26,13 @@ public:
 
     // ---------- 工具方法 ----------
 
-    // 从 .glsl 文件内容解析 #shader-type 标记，拆分出各阶段源码
+    // 从 .glsl 文件内容解析 #shader-type 标记，拆分出各阶段源码，并展开 #include 指令
     static std::unordered_map<ShaderStage, std::string>
-    preprocessShaderSource(const std::string& source);
+    preprocessShaderSource(const std::string& source, const std::string& filePath = "");
+
+    // 递归展开单个着色器阶段源码中的 #include "..." 指令
+    static std::string
+    resolveIncludes(const std::string& source, const std::string& filePath);
 
     // 字符串 → ShaderStage
     static ShaderStage shaderStageFromString(const std::string& type);

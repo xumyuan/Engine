@@ -19,18 +19,9 @@ out float FragColor;
 
 in vec2 TexCoords;
 
-layout(binding = 0) uniform sampler2D gNormal;
 layout(binding = 1) uniform sampler2D gDepth;
 
-layout (std140, binding = 0) uniform PerFrame {
-	mat4 view;
-	mat4 projection;
-	mat4 viewInverse;
-	mat4 projectionInverse;
-	vec4 viewPos;
-	vec2 screenSize;
-	vec2 texelSize;
-};
+#include "../common/depth_utils.glsl"
 
 // 与 UBOSAOParams 的 std140 布局一致
 layout (std140, binding = 4) uniform SAOParams {
@@ -46,19 +37,6 @@ layout (std140, binding = 4) uniform SAOParams {
 
 const float kPi = 3.14159265359;
 
-vec3 reconstructViewPosition(vec2 uv, float depth)
-{
-    vec4 clipPos = vec4(uv * 2.0 - 1.0, depth * 2.0 - 1.0, 1.0);
-    vec4 viewPosRecon = projectionInverse * clipPos;
-    return viewPosRecon.xyz / viewPosRecon.w;
-}
-
-float interleavedGradientNoise(vec2 fragCoord)
-{
-    vec3 magic = vec3(0.06711056, 0.00583715, 52.9829189);
-    return fract(magic.z * fract(dot(fragCoord, magic.xy)));
-}
-
 void main()
 {
     float depth = texture(gDepth, TexCoords).r;
@@ -69,8 +47,7 @@ void main()
     }
 
     vec3 origin = reconstructViewPosition(TexCoords, depth);
-    vec3 normal = texture(gNormal, TexCoords).rgb;
-    normal = normalize((view * vec4(normal, 0.0)).xyz);
+    vec3 normal = reconstructViewSpaceNormalHighQ(gDepth, TexCoords, depth, origin);
 
     float noise = interleavedGradientNoise(gl_FragCoord.xy);
     float angle = (2.0 * kPi * 2.4) * noise;

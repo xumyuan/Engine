@@ -39,7 +39,7 @@ namespace engine
 		const char* algorithmName() const;
 		Shader* algorithmShader() const;
 		void uploadAlgorithmParams(const glm::mat4& projection);
-		void bindAlgorithmTextures();
+		void bindAlgorithmTextures(const GeometryPassOutput& gBufferOutput);
 		UBOSAOParams makeSAOParams(const glm::mat4& projection) const;
 
 		float lerp(float a, float b, float t);

@@ -217,10 +217,11 @@ namespace engine
 		}
 	}
 
-	void SSAOPass::bindAlgorithmTextures()
+	void SSAOPass::bindAlgorithmTextures(const GeometryPassOutput& gBufferOutput)
 	{
 		switch (m_Algorithm) {
 		case Algorithm::Crytek:
+			cmd().bindTextureUnit(gBufferOutput.normalTexture->getRHIHandle(), TextureUnit::SSAONormal);
 			cmd().bindTextureUnit(m_NoiseTexture.getRHIHandle(), TextureUnit::SSAONoise);
 			break;
 		case Algorithm::SAO:
@@ -315,10 +316,9 @@ namespace engine
 			uploadAlgorithmParams(camera->getProjectionMatrix());
 		}
 
-		// 绑定 GBuffer 纹理。各算法额外需要的纹理在 bindAlgorithmTextures 里绑定。
-		cmd().bindTextureUnit(gBufferOutput.normalTexture->getRHIHandle(), TextureUnit::SSAONormal);
+		// 绑定深度纹理；各算法额外需要的纹理（如法线、噪声）在 bindAlgorithmTextures 里绑定。
 		cmd().bindTextureUnit(gBufferOutput.depthStencilTexture->getRHIHandle(), TextureUnit::SSAODepth);
-		bindAlgorithmTextures();
+		bindAlgorithmTextures(gBufferOutput);
 
 			// 绘制全屏四边形
 			ModelRenderer::drawNdcPlane(cmd());
