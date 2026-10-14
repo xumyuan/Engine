@@ -3,20 +3,8 @@
 
 layout(location = 0) in vec3 position;
 
-layout (std140, binding = 0) uniform PerFrame {
-	mat4 view;
-	mat4 projection;
-	mat4 viewInverse;
-	mat4 projectionInverse;
-	vec4 viewPos;
-	vec2 screenSize;
-	vec2 texelSize;
-};
-
-layout (std140, binding = 1) uniform PerObject {
-	mat4 model;
-	mat3 normalMatrix;
-};
+#include "../common/per_frame.glsl"
+#include "../common/per_object.glsl"
 
 layout (std140, binding = 4) uniform FluidParams {
 	vec4 lightPos;      // xyz = lightPos, w = pointScale
@@ -39,15 +27,7 @@ void main() {
 #shader-type fragment
 #version 450 core
 
-layout (std140, binding = 0) uniform PerFrame {
-	mat4 view;
-	mat4 projection;
-	mat4 viewInverse;
-	mat4 projectionInverse;
-	vec4 viewPos;
-	vec2 screenSize;
-	vec2 texelSize;
-};
+#include "../common/per_frame.glsl"
 
 layout (std140, binding = 4) uniform FluidParams {
 	vec4 lightPos;      // xyz = lightPos, w = pointScale

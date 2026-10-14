@@ -4,10 +4,7 @@
 
 layout (location = 0) in vec3 position;
 
-layout (std140, binding = 1) uniform PerObject {
-	mat4 model;
-	mat3 normalMatrix;  // std140: 3 x vec4
-};
+#include "common/per_object.glsl"
 
 layout (std140, binding = 4) uniform ShadowmapParams {
 	mat4 lightSpaceViewProjectionMatrix;

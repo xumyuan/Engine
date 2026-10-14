@@ -10,20 +10,8 @@ layout (location = 4) in vec3 bitangent;
 out mat3 TBN;
 out vec2 TexCoords;
 
-layout (std140, binding = 0) uniform PerFrame {
-	mat4 view;
-	mat4 projection;
-	mat4 viewInverse;
-	mat4 projectionInverse;
-	vec4 viewPos;
-	vec2 screenSize;
-	vec2 texelSize;
-};
-
-layout (std140, binding = 1) uniform PerObject {
-	mat4 model;
-	mat3 normalMatrix;
-};
+#include "../common/per_frame.glsl"
+#include "../common/per_object.glsl"
 
 void main() {
 	// Use the normal matrix to maintain the orthogonal property of a vector when it is scaled non-uniformly
@@ -47,21 +35,8 @@ layout (location = 0) out vec4 gb_Albedo;
 layout (location = 1) out vec3 gb_Normal;
 layout (location = 2) out vec4 gb_MaterialInfo;
 
-layout (std140, binding = 3) uniform MaterialParams {
-	vec4 albedoColour;
-	vec4 emissionColour;
-	float metallicValue;
-	float roughnessValue;
-	float parallaxStrength;
-	float tilingAmount;
-	int hasAlbedoTexture;
-	int hasMetallicTexture;
-	int hasRoughnessTexture;
-	int hasEmissionTexture;
-	int hasDisplacement;
-	int hasEmission;
-	vec2 minMaxDisplacementSteps;
-};
+#include "../common/material_params.glsl"
+#include "../common/pbr_brdf.glsl"
 
 // Terrain texture samplers
 layout(binding = 13) uniform sampler2D texture_albedo1;
@@ -88,9 +63,6 @@ layout(binding = 33) uniform sampler2D blendmap;
 
 in mat3 TBN;
 in vec2 TexCoords;
-
-// Functions
-vec3 UnpackNormal(vec3 textureNormal);
 
 void main() {
 	vec4 blendMapColour = texture(blendmap, TexCoords);
@@ -134,9 +106,4 @@ void main() {
 	gb_Albedo = vec4(albedo, 1.0);
 	gb_Normal = normal;
 	gb_MaterialInfo = vec4(metallic, roughness, ao, 0.0);
-}
-
-// Unpacks the normal from the texture and returns the normal in tangent space
-vec3 UnpackNormal(vec3 textureNormal) {
-	return normalize(textureNormal * 2.0 - 1.0);
 }

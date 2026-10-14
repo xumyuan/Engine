@@ -16,33 +16,8 @@ void main() {
 #shader-type fragment
 #version 450 core
 
-layout (std140, binding = 0) uniform PerFrame {
-	mat4 view;
-	mat4 projection;
-	mat4 viewInverse;
-	mat4 projectionInverse;
-	vec4 viewPos;
-	vec2 screenSize;
-	vec2 texelSize;
-};
-
-struct DirLight {
-	vec4 direction;     // xyz = direction, w = intensity
-	vec4 lightColour;
-};
-
-// 只声明需要的前缀成员；完整布局见 UniformBufferData.h 的 UBOLighting
-layout (std140, binding = 2) uniform Lighting {
-	ivec4 numDirPointSpotLights;
-	DirLight dirLights[3];
-};
-
-layout (std140, binding = 4) uniform SSFParams {
-	vec4 particle;
-	vec4 blur;
-	vec4 absorption;  // rgb = 吸收系数，w = 折射偏移强度
-	vec4 shading;     // x = F0，y = 高光指数
-};
+#include "../common/lighting_ubo.glsl"
+#include "ssf_common.glsl"
 
 layout(binding = 0) uniform sampler2D sceneColor;
 layout(binding = 1) uniform sampler2D fluidDepth;

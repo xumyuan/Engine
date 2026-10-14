@@ -5,22 +5,7 @@
 
 layout(location = 0) in vec3 position;
 
-layout (std140, binding = 0) uniform PerFrame {
-	mat4 view;
-	mat4 projection;
-	mat4 viewInverse;
-	mat4 projectionInverse;
-	vec4 viewPos;
-	vec2 screenSize;
-	vec2 texelSize;
-};
-
-layout (std140, binding = 4) uniform SSFParams {
-	vec4 particle;    // x = 粒子半径（世界单位），y = 厚度缩放
-	vec4 blur;
-	vec4 absorption;
-	vec4 shading;
-};
+#include "ssf_common.glsl"
 
 out vec3 eyeCenter;
 
@@ -34,33 +19,13 @@ void main() {
 #shader-type fragment
 #version 450 core
 
-layout (std140, binding = 0) uniform PerFrame {
-	mat4 view;
-	mat4 projection;
-	mat4 viewInverse;
-	mat4 projectionInverse;
-	vec4 viewPos;
-	vec2 screenSize;
-	vec2 texelSize;
-};
-
-layout (std140, binding = 4) uniform SSFParams {
-	vec4 particle;
-	vec4 blur;
-	vec4 absorption;
-	vec4 shading;
-};
+#include "ssf_common.glsl"
 
 layout(binding = 0) uniform sampler2D sceneDepth;
 
 in vec3 eyeCenter;
 
 layout(location = 0) out float thickness;
-
-float linearDepth(float depth) {
-	float ndcZ = depth * 2.0 - 1.0;
-	return projection[3][2] / (ndcZ + projection[2][2]);
-}
 
 void main() {
 	vec2 p = gl_PointCoord * vec2(2.0, -2.0) + vec2(-1.0, 1.0);
@@ -69,7 +34,7 @@ void main() {
 
 	float nz = sqrt(1.0 - r2);
 	float frontDistance = -(eyeCenter.z + nz * particle.x);
-	float sceneDistance = linearDepth(texelFetch(sceneDepth, ivec2(gl_FragCoord.xy), 0).r);
+	float sceneDistance = linearizeDepth(texelFetch(sceneDepth, ivec2(gl_FragCoord.xy), 0).r);
 	if (frontDistance > sceneDistance) discard;
 
 	// 视线穿过球体的弦长

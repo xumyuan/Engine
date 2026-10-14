@@ -3,27 +3,8 @@
 
 layout(location = 0) in vec3 position;
 
-layout(std140, binding = 0) uniform PerFrame {
-    mat4 view;
-    mat4 projection;
-    mat4 viewInverse;
-    mat4 projectionInverse;
-    vec4 viewPos;
-    vec2 screenSize;
-    vec2 texelSize;
-};
-
-struct DirLight { vec4 direction; vec4 lightColour; };
-struct PointLight { vec4 position; vec4 lightColour; };
-struct SpotLight { vec4 position; vec4 direction; vec4 lightColour; vec4 params; };
-
-// Matches the Lighting UBO prefix in UniformBufferData.h; shadow fields are unused.
-layout(std140, binding = 2) uniform Lighting {
-    ivec4 numDirPointSpotLights;
-    DirLight dirLights[3];
-    PointLight pointLights[9];
-    SpotLight spotLights[6];
-};
+#include "common/per_frame.glsl"
+#include "common/lighting_ubo.glsl"
 
 layout(std140, binding = 4) uniform MarkerParams {
     vec4 markerSettings; // radius, display brightness, unused, unused

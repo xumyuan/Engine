@@ -17,74 +17,15 @@ void main() {
 #shader-type fragment
 #version 450 core
 
-struct DirLight {
-	vec4 direction;        // xyz = direction, w = intensity
-	vec4 lightColour;      // xyz = colour, w = padding
-};
-
-struct PointLight {
-	vec4 position;         // xyz = position, w = intensity
-	vec4 lightColour;      // xyz = colour, w = attenuationRadius
-};
-
-struct SpotLight {
-	vec4 position;         // xyz = position, w = intensity
-	vec4 direction;        // xyz = direction, w = attenuationRadius
-	vec4 lightColour;      // xyz = colour, w = cutOff
-	vec4 params;           // x = outerCutOff, yzw = padding
-};
-
-struct ShadowData {
-	mat4 lightSpaceViewProjectionMatrix;
-	float shadowBias;
-	int lightShadowIndex;
-	float _pad0;
-	float _pad1;
-};
-
-struct ShadowDataPointLight {
-	float farPlane;
-	float shadowBias;
-	int lightShadowIndex;
-	float _pad0;
-};
-
-#define MAX_DIR_LIGHTS 3
-#define MAX_POINT_LIGHTS 9
-#define MAX_SPOT_LIGHTS 6
-const float PI = 3.14159265359;
-
 in vec2 TexCoords;
 
 out vec4 color;
 
-// ===== UBO blocks =====
-layout (std140, binding = 0) uniform PerFrame {
-	mat4 view;
-	mat4 projection;
-	mat4 viewInverse;
-	mat4 projectionInverse;
-	vec4 viewPos;
-	vec2 screenSize;
-	vec2 texelSize;
-};
-
-layout (std140, binding = 2) uniform Lighting {
-	ivec4 numDirPointSpotLights;
-	DirLight dirLights[MAX_DIR_LIGHTS];
-	PointLight pointLights[MAX_POINT_LIGHTS];
-	SpotLight spotLights[MAX_SPOT_LIGHTS];
-	ShadowData dirLightShadowData;
-	ShadowData spotLightShadowData;
-	ShadowDataPointLight pointLightShadowData;
-};
-
-layout (std140, binding = 4) uniform IBLParams {
-	int reflectionProbeMipCount;
-	int computeIBL;
-	int useSSAO;
-	int _iblPad0;
-};
+#include "../common/depth_utils.glsl"
+#include "../common/lighting_ubo.glsl"
+#include "../common/ibl_params.glsl"
+#include "../common/pbr_brdf.glsl"
+#include "../common/shadow_sampling.glsl"
 
 // ===== Texture samplers (remain as individual uniforms) =====
 // GBuffer
@@ -109,18 +50,6 @@ vec3 CalculateDirectionalLightRadiance(vec3 albedo, vec3 normal, float metallic,
 vec3 CalculatePointLightRadiance(vec3 albedo, vec3 normal, float metallic, float roughness, vec3 fragPos, vec3 fragToViewNorm, vec3 baseReflectivity);
 vec3 CalculateSpotLightRadiance(vec3 albedo, vec3 normal, float metallic, float roughness, vec3 fragPos, vec3 fragToViewNorm, vec3 baseReflectivity);
 
-// Cook-Torrance BRDF functions adopted by Epic for UE4
-float NormalDistributionGGX(vec3 normal, vec3 halfwayNorm, float roughness);
-float GeometrySmith(vec3 normal, vec3 fragToViewNorm, vec3 lightDirNorm, float roughness);
-float GeometrySchlickGGX(float cosTheta, float roughness);
-vec3 FresnelSchlick(float cosTheta, vec3 baseReflectivity);
-
-// Other function prototypes
-float CalculateDirLightShadow(vec3 fragPos);
-float CalculateSpotLightShadow(vec3 fragPos);
-float CalculatePointLightShadow(vec3 lightToFrag);
-vec3 WorldPosFromDepth();
-
 void main() {
 	// If this is an emissive fragment then we don't care about lighting it
 	float emissiveIntensity = texture(materialInfoTexture, TexCoords).a;
@@ -142,7 +71,7 @@ void main() {
 	float sceneAO = (useSSAO == 1) ? texture(ssaoTexture, TexCoords).r : 1.0;
 	float ao = materialAO * sceneAO;
 	// Reconstruct fragPos
-	vec3 fragPos = WorldPosFromDepth();
+	vec3 fragPos = reconstructWorldPosition(TexCoords, texture(depthTexture, TexCoords).r);
 
 	vec3 fragToViewNorm = normalize(viewPos.xyz - fragPos);
 	vec3 reflectionVec = reflect(-fragToViewNorm, normal);
@@ -180,240 +109,59 @@ vec3 CalculateDirectionalLightRadiance(vec3 albedo, vec3 normal, float metallic,
 
 	for (int i = 0; i < numDirPointSpotLights.x; ++i) {
 		vec3 lightDirNorm = normalize(-dirLights[i].direction.xyz);
-		vec3 halfwayNorm = normalize(lightDirNorm + fragToViewNorm);
 		vec3 radiance = dirLights[i].direction.w * dirLights[i].lightColour.xyz;
+		vec3 brdf = EvaluateDirectBRDF(albedo, normal, metallic, roughness, fragToViewNorm, lightDirNorm, baseReflectivity);
+		float shadowAmount = CalculateShadow2DPCF(dirLightShadowData, dirLightShadowmap, fragPos);
 
-		float normalDistribution = NormalDistributionGGX(normal, halfwayNorm, roughness);
-		vec3 fresnel = FresnelSchlick(max(dot(halfwayNorm, fragToViewNorm), 0.0), baseReflectivity);
-		float geometry = GeometrySmith(normal, fragToViewNorm, lightDirNorm, roughness);
-
-		vec3 specularRatio = fresnel;
-		vec3 diffuseRatio = vec3(1.0) - specularRatio;
-		diffuseRatio *= 1.0 - metallic;
-
-		vec3 numerator = specularRatio * normalDistribution * geometry;
-		float denominator = 4 * max(dot(fragToViewNorm, normal), 0.1) * max(dot(lightDirNorm, normal), 0.0) + 0.001;
-		vec3 specular = numerator / denominator;
-
-		vec3 diffuse = diffuseRatio * albedo / PI;
-
-		float shadowAmount = 0.0f;
-		shadowAmount = CalculateDirLightShadow(fragPos);
-
-		directLightIrradiance += (diffuse + specular) * radiance * max(dot(normal, lightDirNorm), 0.0) * (1.0 - shadowAmount);
+		directLightIrradiance += brdf * radiance * max(dot(normal, lightDirNorm), 0.0) * (1.0 - shadowAmount);
 	}
 
 	return directLightIrradiance;
 }
-
 
 vec3 CalculatePointLightRadiance(vec3 albedo, vec3 normal, float metallic, float roughness, vec3 fragPos, vec3 fragToViewNorm, vec3 baseReflectivity) {
 	vec3 pointLightIrradiance = vec3(0.0);
 
 	for (int i = 0; i < numDirPointSpotLights.y; ++i) {
 		vec3 fragToLightNorm = normalize(pointLights[i].position.xyz - fragPos);
-		vec3 halfwayNorm = normalize(fragToViewNorm + fragToLightNorm);
 		vec3 lightToFrag = fragPos - pointLights[i].position.xyz;
 		float fragToLightDistance = length(lightToFrag);
 
-		float d = fragToLightDistance / pointLights[i].lightColour.w;
-		float d2 = d * d;
-		float d4 = d2 * d2;
-		float falloffNumerator = clamp(1.0 - d4, 0.0, 1.0);
-		float attenuation = (falloffNumerator * falloffNumerator) / ((fragToLightDistance * fragToLightDistance) + 1.0);
+		float attenuation = AttenuationUE4(fragToLightDistance, pointLights[i].lightColour.w);
 		vec3 radiance = pointLights[i].position.w * pointLights[i].lightColour.xyz * attenuation;
-
-		float normalDistribution = NormalDistributionGGX(normal, halfwayNorm, roughness);
-		vec3 fresnel = FresnelSchlick(max(dot(halfwayNorm, fragToViewNorm), 0.0), baseReflectivity);
-		float geometry = GeometrySmith(normal, fragToViewNorm, fragToLightNorm, roughness);
-
-		vec3 specularRatio = fresnel;
-		vec3 diffuseRatio = vec3(1.0) - specularRatio;
-		diffuseRatio *= 1.0 - metallic;
-
-		vec3 numerator = specularRatio * normalDistribution * geometry;
-		float denominator = 4 * max(dot(fragToViewNorm, normal), 0.1) * max(dot(fragToLightNorm, normal), 0.0) + 0.001;
-		vec3 specular = numerator / denominator;
-
-		vec3 diffuse = diffuseRatio * albedo / PI;
+		vec3 brdf = EvaluateDirectBRDF(albedo, normal, metallic, roughness, fragToViewNorm, fragToLightNorm, baseReflectivity);
 
 		float shadowAmount = 0.0;
 		if (false)
-			shadowAmount = CalculatePointLightShadow(lightToFrag);
+			shadowAmount = CalculatePointLightShadowCubemap(pointLightShadowData, pointLightShadowCubemap, lightToFrag);
 
-		pointLightIrradiance += (diffuse + specular) * radiance * max(dot(normal, fragToLightNorm), 0.0) * (1.0 - shadowAmount);
+		pointLightIrradiance += brdf * radiance * max(dot(normal, fragToLightNorm), 0.0) * (1.0 - shadowAmount);
 	}
 
 	return pointLightIrradiance;
 }
 
-
-vec3 CalculateSpotLightRadiance(vec3 albedo, vec3 normal, float metallic, float roughness,  vec3 fragPos, vec3 fragToViewNorm, vec3 baseReflectivity) {
+vec3 CalculateSpotLightRadiance(vec3 albedo, vec3 normal, float metallic, float roughness, vec3 fragPos, vec3 fragToViewNorm, vec3 baseReflectivity) {
 	vec3 spotLightIrradiance = vec3(0.0);
 
 	for (int i = 0; i < numDirPointSpotLights.z; ++i) {
 		vec3 fragToLightNorm = normalize(spotLights[i].position.xyz - fragPos);
-		vec3 halfwayNorm = normalize(fragToViewNorm + fragToLightNorm);
 		float fragToLightDistance = length(spotLights[i].position.xyz - fragPos);
-
-		float d = fragToLightDistance / spotLights[i].direction.w;
-		float d2 = d * d;
-		float d4 = d2 * d2;
-		float falloffNumerator = clamp(1.0 - d4, 0.0, 1.0);
 
 		float theta = dot(normalize(spotLights[i].direction.xyz), -fragToLightNorm);
 		float difference = spotLights[i].lightColour.w - spotLights[i].params.x;
 		float intensity = clamp((theta - spotLights[i].params.x) / difference, 0.0, 1.0);
-		float attenuation = intensity * (falloffNumerator * falloffNumerator) / ((fragToLightDistance * fragToLightDistance) + 1.0);
+		float attenuation = intensity * AttenuationUE4(fragToLightDistance, spotLights[i].direction.w);
 		vec3 radiance = spotLights[i].position.w * spotLights[i].lightColour.xyz * attenuation;
 
-		float normalDistribution = NormalDistributionGGX(normal, halfwayNorm, roughness);
-		vec3 fresnel = FresnelSchlick(max(dot(halfwayNorm, fragToViewNorm), 0.0), baseReflectivity);
-		float geometry = GeometrySmith(normal, fragToViewNorm, fragToLightNorm, roughness);
-
-		vec3 specularRatio = fresnel;
-		vec3 diffuseRatio = vec3(1.0) - specularRatio;
-		diffuseRatio *= 1.0 - metallic;
-
-		vec3 numerator = specularRatio * normalDistribution * geometry;
-		float denominator = 4 * max(dot(fragToViewNorm, normal), 0.1) * max(dot(fragToLightNorm, normal), 0.0) + 0.001;
-		vec3 specular = numerator / denominator;
-
-		vec3 diffuse = diffuseRatio * albedo / PI;
+		vec3 brdf = EvaluateDirectBRDF(albedo, normal, metallic, roughness, fragToViewNorm, fragToLightNorm, baseReflectivity);
 
 		float shadowAmount = 0.0f;
 		if (false)
-			shadowAmount = CalculateSpotLightShadow(fragPos);
+			shadowAmount = CalculateShadow2DPCF(spotLightShadowData, spotLightShadowmap, fragPos);
 
-		spotLightIrradiance += (diffuse + specular) * radiance * max(dot(normal, fragToLightNorm), 0.0) * (1.0 - shadowAmount);
+		spotLightIrradiance += brdf * radiance * max(dot(normal, fragToLightNorm), 0.0) * (1.0 - shadowAmount);
 	}
 
 	return spotLightIrradiance;
-}
-
-
-float NormalDistributionGGX(vec3 normal, vec3 halfwayNorm, float roughness) {
-	float a = roughness * roughness;
-	float a2 = a * a;
-	float normDotHalf = dot(normal, halfwayNorm);
-	float normDotHalf2 = normDotHalf * normDotHalf;
-
-	float numerator = a2;
-	float denominator = normDotHalf2 * (a2 - 1.0) + 1.0;
-	denominator = PI * denominator * denominator;
-
-	return numerator / denominator;
-}
-
-
-float GeometrySmith(vec3 normal, vec3 fragToViewNorm, vec3 lightDirNorm, float roughness) {
-	return GeometrySchlickGGX(max(dot(normal, fragToViewNorm), 0.0), roughness) * GeometrySchlickGGX(max(dot(normal, lightDirNorm), 0.0), roughness);
-}
-float GeometrySchlickGGX(float cosTheta, float roughness) {
-	float r = (roughness + 1.0);
-	float k = (roughness * roughness) / 8.0;
-
-	float numerator = cosTheta;
-	float denominator = cosTheta * (1.0 - k) + k;
-
-	return numerator / max(denominator, 0.001);
-}
-
-
-vec3 FresnelSchlick(float cosTheta, vec3 baseReflectivity) {
-	return max(baseReflectivity + (1.0 - baseReflectivity) * pow(2, (-5.55473 * cosTheta - 6.98316) * cosTheta), 0.0);
-}
-
-
-float CalculateDirLightShadow(vec3 fragPos) {
-	if (dirLightShadowData.lightShadowIndex == -1)
-		return 0.0;
-
-	vec4 fragPosLightClipSpace = dirLightShadowData.lightSpaceViewProjectionMatrix * vec4(fragPos, 1.0);
-	vec3 ndcCoords = fragPosLightClipSpace.xyz / fragPosLightClipSpace.w;
-	vec3 depthmapCoords = ndcCoords * 0.5 + 0.5;
-
-	float currentDepth = depthmapCoords.z;
-	if (currentDepth > 1.0)
-		return 0.0;
-
-	float shadow = 0.0;
-	vec2 texelSizeShadow = 1.0 / textureSize(dirLightShadowmap, 0);
-	for (float y = -1.5; y < 1.0; y += 2.0) {
-		for (float x = -1.5; x < 1.0; x += 2.0) {
-			float sampledDepthPCF = texture(dirLightShadowmap, depthmapCoords.xy + (texelSizeShadow * vec2(x, y))).r;
-			shadow += currentDepth > sampledDepthPCF + dirLightShadowData.shadowBias ? 1.0 : 0.0;
-		}
-	}
-	shadow *= 0.25;
-
-	return shadow;
-}
-
-float CalculateSpotLightShadow(vec3 fragPos) {
-	if (spotLightShadowData.lightShadowIndex == -1)
-		return 0.0;
-
-	vec4 fragPosLightClipSpace = spotLightShadowData.lightSpaceViewProjectionMatrix * vec4(fragPos, 1.0);
-	vec3 ndcCoords = fragPosLightClipSpace.xyz / fragPosLightClipSpace.w;
-	vec3 depthmapCoords = ndcCoords * 0.5 + 0.5;
-
-	float currentDepth = depthmapCoords.z;
-	if (currentDepth > 1.0)
-		return 0.0;
-
-	float shadow = 0.0;
-	vec2 texelSizeShadow = 1.0 / textureSize(spotLightShadowmap, 0);
-	for (float y = -1.5; y < 1.0; y += 2.0) {
-		for (float x = -1.5; x < 1.0; x += 2.0) {
-			float sampledDepthPCF = texture(spotLightShadowmap, depthmapCoords.xy + (texelSizeShadow * vec2(x, y))).r;
-			shadow += currentDepth > sampledDepthPCF + spotLightShadowData.shadowBias ? 1.0 : 0.0;
-		}
-	}
-	shadow *= 0.25;
-
-	return shadow;
-}
-
-vec3 sampleOffsetDirections[20] = vec3[]
-(
-	vec3( 1,  1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1,  1,  1), 
-	vec3( 1,  1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1,  1, -1),
-	vec3( 1,  1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1,  1,  0),
-	vec3( 1,  0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1,  0, -1),
-	vec3( 0,  1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0,  1, -1)
-);
-
-float CalculatePointLightShadow(vec3 lightToFrag) {
-	if (pointLightShadowData.lightShadowIndex == -1)
-		return 0.0;
-
-	float currentDepth = length(lightToFrag);
-	if (currentDepth > pointLightShadowData.farPlane)
-		return 0.0;
-
-	float shadow = 0.0;
-	float samples = 20;
-	float diskRadius = 0.05;
-	for (int i = 0; i < samples; i++)
-	{
-		float closestDepth = texture(pointLightShadowCubemap, lightToFrag + sampleOffsetDirections[i] * diskRadius).r;
-		closestDepth *= pointLightShadowData.farPlane;
-		if (currentDepth - pointLightShadowData.shadowBias > closestDepth)
-			shadow += 1.0;
-	}
-	shadow /= float(samples);
-
-	return shadow;
-}
-
-vec3 WorldPosFromDepth() {
-	float z = 2.0 * texture(depthTexture, TexCoords).r - 1.0;
-	vec4 clipSpacePos = vec4(TexCoords * 2.0 - 1.0 , z, 1.0);
-	vec4 viewSpacePos = projectionInverse * clipSpacePos;
-	viewSpacePos /= viewSpacePos.w;
-
-	vec4 worldSpacePos = viewInverse * viewSpacePos;
-
-	return worldSpacePos.xyz;
 }

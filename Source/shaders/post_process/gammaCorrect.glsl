@@ -21,11 +21,7 @@ in vec2 TexCoords;
 
 layout(binding = 0) uniform sampler2D screen_texture;
 
-layout (std140, binding = 4) uniform PostProcessParams {
-	float gamma_inverse;
-	float exposure;
-	vec2 texel_size;
-};
+#include "../common/post_process_params.glsl"
 
 void main() {
 

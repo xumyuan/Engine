@@ -13,22 +13,7 @@ void main() {
 #shader-type fragment
 #version 450 core
 
-layout (std140, binding = 0) uniform PerFrame {
-	mat4 view;
-	mat4 projection;
-	mat4 viewInverse;
-	mat4 projectionInverse;
-	vec4 viewPos;
-	vec2 screenSize;
-	vec2 texelSize;
-};
-
-layout (std140, binding = 4) uniform SSFParams {
-	vec4 particle;
-	vec4 blur;        // xy = 纹素步长方向 (1,0) 或 (0,1)，z = 世界空间滤波半径，w = 深度差衰减
-	vec4 absorption;
-	vec4 shading;     // z = 最大滤波半径（像素）
-};
+#include "ssf_common.glsl"
 
 // 0 表示该像素没有流体
 layout(binding = 0) uniform sampler2D depthInput;

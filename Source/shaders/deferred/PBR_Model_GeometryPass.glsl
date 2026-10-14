@@ -12,36 +12,9 @@ out vec2 TexCoords;
 out vec3 FragPosTangentSpace;
 out vec3 ViewPosTangentSpace;
 
-layout (std140, binding = 0) uniform PerFrame {
-	mat4 view;
-	mat4 projection;
-	mat4 viewInverse;
-	mat4 projectionInverse;
-	vec4 viewPos;
-	vec2 screenSize;
-	vec2 texelSize;
-};
-
-layout (std140, binding = 1) uniform PerObject {
-	mat4 model;
-	mat3 normalMatrix;  // std140: 3 x vec4
-};
-
-layout (std140, binding = 3) uniform MaterialParams {
-	vec4 albedoColour;
-	vec4 emissionColour;             // xyz = emission, w = emissionIntensity
-	float metallicValue;
-	float roughnessValue;
-	float parallaxStrength;
-	float tilingAmount;
-	int hasAlbedoTexture;
-	int hasMetallicTexture;
-	int hasRoughnessTexture;
-	int hasEmissionTexture;
-	int hasDisplacement;
-	int hasEmission;
-	vec2 minMaxDisplacementSteps;
-};
+#include "../common/per_frame.glsl"
+#include "../common/per_object.glsl"
+#include "../common/material_params.glsl"
 
 void main() {
 	// Use the normal matrix to maintain the orthogonal property of a vector when it is scaled non-uniformly
@@ -76,21 +49,8 @@ in vec2 TexCoords;
 in vec3 FragPosTangentSpace;
 in vec3 ViewPosTangentSpace;
 
-layout (std140, binding = 3) uniform MaterialParams {
-	vec4 albedoColour;
-	vec4 emissionColour;             // xyz = emission, w = emissionIntensity
-	float metallicValue;
-	float roughnessValue;
-	float parallaxStrength;
-	float tilingAmount;
-	int hasAlbedoTexture;
-	int hasMetallicTexture;
-	int hasRoughnessTexture;
-	int hasEmissionTexture;
-	int hasDisplacement;
-	int hasEmission;
-	vec2 minMaxDisplacementSteps;
-};
+#include "../common/material_params.glsl"
+#include "../common/pbr_brdf.glsl"
 
 // Texture samplers remain as individual uniforms
 layout(binding = 4) uniform sampler2D texture_albedo;
@@ -102,7 +62,6 @@ layout(binding = 9) uniform sampler2D texture_displacement;
 layout(binding = 10) uniform sampler2D texture_emission;
 
 // Functions
-vec3 UnpackNormal(vec3 textureNormal);
 vec2 ParallaxMapping(vec2 texCoords, vec3 viewDirTangentSpace);
 
 void main() {
@@ -146,11 +105,6 @@ void main() {
 	gb_Albedo = albedo;
 	gb_Normal = normal;
 	gb_MaterialInfo = vec4(metallic, roughness, ao, emissionIntensity);
-}
-
-// Unpacks the normal from the texture and returns the normal in tangent space
-vec3 UnpackNormal(vec3 textureNormal) {
-	return normalize(textureNormal * 2.0 - 1.0);
 }
 
 vec2 ParallaxMapping(vec2 texCoords, vec3 viewDirTangentSpace) {

@@ -11,6 +11,20 @@ vec3 reconstructViewPosition(vec2 uv, float depth)
     return viewPosRecon.xyz / viewPosRecon.w;
 }
 
+// 从深度（[0, 1]）和 UV 重建世界空间位置
+vec3 reconstructWorldPosition(vec2 uv, float depth)
+{
+    vec3 viewPosRecon = reconstructViewPosition(uv, depth);
+    return (viewInverse * vec4(viewPosRecon, 1.0)).xyz;
+}
+
+// 将 [0, 1] 硬件深度转换为相机前方的正值线性距离（-viewZ）
+float linearizeDepth(float depth)
+{
+    float ndcZ = depth * 2.0 - 1.0;
+    return projection[3][2] / (ndcZ + projection[2][2]);
+}
+
 // 单侧差分重建几何法线（MediumQ，2 次额外采样）
 vec3 reconstructViewSpaceNormalMediumQ(sampler2D depthTex, vec2 uv, vec3 origin)
 {

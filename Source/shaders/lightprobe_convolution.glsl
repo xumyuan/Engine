@@ -6,15 +6,7 @@ layout (location = 0) in vec3 position;
 
 out vec3 SampleDirection;
 
-layout (std140, binding = 0) uniform PerFrame {
-	mat4 view;
-	mat4 projection;
-	mat4 viewInverse;
-	mat4 projectionInverse;
-	vec4 viewPos;
-	vec2 screenSize;
-	vec2 texelSize;
-};
+#include "common/per_frame.glsl"
 
 void main() {
 	SampleDirection = position;
