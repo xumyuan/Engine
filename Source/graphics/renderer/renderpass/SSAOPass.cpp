@@ -13,6 +13,18 @@
 namespace engine
 {
 
+	namespace {
+
+	constexpr const char* kAlgorithmNames[] = {
+		"Crytek",
+		"SAO",
+	};
+	static_assert(sizeof(kAlgorithmNames) / sizeof(kAlgorithmNames[0])
+		== static_cast<size_t>(SSAOPass::Algorithm::Count),
+		"Algorithm combo labels must match SSAOPass::Algorithm");
+
+	}
+
 	SSAOPass::SSAOPass(const RenderScene& renderScene)
 		: RenderPass(renderScene, RenderPassType::SSAOPassType),
 		m_SSAORT(Window::getWidth(), Window::getHeight()),
@@ -20,6 +32,7 @@ namespace engine
 	{
 		// 加载着色器
 		m_SSAOShader = ShaderLoader::loadShader("Source/shaders/post_process/ssao.glsl");
+		m_SAOShader = ShaderLoader::loadShader("Source/shaders/post_process/sao.glsl");
 		m_SSAOBlurShader = ShaderLoader::loadShader("Source/shaders/post_process/ssao_blur.glsl");
 
 		// 创建 SSAO RenderTarget（单通道，存储 AO 值）
@@ -34,15 +47,16 @@ namespace engine
 
 		m_DebugSection = DebugPane::addSection("SSAO", [this]() {
 			ImGui::Checkbox("Enabled", &m_Enabled);
+
+			int algorithm = static_cast<int>(m_Algorithm);
+			if (ImGui::Combo("Algorithm", &algorithm, kAlgorithmNames, static_cast<int>(Algorithm::Count)))
+				m_Algorithm = static_cast<Algorithm>(algorithm);
+
 			ImGui::SliderFloat("Radius", &m_Radius, 0.05f, 2.0f, "%.3f");
 			if (ImGui::IsItemHovered())
 				ImGui::SetTooltip("View-space sample radius");
-			ImGui::SliderFloat("Bias", &m_Bias, 0.0f, 0.2f, "%.4f");
-			if (ImGui::IsItemHovered())
-				ImGui::SetTooltip("Depth bias. Raise it if flat surfaces look speckled");
-			ImGui::SliderFloat("Power", &m_Power, 0.5f, 4.0f, "%.2f");
-			if (ImGui::IsItemHovered())
-				ImGui::SetTooltip("Contrast of the occlusion");
+
+			drawAlgorithmControls();
 		}, 30, true);
 	}
 
@@ -116,6 +130,154 @@ namespace engine
 			rhi::TextureFormat::RGBA32F, ssaoNoise.data());
 	}
 
+	void SSAOPass::drawAlgorithmControls()
+	{
+		switch (m_Algorithm) {
+		case Algorithm::Crytek:
+			ImGui::SliderFloat("Bias", &m_Bias, 0.0f, 0.2f, "%.4f");
+			if (ImGui::IsItemHovered())
+				ImGui::SetTooltip("Depth bias. Raise it if flat surfaces look speckled");
+			ImGui::SliderFloat("Power", &m_Power, 0.5f, 4.0f, "%.2f");
+			if (ImGui::IsItemHovered())
+				ImGui::SetTooltip("Contrast of the occlusion");
+			break;
+		case Algorithm::SAO: {
+			ImGui::SliderFloat("Bias", &m_SAOBias, 0.0f, 0.05f, "%.5f");
+			if (ImGui::IsItemHovered())
+				ImGui::SetTooltip("Multiplied by view-space z. Keep this small");
+			ImGui::SliderFloat("Intensity", &m_SAOIntensity, 0.0f, 4.0f, "%.2f");
+			ImGui::SliderFloat("Power", &m_SAOPower, 0.5f, 4.0f, "%.2f");
+			if (ImGui::IsItemHovered())
+				ImGui::SetTooltip("Contrast. 2 matches the squared SAO result");
+
+			const char* qualities[] = { "Low", "Medium", "High", "Ultra" };
+			int quality = static_cast<int>(m_SAOQuality);
+			if (ImGui::Combo("Quality", &quality, qualities, IM_ARRAYSIZE(qualities)))
+				m_SAOQuality = static_cast<SAOQuality>(quality);
+
+			ImGui::SliderFloat("Min Horizon Angle", &m_SAOMinHorizonAngleDeg, 0.0f, 30.0f, "%.1f deg");
+			if (ImGui::IsItemHovered())
+				ImGui::SetTooltip("Reject samples too close to the horizon");
+			break;
+		}
+		default:
+			break;
+		}
+	}
+
+	const char* SSAOPass::algorithmName() const
+	{
+		const int index = static_cast<int>(m_Algorithm);
+		if (index < 0 || index >= static_cast<int>(Algorithm::Count))
+			return "AO";
+		return kAlgorithmNames[index];
+	}
+
+	Shader* SSAOPass::algorithmShader() const
+	{
+		switch (m_Algorithm) {
+		case Algorithm::Crytek:
+			return m_SSAOShader;
+		case Algorithm::SAO:
+			return m_SAOShader;
+		default:
+			return m_SSAOShader;
+		}
+	}
+
+	void SSAOPass::uploadAlgorithmParams(const glm::mat4& projection)
+	{
+		auto* uboMgr = getUBOManager();
+		if (!uboMgr)
+			return;
+
+		switch (m_Algorithm) {
+		case Algorithm::Crytek: {
+			UBOSSAOParams ssaoUBOParams{};
+			for (int i = 0; i < KERNEL_SIZE; ++i)
+				ssaoUBOParams.samples[i] = glm::vec4(m_SSAOKernel[i], 0.0f);
+			ssaoUBOParams.kernelSize = KERNEL_SIZE;
+			ssaoUBOParams.radius = m_Radius;
+			ssaoUBOParams.bias = m_Bias;
+			ssaoUBOParams.power = m_Power;
+			cmd().updateBuffer(uboMgr->getCustomHandle(), &ssaoUBOParams, sizeof(UBOSSAOParams));
+			cmd().bindUBO(UBOBinding::CustomParams,
+				uboMgr->getCustomHandle(), sizeof(UBOSSAOParams));
+			break;
+		}
+		case Algorithm::SAO: {
+			UBOSAOParams saoParams = makeSAOParams(projection);
+			cmd().updateBuffer(uboMgr->getCustomHandle(), &saoParams, sizeof(UBOSAOParams));
+			cmd().bindUBO(UBOBinding::CustomParams,
+				uboMgr->getCustomHandle(), sizeof(UBOSAOParams));
+			break;
+		}
+		default:
+			break;
+		}
+	}
+
+	void SSAOPass::bindAlgorithmTextures()
+	{
+		switch (m_Algorithm) {
+		case Algorithm::Crytek:
+			cmd().bindTextureUnit(m_NoiseTexture.getRHIHandle(), TextureUnit::SSAONoise);
+			break;
+		case Algorithm::SAO:
+			break;
+		default:
+			break;
+		}
+	}
+
+	UBOSAOParams SSAOPass::makeSAOParams(const glm::mat4& projection) const
+	{
+		float sampleCount = 11.0f;
+		float spiralTurns = 9.0f;
+		switch (m_SAOQuality) {
+		case SAOQuality::Low:
+			sampleCount = 7.0f;
+			spiralTurns = 5.0f;
+			break;
+		case SAOQuality::Medium:
+			sampleCount = 11.0f;
+			spiralTurns = 9.0f;
+			break;
+		case SAOQuality::High:
+			sampleCount = 16.0f;
+			spiralTurns = 10.0f;
+			break;
+		case SAOQuality::Ultra:
+			sampleCount = 32.0f;
+			spiralTurns = 14.0f;
+			break;
+		}
+
+		constexpr float kTau = 6.28318530718f;
+		const float radius = glm::max(m_Radius, 1.0e-4f);
+		const float invCount = 1.0f / (sampleCount - 0.5f);
+		const float inc = invCount * spiralTurns * kTau;
+		const float peak = 0.1f * radius;
+		const float width = static_cast<float>(Window::getWidth());
+		const float height = static_cast<float>(Window::getHeight());
+		const float projectionScale = glm::min(
+			0.5f * projection[0][0] * width,
+			0.5f * projection[1][1] * height);
+		const float horizonRad = glm::radians(m_SAOMinHorizonAngleDeg);
+		const float horizonSin = std::sin(horizonRad);
+
+		UBOSAOParams params{};
+		params.sampleCount = glm::vec4(sampleCount, invCount, spiralTurns, 1.0f / (radius * radius));
+		params.angleIncCosSin = glm::vec2(std::cos(inc), std::sin(inc));
+		params.minHorizonAngleSineSquared = horizonSin * horizonSin;
+		params.bias = m_SAOBias;
+		params.peak2 = peak * peak;
+		params.projectionScaleRadius = projectionScale * radius;
+		params.intensity = (kTau * peak * m_SAOIntensity) / sampleCount;
+		params.power = m_SAOPower;
+		return params;
+	}
+
 	PreLightingPassOutput SSAOPass::executeSSAOPass(ICamera* camera, GeometryPassOutput& gBufferOutput)
 	{
 		if (!m_Enabled)
@@ -123,8 +285,7 @@ namespace engine
 
 		rhi::PipelineState ssaoPipeline;
 		{
-			// ========== SSAO Pass ==========
-			cmd().pushDebugGroup("SSAO");
+			cmd().pushDebugGroup(algorithmName());
 
 		// 通过命令缓冲录制 beginRenderPass
 		rhi::RenderPassParams ssaoParams;
@@ -134,7 +295,7 @@ namespace engine
 		cmd().beginRenderPass(m_SSAORT.getHandle(), ssaoParams);
 
 		// 构建 SSAO pass 的管线状态
-		ssaoPipeline.program = m_SSAOShader->getProgramHandle();
+		ssaoPipeline.program = algorithmShader()->getProgramHandle();
 		ssaoPipeline.depthTest = false;
 		ssaoPipeline.blendEnable = false;
 		ssaoPipeline.stencilEnable = false;
@@ -151,26 +312,13 @@ namespace engine
 			cmd().bindUBO(UBOBinding::PerFrame,
 				uboMgr->getPerFrameHandle(), sizeof(UBOPerFrame));
 
-			// SSAO Params UBO
-			UBOSSAOParams ssaoUBOParams{};
-			for (int i = 0; i < KERNEL_SIZE; ++i) {
-				ssaoUBOParams.samples[i] = glm::vec4(m_SSAOKernel[i], 0.0f);
-			}
-			ssaoUBOParams.kernelSize = KERNEL_SIZE;
-			ssaoUBOParams.radius = m_Radius;
-			ssaoUBOParams.bias = m_Bias;
-			ssaoUBOParams.power = m_Power;
-			cmd().updateBuffer(uboMgr->getCustomHandle(), &ssaoUBOParams, sizeof(UBOSSAOParams));
-			cmd().bindUBO(UBOBinding::CustomParams,
-				uboMgr->getCustomHandle(), sizeof(UBOSSAOParams));
+			uploadAlgorithmParams(camera->getProjectionMatrix());
 		}
 
-		// 绑定 GBuffer 纹理
+		// 绑定 GBuffer 纹理。各算法额外需要的纹理在 bindAlgorithmTextures 里绑定。
 		cmd().bindTextureUnit(gBufferOutput.normalTexture->getRHIHandle(), TextureUnit::SSAONormal);
 		cmd().bindTextureUnit(gBufferOutput.depthStencilTexture->getRHIHandle(), TextureUnit::SSAODepth);
-
-		// 绑定噪声纹理
-		cmd().bindTextureUnit(m_NoiseTexture.getRHIHandle(), TextureUnit::SSAONoise);
+		bindAlgorithmTextures();
 
 			// 绘制全屏四边形
 			ModelRenderer::drawNdcPlane(cmd());

@@ -154,6 +154,22 @@ struct alignas(16) UBOSSAOParams {
 static_assert(sizeof(UBOSSAOParams) == 1040, "UBOSSAOParams size mismatch with std140 layout");
 
 // ============================================================================
+// UBO 4: SAOParams — Scalable Ambient Obscurance（与 SSAOParams 共用 binding 4）
+// ============================================================================
+struct alignas(16) UBOSAOParams {
+    glm::vec4 sampleCount;              // offset 0  — x = N, y = 1/(N-0.5), z = spiralTurns, w = invRadiusSquared
+    glm::vec2 angleIncCosSin;           // offset 16 — 每个采样的旋转步进
+    float minHorizonAngleSineSquared;   // offset 24
+    float bias;                         // offset 28 — 再乘视图空间 z
+    float peak2;                        // offset 32
+    float projectionScaleRadius;        // offset 36
+    float intensity;                    // offset 40 — 已按采样数归一化
+    float power;                        // offset 44
+    // Total: 48 bytes
+};
+static_assert(sizeof(UBOSAOParams) == 48, "UBOSAOParams size mismatch with std140 layout");
+
+// ============================================================================
 // UBO 4: PostProcessParams — 后处理参数（与 SSAOParams 共用 binding 4，不同 shader）
 // ============================================================================
 struct alignas(16) UBOPostProcessParams {

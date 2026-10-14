@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>图对比</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #101114;
+    --bar: #17191e;
+    --ink: #e7e8eb;
+    --muted: #8d929a;
+    --faint: #5c6168;
+    --chip: #262a31;
+    --line: #f4f5f6;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    height: 100%;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Segoe UI", sans-serif;
+    font-size: 13px;
+    user-select: none;
+  }
+
+  header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    min-height: 48px;
+    padding: 8px 12px;
+    background: var(--bar);
+    border-bottom: 1px solid #000;
+  }
+
+  button, .file, input[type="range"] {
+    font: inherit;
+    color: inherit;
+  }
+
+  button {
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  button:focus-visible, .file:focus-within {
+    outline: 1px solid #9aa0a8;
+    outline-offset: 2px;
+  }
+
+  .file {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 240px;
+    height: 32px;
+    padding: 0 10px 0 4px;
+    border-radius: 8px;
+    background: var(--chip);
+    cursor: pointer;
+  }
+
+  .file input { display: none; }
+
+  .tag {
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background: #101114;
+    font-size: 11px;
+    font-weight: 650;
+  }
+
+  .fname {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+  }
+
+  .icon-btn {
+    height: 32px;
+    padding: 0 10px;
+    border-radius: 8px;
+    background: var(--chip);
+    color: var(--muted);
+  }
+
+  .icon-btn:hover { color: var(--ink); }
+
+  .modes {
+    display: flex;
+    padding: 2px;
+    border-radius: 8px;
+    background: #101114;
+  }
+
+  .modes button {
+    height: 28px;
+    padding: 0 10px;
+    border-radius: 6px;
+    color: var(--muted);
+  }
+
+  .modes button[aria-pressed="true"] {
+    background: #2c313a;
+    color: var(--ink);
+  }
+
+  .modes button:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  .gain {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .gain input { width: 96px; accent-color: #d7d7d7; }
+  .gain span { min-width: 1.6em; font-variant-numeric: tabular-nums; }
+
+  #zoom, #meta {
+    font-family: Consolas, ui-monospace, monospace;
+    font-size: 12px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .hint {
+    margin-left: auto;
+    color: var(--faint);
+    font-size: 12px;
+  }
+
+  #stage {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    background: #0c0d10;
+  }
+
+  #viewport {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    touch-action: none;
+    cursor: grab;
+  }
+
+  #world {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform-origin: 0 0;
+  }
+
+  #world canvas {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  #canvasA { z-index: 0; }
+  #canvasB { z-index: 1; }
+  #canvasHeat { z-index: 2; }
+
+  #divider {
+    position: absolute;
+    z-index: 3;
+    width: 36px;
+    margin-left: -18px;
+    pointer-events: none;
+  }
+
+  #divider .line {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--line);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.7);
+  }
+
+  #divider .handle {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 28px;
+    height: 36px;
+    transform: translate(-50%, -50%);
+    border-radius: 8px;
+    background: var(--line);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+  }
+
+  #divider .handle::before,
+  #divider .handle::after {
+    content: "";
+    position: absolute;
+    top: 9px;
+    bottom: 9px;
+    width: 1px;
+    background: #1a1a1a;
+  }
+
+  #divider .handle::before { left: 11px; }
+  #divider .handle::after { right: 11px; }
+
+  .chip {
+    position: absolute;
+    z-index: 4;
+    padding: 3px 7px;
+    border-radius: 999px;
+    background: rgba(10, 10, 12, 0.72);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 650;
+    letter-spacing: 0.04em;
+    pointer-events: none;
+  }
+
+  #empty[hidden],
+  #divider[hidden],
+  #labelA[hidden],
+  #labelB[hidden],
+  #readout[hidden],
+  .gain[hidden] {
+    display: none !important;
+  }
+
+  #empty {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    pointer-events: none;
+  }
+
+  #empty p { margin: 0; color: var(--muted); font-size: 15px; }
+  #empty .sub { margin-top: 6px; color: var(--faint); font-size: 12px; }
+
+  #readout {
+    position: absolute;
+    z-index: 4;
+    left: 12px;
+    bottom: 12px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.62);
+    color: #eee;
+    font-family: Consolas, ui-monospace, monospace;
+    font-size: 12px;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<header>
+  <label class="file">
+    <span class="tag">A</span>
+    <span class="fname" id="nameA">选择图片</span>
+    <input id="fileA" type="file" accept="image/*">
+  </label>
+  <button type="button" class="icon-btn" id="swap" title="交换 A / B">交换</button>
+  <label class="file">
+    <span class="tag">B</span>
+    <span class="fname" id="nameB">选择图片</span>
+    <input id="fileB" type="file" accept="image/*">
+  </label>
+
+  <div class="modes" role="group" aria-label="对比方式">
+    <button type="button" id="modeWipe" aria-pressed="true">对比</button>
+    <button type="button" id="modeDiff" aria-pressed="false" disabled>差值</button>
+    <button type="button" id="modeHeat" aria-pressed="false" disabled>热度</button>
+  </div>
+
+  <label class="gain" id="gainLabel" hidden>
+    增益
+    <input id="gain" type="range" min="1" max="32" step="0.5" value="4">
+    <span id="gainValue">4</span>
+  </label>
+
+  <button type="button" class="icon-btn" id="fit" title="适应窗口 (F)">适应</button>
+  <span id="zoom">100%</span>
+  <span id="meta"></span>
+  <span class="hint">拖分割线 · 拖画面平移 · 滚轮缩放 · ←→ 微调</span>
+</header>
+
+<div id="stage">
+  <div id="viewport">
+    <div id="world">
+      <canvas id="canvasA"></canvas>
+      <canvas id="canvasB"></canvas>
+      <canvas id="canvasHeat"></canvas>
+    </div>
+  </div>
+  <div id="divider" hidden>
+    <div class="line"></div>
+    <div class="handle"></div>
+  </div>
+  <div class="chip" id="labelA" hidden>A</div>
+  <div class="chip" id="labelB" hidden>B</div>
+  <div id="empty">
+    <div>
+      <p>把两张同一机位的图拖到这里</p>
+      <p class="sub">左侧是 A，分割线右侧是 B</p>
+    </div>
+  </div>
+  <div id="readout" hidden></div>
+</div>
+
+<script>
+const nameA = document.getElementById("nameA");
+const nameB = document.getElementById("nameB");
+const fileA = document.getElementById("fileA");
+const fileB = document.getElementById("fileB");
+const swapBtn = document.getElementById("swap");
+const fitBtn = document.getElementById("fit");
+const modeWipe = document.getElementById("modeWipe");
+const modeDiff = document.getElementById("modeDiff");
+const modeHeat = document.getElementById("modeHeat");
+const gainLabel = document.getElementById("gainLabel");
+const gainInput = document.getElementById("gain");
+const gainValue = document.getElementById("gainValue");
+const zoomLabel = document.getElementById("zoom");
+const meta = document.getElementById("meta");
+const viewport = document.getElementById("viewport");
+const world = document.getElementById("world");
+const canvasA = document.getElementById("canvasA");
+const canvasB = document.getElementById("canvasB");
+const canvasHeat = document.getElementById("canvasHeat");
+const divider = document.getElementById("divider");
+const labelA = document.getElementById("labelA");
+const labelB = document.getElementById("labelB");
+const empty = document.getElementById("empty");
+const readout = document.getElementById("readout");
+
+const ctxA = canvasA.getContext("2d", { willReadFrequently: true });
+const ctxB = canvasB.getContext("2d", { willReadFrequently: true });
+const ctxHeat = canvasHeat.getContext("2d");
+
+const HEAT = (() => {
+  const lut = new Uint8ClampedArray(256 * 3);
+  const stops = [
+    [8, 10, 14],
+    [24, 52, 138],
+    [16, 156, 168],
+    [228, 196, 52],
+    [255, 248, 236],
+  ];
+  for (let i = 0; i < 256; i++) {
+    const x = (i / 255) * (stops.length - 1);
+    const s = Math.min(stops.length - 2, x | 0);
+    const f = x - s;
+    const a = stops[s];
+    const b = stops[s + 1];
+    lut[i * 3] = a[0] + (b[0] - a[0]) * f;
+    lut[i * 3 + 1] = a[1] + (b[1] - a[1]) * f;
+    lut[i * 3 + 2] = a[2] + (b[2] - a[2]) * f;
+  }
+  return lut;
+})();
+
+const view = {
+  scale: 1,
+  tx: 0,
+  ty: 0,
+  split: 0.5,
+  dirty: false,
+  mode: "wipe",
+  gain: 4,
+};
+
+let bitmapA = null;
+let bitmapB = null;
+let dataA = null;
+let dataB = null;
+let imageW = 0;
+let imageH = 0;
+let heatDirty = true;
+let drag = null;
+let spaceDown = false;
+
+function clamp(v, lo, hi) {
+  return v < lo ? lo : v > hi ? hi : v;
+}
+
+function bothLoaded() {
+  return bitmapA && bitmapB;
+}
+
+function isImageFile(file) {
+  return file.type.startsWith("image/") || /\.(png|jpe?g|webp|bmp|gif)$/i.test(file.name);
+}
+
+async function setSlot(slot, file) {
+  let bitmap;
+  try {
+    bitmap = await createImageBitmap(file);
+  } catch (err) {
+    meta.textContent = "无法读取这张图";
+    return;
+  }
+  if (slot === "a") {
+    bitmapA?.close();
+    bitmapA = bitmap;
+    nameA.textContent = nameA.title = file.name;
+  } else {
+    bitmapB?.close();
+    bitmapB = bitmap;
+    nameB.textContent = nameB.title = file.name;
+  }
+  renderImages();
+}
+
+function renderImages() {
+  if (!bitmapA && !bitmapB) return;
+  const srcA = bitmapA;
+  const srcB = bitmapB;
+  imageW = Math.max(srcA?.width || 0, srcB?.width || 0);
+  imageH = Math.max(srcA?.height || 0, srcB?.height || 0);
+  canvasA.width = canvasB.width = canvasHeat.width = imageW;
+  canvasA.height = canvasB.height = canvasHeat.height = imageH;
+  world.style.width = imageW + "px";
+  world.style.height = imageH + "px";
+
+  ctxA.clearRect(0, 0, imageW, imageH);
+  ctxB.clearRect(0, 0, imageW, imageH);
+  if (srcA) ctxA.drawImage(srcA, 0, 0, imageW, imageH);
+  if (srcB) ctxB.drawImage(srcB, 0, 0, imageW, imageH);
+  dataA = srcA ? ctxA.getImageData(0, 0, imageW, imageH) : null;
+  dataB = srcB ? ctxB.getImageData(0, 0, imageW, imageH) : null;
+  heatDirty = true;
+
+  const mismatch = srcA && srcB && (srcA.width !== srcB.width || srcA.height !== srcB.height);
+  meta.textContent = mismatch ? `尺寸不同，已拉伸到 ${imageW}×${imageH}` : `${imageW}×${imageH}`;
+  empty.hidden = true;
+  modeDiff.disabled = modeHeat.disabled = !bothLoaded();
+  if (!bothLoaded() && view.mode !== "wipe") view.mode = "wipe";
+  fit();
+  setMode(view.mode);
+}
+
+function swap() {
+  if (!bitmapA && !bitmapB) return;
+  [bitmapA, bitmapB] = [bitmapB, bitmapA];
+  const tmp = nameA.textContent;
+  nameA.textContent = nameA.title = bitmapA ? nameB.textContent : "选择图片";
+  nameB.textContent = nameB.title = bitmapB ? tmp : "选择图片";
+  if (!bitmapA) nameA.title = "";
+  if (!bitmapB) nameB.title = "";
+  renderImages();
+}
+
+function fit() {
+  const vw = viewport.clientWidth;
+  const vh = viewport.clientHeight;
+  if (!imageW || !vw || !vh) return;
+  const margin = 32;
+  view.scale = Math.min((vw - margin) / imageW, (vh - margin) / imageH);
+  view.scale = clamp(view.scale, 0.02, 80);
+  view.tx = (vw - imageW * view.scale) / 2;
+  view.ty = (vh - imageH * view.scale) / 2;
+  view.dirty = false;
+  apply();
+}
+
+function apply() {
+  world.style.transform = `translate(${view.tx}px, ${view.ty}px) scale(${view.scale})`;
+  world.style.imageRendering = view.scale >= 1 ? "pixelated" : "auto";
+  zoomLabel.textContent = Math.round(view.scale * 100) + "%";
+  updateClip();
+  layoutChrome();
+}
+
+function updateClip() {
+  if (view.mode === "wipe" && bitmapB) {
+    canvasB.style.clipPath = `inset(0 0 0 ${(view.split * 100).toFixed(4)}%)`;
+  } else {
+    canvasB.style.clipPath = "none";
+  }
+}
+
+function setMode(mode) {
+  view.mode = mode;
+  modeWipe.setAttribute("aria-pressed", mode === "wipe" ? "true" : "false");
+  modeDiff.setAttribute("aria-pressed", mode === "diff" ? "true" : "false");
+  modeHeat.setAttribute("aria-pressed", mode === "heat" ? "true" : "false");
+  const heat = mode === "heat";
+  canvasA.style.visibility = heat ? "hidden" : "visible";
+  canvasB.style.visibility = heat || !bitmapB ? "hidden" : "visible";
+  canvasHeat.style.visibility = heat ? "visible" : "hidden";
+  canvasB.style.mixBlendMode = mode === "diff" ? "difference" : "normal";
+  gainLabel.hidden = !heat;
+  if (heat && heatDirty) rebuildHeat();
+  updateClip();
+  layoutChrome();
+}
+
+function rebuildHeat() {
+  if (!dataA || !dataB) return;
+  const srcA = dataA.data;
+  const srcB = dataB.data;
+  const img = ctxHeat.createImageData(imageW, imageH);
+  const out = img.data;
+  const gain = view.gain;
+  for (let p = 0; p < srcA.length; p += 4) {
+    const d = Math.max(
+      Math.abs(srcA[p] - srcB[p]),
+      Math.abs(srcA[p + 1] - srcB[p + 1]),
+      Math.abs(srcA[p + 2] - srcB[p + 2])
+    );
+    const li = Math.min(255, (d * gain + 0.5) | 0) * 3;
+    out[p] = HEAT[li];
+    out[p + 1] = HEAT[li + 1];
+    out[p + 2] = HEAT[li + 2];
+    out[p + 3] = 255;
+  }
+  ctxHeat.putImageData(img, 0, 0);
+  heatDirty = false;
+}
+
+function layoutChrome() {
+  const showSplit = view.mode === "wipe" && bothLoaded() && imageW > 0;
+  const vh = viewport.clientHeight;
+  const vw = viewport.clientWidth;
+  const top = Math.max(0, view.ty);
+  const bottom = Math.min(vh, view.ty + imageH * view.scale);
+  const x = view.tx + view.split * imageW * view.scale;
+  divider.hidden = !showSplit || bottom <= top;
+  if (showSplit) {
+    divider.style.top = top + "px";
+    divider.style.height = Math.max(0, bottom - top) + "px";
+    divider.style.left = x + "px";
+  }
+
+  const y = clamp(Math.max(view.ty, 0) + 12, 12, Math.max(12, vh - 36));
+  labelA.hidden = !showSplit || x < 52;
+  labelB.hidden = !showSplit || vw - x < 52;
+  if (!labelA.hidden) {
+    labelA.style.left = clamp(view.tx + 12, 12, x - 36) + "px";
+    labelA.style.top = y + "px";
+  }
+  if (!labelB.hidden) {
+    labelB.style.left = clamp(x + 12, x + 12, vw - 36) + "px";
+    labelB.style.top = y + "px";
+  }
+}
+
+function nearDivider(e) {
+  const rect = viewport.getBoundingClientRect();
+  const x = view.tx + view.split * imageW * view.scale;
+  return Math.abs(e.clientX - rect.left - x) <= 18;
+}
+
+function setSplitFromEvent(e) {
+  const rect = world.getBoundingClientRect();
+  if (rect.width <= 0) return;
+  view.split = clamp((e.clientX - rect.left) / rect.width, 0, 1);
+  updateClip();
+  layoutChrome();
+}
+
+function eventToPixel(e) {
+  const rect = viewport.getBoundingClientRect();
+  const ix = (e.clientX - rect.left - view.tx) / view.scale;
+  const iy = (e.clientY - rect.top - view.ty) / view.scale;
+  return [Math.floor(ix), Math.floor(iy)];
+}
+
+function sample(data, x, y) {
+  if (!data || x < 0 || y < 0 || x >= imageW || y >= imageH) return null;
+  const i = (y * imageW + x) * 4;
+  const p = data.data;
+  return [p[i], p[i + 1], p[i + 2]];
+}
+
+function updateReadout(e) {
+  if (!dataA && !dataB) {
+    readout.hidden = true;
+    return;
+  }
+  const [x, y] = eventToPixel(e);
+  const a = sample(dataA, x, y);
+  const b = sample(dataB, x, y);
+  if (!a && !b) {
+    readout.hidden = true;
+    return;
+  }
+  const fmt = (p) => p ? p.join(",") : "—";
+  let delta = "—";
+  if (a && b) {
+    delta = String(Math.max(
+      Math.abs(a[0] - b[0]),
+      Math.abs(a[1] - b[1]),
+      Math.abs(a[2] - b[2])
+    ));
+  }
+  readout.hidden = false;
+  readout.textContent = `${x}, ${y}    A ${fmt(a)}    B ${fmt(b)}    Δ ${delta}`;
+}
+
+function updateCursor(e) {
+  if (drag?.type === "pan" || spaceDown) viewport.style.cursor = "grabbing";
+  else if (view.mode === "wipe" && bothLoaded() && (drag?.type === "split" || (e && nearDivider(e))))
+    viewport.style.cursor = "ew-resize";
+  else viewport.style.cursor = "grab";
+}
+
+fileA.addEventListener("change", () => {
+  if (fileA.files[0]) setSlot("a", fileA.files[0]);
+  fileA.value = "";
+});
+fileB.addEventListener("change", () => {
+  if (fileB.files[0]) setSlot("b", fileB.files[0]);
+  fileB.value = "";
+});
+swapBtn.addEventListener("click", swap);
+fitBtn.addEventListener("click", fit);
+modeWipe.addEventListener("click", () => setMode("wipe"));
+modeDiff.addEventListener("click", () => { if (!modeDiff.disabled) setMode("diff"); });
+modeHeat.addEventListener("click", () => { if (!modeHeat.disabled) setMode("heat"); });
+gainInput.addEventListener("input", () => {
+  view.gain = Number(gainInput.value);
+  gainValue.textContent = String(view.gain);
+  heatDirty = true;
+  if (view.mode === "heat") rebuildHeat();
+});
+
+window.addEventListener("dragover", (e) => {
+  e.preventDefault();
+});
+window.addEventListener("drop", async (e) => {
+  e.preventDefault();
+  const files = [...e.dataTransfer.files].filter(isImageFile);
+  if (files.length >= 2) {
+    await setSlot("a", files[0]);
+    await setSlot("b", files[1]);
+  } else if (files.length === 1) {
+    await setSlot(bitmapA && !bitmapB ? "b" : "a", files[0]);
+  }
+});
+
+viewport.addEventListener("wheel", (e) => {
+  if (!imageW) return;
+  e.preventDefault();
+  const rect = viewport.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  const next = clamp(view.scale * (e.deltaY < 0 ? 1.12 : 1 / 1.12), 0.02, 80);
+  const k = next / view.scale;
+  view.tx = mx - (mx - view.tx) * k;
+  view.ty = my - (my - view.ty) * k;
+  view.scale = next;
+  view.dirty = true;
+  apply();
+  updateReadout(e);
+}, { passive: false });
+
+viewport.addEventListener("pointerdown", (e) => {
+  if (!imageW || e.button > 1) return;
+  if (e.button === 1) e.preventDefault();
+  viewport.setPointerCapture(e.pointerId);
+  if (e.button === 1 || spaceDown || view.mode !== "wipe" || !bothLoaded() || !nearDivider(e)) {
+    drag = { type: "pan", x: e.clientX, y: e.clientY, tx: view.tx, ty: view.ty };
+  } else {
+    drag = { type: "split" };
+    setSplitFromEvent(e);
+  }
+  updateCursor(e);
+});
+
+viewport.addEventListener("pointermove", (e) => {
+  if (drag?.type === "pan") {
+    view.tx = drag.tx + (e.clientX - drag.x);
+    view.ty = drag.ty + (e.clientY - drag.y);
+    view.dirty = true;
+    apply();
+  } else if (drag?.type === "split") {
+    setSplitFromEvent(e);
+  }
+  updateCursor(e);
+  updateReadout(e);
+});
+
+function endDrag(e) {
+  drag = null;
+  if (viewport.hasPointerCapture(e.pointerId)) viewport.releasePointerCapture(e.pointerId);
+  updateCursor(e);
+}
+viewport.addEventListener("pointerup", endDrag);
+viewport.addEventListener("pointercancel", endDrag);
+viewport.addEventListener("pointerleave", (e) => {
+  if (!drag) readout.hidden = true;
+});
+viewport.addEventListener("dblclick", (e) => {
+  if (e.button === 0) fit();
+});
+viewport.addEventListener("auxclick", (e) => {
+  if (e.button === 1) e.preventDefault();
+});
+
+window.addEventListener("keydown", (e) => {
+  if (e.code === "Space") {
+    e.preventDefault();
+    spaceDown = true;
+    updateCursor(e);
+    return;
+  }
+  if (e.key === "f" || e.key === "F") {
+    fit();
+    return;
+  }
+  if (e.key === "1") setMode("wipe");
+  else if (e.key === "2" && !modeDiff.disabled) setMode("diff");
+  else if (e.key === "3" && !modeHeat.disabled) setMode("heat");
+  else if ((e.key === "ArrowLeft" || e.key === "ArrowRight") && view.mode === "wipe" && bothLoaded()) {
+    e.preventDefault();
+    const step = (e.shiftKey ? 10 : 1) / imageW;
+    view.split = clamp(view.split + (e.key === "ArrowRight" ? step : -step), 0, 1);
+    updateClip();
+    layoutChrome();
+  }
+});
+window.addEventListener("keyup", (e) => {
+  if (e.code === "Space") {
+    spaceDown = false;
+    updateCursor(e);
+  }
+});
+
+new ResizeObserver(() => {
+  if (!imageW) return;
+  if (!view.dirty) fit();
+  else apply();
+}).observe(viewport);
+
+setMode("wipe");
+</script>
+</body>
+</html>
