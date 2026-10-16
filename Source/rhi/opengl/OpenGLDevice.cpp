@@ -371,6 +371,11 @@ TextureHandle OpenGLDevice::createTexture(const TextureDesc& desc) {
             uint32_t h = std::max(1u, desc.height >> level);
             glTexImage2D(GL_TEXTURE_2D, level, internalFmt, w, h, 0, fmt, pixelType, nullptr);
         }
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, actualLevels - 1);
+        if (actualLevels > 1 && desc.lodBias != 0) {
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, desc.lodBias);
+        }
         // 使用 desc 中的采样器参数
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, toGLFilterMode(desc.minFilter));
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, toGLFilterMode(desc.magFilter));
@@ -393,6 +398,11 @@ TextureHandle OpenGLDevice::createTexture(const TextureDesc& desc) {
                 glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face,
                         level, internalFmt, w, h, 0, fmt, pixelType, nullptr);
             }
+        }
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, actualLevels - 1);
+        if (actualLevels > 1 && desc.lodBias != 0) {
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_LOD_BIAS, desc.lodBias);
         }
         // 使用 desc 中的采样器参数
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, toGLFilterMode(desc.minFilter));
@@ -423,11 +433,19 @@ void OpenGLDevice::generateMipmaps(const TextureHandle handle) {
     auto it = mTextures.find(handle.getId());
     if (it == mTextures.end()) return;
 
-    const auto& data = it->second;
+    auto& data = it->second;
     GLenum target = (data.desc.type == TextureType::TextureCube)
                     ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
 
+    uint32_t maxDim = std::max(data.desc.width, data.desc.height);
+    uint8_t fullLevels = static_cast<uint8_t>(std::floor(std::log2(maxDim))) + 1;
+    if (data.desc.levels < fullLevels) {
+        data.desc.levels = fullLevels;
+    }
+
     glBindTexture(target, data.glId);
+    glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, 0);
+    glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, data.desc.levels - 1);
     glGenerateMipmap(target);
     glBindTexture(target, 0);
 }
@@ -809,6 +827,7 @@ void OpenGLDevice::updateTextureSampler(TextureHandle handle,
     auto it = mTextures.find(handle.getId());
     if (it == mTextures.end()) return;
 
+    const uint8_t actualLevels = it->second.desc.levels;
     GLenum target = toGLTextureTarget(desc.type, desc.samples);
     glBindTexture(target, it->second.glId);
 
@@ -825,8 +844,7 @@ void OpenGLDevice::updateTextureSampler(TextureHandle handle,
     glTexParameteri(target, GL_TEXTURE_MIN_FILTER, toGLFilterMode(desc.minFilter));
     glTexParameteri(target, GL_TEXTURE_MAG_FILTER, toGLFilterMode(desc.magFilter));
 
-    if (desc.levels > 1) {
-        glGenerateMipmap(target);
+    if (actualLevels > 1) {
         glTexParameteri(target, GL_TEXTURE_LOD_BIAS, desc.lodBias);
     }
 
@@ -840,8 +858,25 @@ void OpenGLDevice::updateTextureSampler(TextureHandle handle,
 
     glBindTexture(target, 0);
 
-    // 同步 desc 中的采样器参数到内部存储
+    // 同步 desc 中的采样器参数到内部存储，保留创建/生成 mip 时确定的真实层数
     it->second.desc = desc;
+    it->second.desc.levels = actualLevels;
+}
+
+void OpenGLDevice::setTextureMipRange(TextureHandle handle,
+        uint8_t baseLevel, uint8_t maxLevel) {
+    auto it = mTextures.find(handle.getId());
+    if (it == mTextures.end() || it->second.isRenderbuffer) return;
+
+    if (GLEW_VERSION_4_5 || GLEW_ARB_direct_state_access) {
+        glTextureParameteri(it->second.glId, GL_TEXTURE_BASE_LEVEL, static_cast<GLint>(baseLevel));
+        glTextureParameteri(it->second.glId, GL_TEXTURE_MAX_LEVEL, static_cast<GLint>(maxLevel));
+    } else {
+        GLenum target = toGLTextureTarget(it->second.desc.type, it->second.desc.samples);
+        glBindTexture(target, it->second.glId);
+        glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, static_cast<GLint>(baseLevel));
+        glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, static_cast<GLint>(maxLevel));
+    }
 }
 
 // ============================================================================

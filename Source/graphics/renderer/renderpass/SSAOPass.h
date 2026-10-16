@@ -41,6 +41,7 @@ namespace engine
 		void uploadAlgorithmParams(const glm::mat4& projection);
 		void bindAlgorithmTextures(const GeometryPassOutput& gBufferOutput);
 		UBOSAOParams makeSAOParams(const glm::mat4& projection) const;
+		void buildDepthPyramid(const GeometryPassOutput& gBufferOutput);
 
 		float lerp(float a, float b, float t);
 
@@ -51,8 +52,15 @@ namespace engine
 		Shader* m_SAOShader;
 
 		// Blur Pass
+		RenderTarget m_BlurPingRT;
 		RenderTarget m_SSAOBlurRT;
 		Shader* m_SSAOBlurShader;
+
+		// 深度塔（R32F 多 mip 纹理，存线性视图距离）
+		Texture m_DepthPyramidTexture;
+		RenderTarget m_DepthPyramidRT;
+		Shader* m_DepthPyramidShader;
+		int m_DepthPyramidLevels = 1;
 
 		// 采样核（半球内的随机采样点）
 		std::vector<glm::vec3> m_SSAOKernel;
@@ -67,6 +75,7 @@ namespace engine
 		bool m_Enabled = true;
 		Algorithm m_Algorithm = Algorithm::Crytek;
 		float m_Radius = 0.5f;
+		float m_BilateralThreshold = 0.05f;
 		float m_Bias = 0.025f;
 		float m_Power = 1.0f;
 

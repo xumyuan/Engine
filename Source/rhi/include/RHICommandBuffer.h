@@ -37,6 +37,7 @@ enum class CommandType : uint8_t {
     SetScissor,
     SetPolygonMode,
     GenerateMipmaps,
+    SetTextureMipRange,
     SetRTColorAttachment,
     CopyTexture,
     Blit,
@@ -121,6 +122,12 @@ struct CmdSetPolygonMode {
 
 struct CmdGenerateMipmaps {
     TextureHandle handle;
+};
+
+struct CmdSetTextureMipRange {
+    TextureHandle handle;
+    uint8_t       baseLevel;
+    uint8_t       maxLevel;
 };
 
 struct CmdSetRTColorAttachment {
@@ -214,6 +221,7 @@ struct RenderCommand {
         CmdSetScissor           setScissor;
         CmdSetPolygonMode       setPolygonMode;
         CmdGenerateMipmaps      generateMipmaps;
+        CmdSetTextureMipRange   setTextureMipRange;
         CmdSetRTColorAttachment setRTColorAttachment;
         CmdCopyTexture          copyTexture;
         CmdBlit                 blit;
@@ -385,6 +393,12 @@ public:
     void generateMipmaps(TextureHandle handle) {
         auto& cmd = emplaceCommand(CommandType::GenerateMipmaps);
         cmd.generateMipmaps.handle = handle;
+        dispatchImmediate(cmd);
+    }
+
+    void setTextureMipRange(TextureHandle handle, uint8_t baseLevel, uint8_t maxLevel) {
+        auto& cmd = emplaceCommand(CommandType::SetTextureMipRange);
+        cmd.setTextureMipRange = { handle, baseLevel, maxLevel };
         dispatchImmediate(cmd);
     }
 

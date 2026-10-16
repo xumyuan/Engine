@@ -224,6 +224,12 @@ private:
             case CommandType::GenerateMipmaps:
                 m_Device->generateMipmaps(cmd.generateMipmaps.handle);
                 break;
+            case CommandType::SetTextureMipRange:
+                m_Device->setTextureMipRange(
+                    cmd.setTextureMipRange.handle,
+                    cmd.setTextureMipRange.baseLevel,
+                    cmd.setTextureMipRange.maxLevel);
+                break;
 
             // --- RenderTarget 动态附件 ---
             case CommandType::SetRTColorAttachment:

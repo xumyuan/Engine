@@ -160,6 +160,26 @@ namespace engine {
 		}
 	}
 
+	void Texture::generate2DMipmappedTexture(unsigned int width, unsigned int height,
+		ChannelLayout channels, unsigned int levels) {
+		m_Width = width;
+		m_Height = height;
+		m_IsMultisample = false;
+
+		m_TextureSettings.format = resolveFormat(m_TextureSettings.format, channels,
+			m_TextureSettings.IsSRGB, m_TextureSettings.formatExplicitlySet);
+
+		if (!m_Device) {
+			m_Device = getRHIDevice();
+		}
+
+		if (m_Device) {
+			rhi::TextureDesc desc = buildTextureDesc(width, height);
+			desc.levels = static_cast<uint8_t>(levels); // 显式层数，覆盖默认的单层/自动逻辑
+			m_RHIHandle = m_Device->createTexture(desc);
+		}
+	}
+
 	void Texture::generateMips() {
 		m_TextureSettings.HasMips = true;
 		if (m_Device && isGenerated()) {

@@ -72,6 +72,9 @@ namespace engine {
 			const void* data);
 
 		void generate2DMultisampleTexture(unsigned int width, unsigned int height);
+		// 创建带显式 mip 层数的空纹理（供深度塔等需要逐级渲染/采样的资源使用）
+		void generate2DMipmappedTexture(unsigned int width, unsigned int height,
+			ChannelLayout channels, unsigned int levels);
 		void generateMips();
 
 		void bind(int unit = 0);

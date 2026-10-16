@@ -64,6 +64,59 @@ vec3 reconstructViewSpaceNormalHighQ(sampler2D depthTex, vec2 uv, float depth, v
     return normalize(cross(dpdx, dpdy));
 }
 
+// 从线性视图距离（-viewZ，正值）重建视图空间位置
+vec3 reconstructViewPositionFromViewDist(vec2 uv, float viewDist)
+{
+    vec2 ndc = uv * 2.0 - 1.0;
+    return vec3(ndc * vec2(projectionInverse[0][0], projectionInverse[1][1]) * viewDist,
+        -viewDist);
+}
+
+// 基于线性视图距离纹理（深度塔 level 0）的 HighQ 法线重建
+vec3 reconstructViewSpaceNormalFromViewDist(sampler2D distTex, vec2 uv, float viewDist, vec3 origin)
+{
+    vec2 dx = vec2(texelSize.x, 0.0);
+    vec2 dy = vec2(0.0, texelSize.y);
+    float invDist = 1.0 / viewDist;
+
+    vec4 H;
+    H.x = textureLod(distTex, uv - dx, 0.0).r;
+    H.y = textureLod(distTex, uv + dx, 0.0).r;
+    H.z = textureLod(distTex, uv - dx * 2.0, 0.0).r;
+    H.w = textureLod(distTex, uv + dx * 2.0, 0.0).r;
+    vec4 invH = 1.0 / H;
+    vec2 he = abs((2.0 * invH.xy - invH.zw) - invDist);
+    vec3 dpdx = (he.x < he.y)
+        ? (origin - reconstructViewPositionFromViewDist(uv - dx, H.x))
+        : (reconstructViewPositionFromViewDist(uv + dx, H.y) - origin);
+
+    vec4 V;
+    V.x = textureLod(distTex, uv - dy, 0.0).r;
+    V.y = textureLod(distTex, uv + dy, 0.0).r;
+    V.z = textureLod(distTex, uv - dy * 2.0, 0.0).r;
+    V.w = textureLod(distTex, uv + dy * 2.0, 0.0).r;
+    vec4 invV = 1.0 / V;
+    vec2 ve = abs((2.0 * invV.xy - invV.zw) - invDist);
+    vec3 dpdy = (ve.x < ve.y)
+        ? (origin - reconstructViewPositionFromViewDist(uv - dy, V.x))
+        : (reconstructViewPositionFromViewDist(uv + dy, V.y) - origin);
+
+    return normalize(cross(dpdx, dpdy));
+}
+
+// 双边滤波深度 key 打包与解包（Filament ssaoUtils.fs）
+vec2 packDepthKey(float normalizedDepth)
+{
+    float z = clamp(normalizedDepth, 0.0, 1.0);
+    float t = floor(256.0 * z);
+    return vec2(t * (1.0 / 256.0), 256.0 * z - t);
+}
+
+float unpackDepthKey(vec2 p)
+{
+    return p.x * (256.0 / 257.0) + p.y * (1.0 / 257.0);
+}
+
 float interleavedGradientNoise(vec2 fragCoord)
 {
     vec3 magic = vec3(0.06711056, 0.00583715, 52.9829189);

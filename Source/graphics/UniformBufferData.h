@@ -165,9 +165,38 @@ struct alignas(16) UBOSAOParams {
     float projectionScaleRadius;        // offset 36
     float intensity;                    // offset 40 — 已按采样数归一化
     float power;                        // offset 44
-    // Total: 48 bytes
+    int maxLevel;                       // offset 48 — 深度塔最高 mip 层级（层数-1）
+    float farPlane;                     // offset 52 — 相机远平面（线性距离归一化/天空判定）
+    glm::vec2 _pad;                     // offset 56
+    // Total: 64 bytes
 };
-static_assert(sizeof(UBOSAOParams) == 48, "UBOSAOParams size mismatch with std140 layout");
+static_assert(sizeof(UBOSAOParams) == 64, "UBOSAOParams size mismatch with std140 layout");
+
+// ============================================================================
+// UBO 4: DepthPyramidParams — 深度塔构建参数（与 SAOParams 共用 binding 4）
+// ============================================================================
+struct alignas(16) UBODepthPyramidParams {
+    int isBaseLevel;                    // offset 0 — 1: level 0 线性化，0: level 1..N 子采样
+    int _pad0;                          // offset 4
+    int _pad1;                          // offset 8
+    int _pad2;                          // offset 12
+    // Total: 16 bytes
+};
+static_assert(sizeof(UBODepthPyramidParams) == 16, "UBODepthPyramidParams size mismatch with std140 layout");
+
+// ============================================================================
+// UBO 4: BilateralBlurParams — AO 可分离双边模糊参数（与 SAOParams 共用 binding 4）
+// ============================================================================
+struct alignas(16) UBOBilateralBlurParams {
+    glm::vec2 axis;                     // offset 0 — 每步的 UV 偏移（含 stride 缩放）
+    int sampleCount;                    // offset 8 — 高斯核元素个数（含中心）
+    float farPlaneOverEdgeDistance;     // offset 12 — farPlane / bilateralThreshold
+    float sigma;                        // offset 16 — 高斯标准差（以 tap 步长为单位）
+    float _pad0;                        // offset 20
+    glm::vec2 _pad1;                    // offset 24
+    // Total: 32 bytes
+};
+static_assert(sizeof(UBOBilateralBlurParams) == 32, "UBOBilateralBlurParams size mismatch with std140 layout");
 
 // ============================================================================
 // UBO 4: PostProcessParams — 后处理参数（与 SSAOParams 共用 binding 4，不同 shader）

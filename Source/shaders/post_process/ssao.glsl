@@ -15,7 +15,7 @@ void main()
 #shader-type fragment
 #version 450 core
 
-out float FragColor;
+out vec3 FragColor;
 
 in vec2 TexCoords;
 
@@ -44,7 +44,7 @@ void main()
     // 跳过天空/远处
     if (depth >= 1.0)
     {
-        FragColor = 1.0;
+        FragColor = vec3(1.0);
         return;
     }
     
@@ -86,5 +86,5 @@ void main()
     }
     
     occlusion = 1.0 - (occlusion / float(kernelSize));
-    FragColor = pow(occlusion, power);
+    FragColor = vec3(pow(occlusion, power), packDepthKey(-fragPos.z / linearizeDepth(1.0)));
 }

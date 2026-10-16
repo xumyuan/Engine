@@ -15,11 +15,11 @@ void main()
 #shader-type fragment
 #version 450 core
 
-out float FragColor;
+out vec3 FragColor;
 
 in vec2 TexCoords;
 
-layout(binding = 1) uniform sampler2D gDepth;
+layout(binding = 1) uniform sampler2D gDepthPyramid;
 
 #include "../common/depth_utils.glsl"
 
@@ -33,21 +33,25 @@ layout (std140, binding = 4) uniform SAOParams {
 	float projectionScaleRadius;
 	float intensity;
 	float power;
+	int maxLevel;
+	float farPlane;
+	vec2 _pad;
 };
 
 const float kPi = 3.14159265359;
+const float kLog2LodRate = 3.0;
 
 void main()
 {
-    float depth = texture(gDepth, TexCoords).r;
-    if (depth >= 1.0)
+    float viewDist = textureLod(gDepthPyramid, TexCoords, 0.0).r;
+    if (viewDist >= farPlane * 0.999)
     {
-        FragColor = 1.0;
+        FragColor = vec3(1.0);
         return;
     }
 
-    vec3 origin = reconstructViewPosition(TexCoords, depth);
-    vec3 normal = reconstructViewSpaceNormalHighQ(gDepth, TexCoords, depth, origin);
+    vec3 origin = reconstructViewPositionFromViewDist(TexCoords, viewDist);
+    vec3 normal = reconstructViewSpaceNormalFromViewDist(gDepthPyramid, TexCoords, viewDist, origin);
 
     float noise = interleavedGradientNoise(gl_FragCoord.xy);
     float angle = (2.0 * kPi * 2.4) * noise;
@@ -68,8 +72,9 @@ void main()
         float ssRadius = max(1.0, tap.z * ssDiskRadius);
         vec2 uvSamplePos = TexCoords + (ssRadius * tap.xy) * texelSize;
 
-        float sampleDepth = texture(gDepth, uvSamplePos).r;
-        vec3 samplePos = reconstructViewPosition(uvSamplePos, sampleDepth);
+        float level = clamp(floor(log2(ssRadius)) - kLog2LodRate, 0.0, float(maxLevel));
+        float sampleDist = textureLod(gDepthPyramid, uvSamplePos, level).r;
+        vec3 samplePos = reconstructViewPositionFromViewDist(uvSamplePos, sampleDist);
 
         vec3 v = samplePos - origin;
         float vv = dot(v, v);
@@ -87,5 +92,6 @@ void main()
 
     // 参考实现输出的是遮蔽量，光照乘的是可见度。
     float obscurance = sqrt(max(occlusion * intensity, 0.0));
-    FragColor = pow(clamp(1.0 - obscurance, 0.0, 1.0), power);
+    float visibility = pow(clamp(1.0 - obscurance, 0.0, 1.0), power);
+    FragColor = vec3(visibility, packDepthKey(viewDist / farPlane));
 }

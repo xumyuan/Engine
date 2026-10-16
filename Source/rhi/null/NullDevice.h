@@ -50,6 +50,7 @@ public:
     void updateCubemapFace(TextureHandle, uint8_t, uint32_t,
             uint32_t, uint32_t, TextureFormat, const void*, uint32_t) override {}
     void updateTextureSampler(TextureHandle, const TextureDesc&) override {}
+    void setTextureMipRange(TextureHandle, uint8_t, uint8_t) override {}
 
     // ---------- Shader 工厂 ----------
     std::unique_ptr<RHIShaderCompiler> createShaderCompiler() override {

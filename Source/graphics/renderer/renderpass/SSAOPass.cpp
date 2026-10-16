@@ -28,18 +28,43 @@ namespace engine
 	SSAOPass::SSAOPass(const RenderScene& renderScene)
 		: RenderPass(renderScene, RenderPassType::SSAOPassType),
 		m_SSAORT(Window::getWidth(), Window::getHeight()),
-		m_SSAOBlurRT(Window::getWidth(), Window::getHeight())
+		m_BlurPingRT(Window::getWidth(), Window::getHeight()),
+		m_SSAOBlurRT(Window::getWidth(), Window::getHeight()),
+		m_DepthPyramidRT(Window::getWidth(), Window::getHeight())
 	{
 		// 加载着色器
 		m_SSAOShader = ShaderLoader::loadShader("Source/shaders/post_process/ssao.glsl");
 		m_SAOShader = ShaderLoader::loadShader("Source/shaders/post_process/sao.glsl");
 		m_SSAOBlurShader = ShaderLoader::loadShader("Source/shaders/post_process/ssao_blur.glsl");
+		m_DepthPyramidShader = ShaderLoader::loadShader("Source/shaders/post_process/depth_pyramid_minify.glsl");
 
-		// 创建 SSAO RenderTarget（单通道，存储 AO 值）
-		m_SSAORT.addColorTexture(rhi::TextureFormat::R8).build();
+		// 创建 SSAO RenderTarget（RGB8：R=可见度，GB=打包的 bilateral key）与模糊乒乓目标
+		m_SSAORT.addColorTexture(rhi::TextureFormat::RGB8).build();
+		m_BlurPingRT.addColorTexture(rhi::TextureFormat::RGB8).build();
 
 		// 创建模糊后的 RenderTarget
 		m_SSAOBlurRT.addColorTexture(rhi::TextureFormat::R8).build();
+
+		// 深度塔：单张 R32F 多 mip 纹理存线性视图距离（1080p -> 6 级）
+		const int width = Window::getWidth();
+		const int height = Window::getHeight();
+		m_DepthPyramidLevels = std::min(8, std::max(1,
+			static_cast<int>(std::floor(std::log2(std::max(width, height)))) - 4));
+
+		TextureSettings pyramidSettings;
+		pyramidSettings.format = rhi::TextureFormat::R32F;
+		pyramidSettings.formatExplicitlySet = true;
+		pyramidSettings.minFilter = rhi::FilterMode::NearestMipmapNearest;
+		pyramidSettings.magFilter = rhi::FilterMode::Nearest;
+		pyramidSettings.wrapS = rhi::WrapMode::ClampToEdge;
+		pyramidSettings.wrapT = rhi::WrapMode::ClampToEdge;
+		pyramidSettings.anisotropy = 1.0f;
+		pyramidSettings.HasMips = true;
+		m_DepthPyramidTexture.setTextureSettings(pyramidSettings);
+		m_DepthPyramidTexture.generate2DMipmappedTexture(
+			static_cast<unsigned int>(width), static_cast<unsigned int>(height),
+			ChannelLayout::R, static_cast<unsigned int>(m_DepthPyramidLevels));
+		m_DepthPyramidRT.addExternalColorTexture(&m_DepthPyramidTexture).build();
 
 		// 生成采样核和噪声纹理
 		generateSampleKernel();
@@ -55,6 +80,10 @@ namespace engine
 			ImGui::SliderFloat("Radius", &m_Radius, 0.05f, 2.0f, "%.3f");
 			if (ImGui::IsItemHovered())
 				ImGui::SetTooltip("View-space sample radius");
+
+			ImGui::SliderFloat("Bilateral Threshold", &m_BilateralThreshold, 0.01f, 0.2f, "%.3f m");
+			if (ImGui::IsItemHovered())
+				ImGui::SetTooltip("Depth difference treated as an edge by the bilateral blur");
 
 			drawAlgorithmControls();
 		}, 30, true);
@@ -221,10 +250,12 @@ namespace engine
 	{
 		switch (m_Algorithm) {
 		case Algorithm::Crytek:
+			cmd().bindTextureUnit(gBufferOutput.depthStencilTexture->getRHIHandle(), TextureUnit::SSAODepth);
 			cmd().bindTextureUnit(gBufferOutput.normalTexture->getRHIHandle(), TextureUnit::SSAONormal);
 			cmd().bindTextureUnit(m_NoiseTexture.getRHIHandle(), TextureUnit::SSAONoise);
 			break;
 		case Algorithm::SAO:
+			cmd().bindTextureUnit(m_DepthPyramidTexture.getRHIHandle(), TextureUnit::SSAODepth);
 			break;
 		default:
 			break;
@@ -276,7 +307,71 @@ namespace engine
 		params.projectionScaleRadius = projectionScale * radius;
 		params.intensity = (kTau * peak * m_SAOIntensity) / sampleCount;
 		params.power = m_SAOPower;
+		params.maxLevel = m_DepthPyramidLevels - 1;
+		params.farPlane = FAR_PLANE;
 		return params;
+	}
+
+	void SSAOPass::buildDepthPyramid(const GeometryPassOutput& gBufferOutput)
+	{
+		cmd().pushDebugGroup("DepthPyramid");
+
+		const uint32_t width = m_DepthPyramidRT.getWidth();
+		const uint32_t height = m_DepthPyramidRT.getHeight();
+		const rhi::TextureHandle pyramidHandle = m_DepthPyramidTexture.getRHIHandle();
+		auto* uboMgr = getUBOManager();
+
+		auto uploadPyramidMode = [&](int isBaseLevel) {
+			if (!uboMgr)
+				return;
+			UBODepthPyramidParams pyramidParams{ isBaseLevel };
+			cmd().updateBuffer(uboMgr->getCustomHandle(), &pyramidParams, sizeof(UBODepthPyramidParams));
+			cmd().bindUBO(UBOBinding::CustomParams,
+				uboMgr->getCustomHandle(), sizeof(UBODepthPyramidParams));
+		};
+
+		cmd().bindTextureUnit(gBufferOutput.depthStencilTexture->getRHIHandle(), TextureUnit::SSAODepth);
+		cmd().setRenderTargetColorAttachment(m_DepthPyramidRT.getHandle(), 0, pyramidHandle, 0, 0);
+
+		rhi::RenderPassParams pyramidPassParams;
+		pyramidPassParams.viewport = { 0, 0, width, height };
+		pyramidPassParams.clearColorFlag = false;
+		pyramidPassParams.clearDepthFlag = false;
+		pyramidPassParams.clearStencilFlag = false;
+		cmd().beginRenderPass(m_DepthPyramidRT.getHandle(), pyramidPassParams);
+
+		rhi::PipelineState pipeline;
+		pipeline.program = m_DepthPyramidShader->getProgramHandle();
+		pipeline.depthTest = false;
+		pipeline.depthWrite = false;
+		pipeline.blendEnable = false;
+		pipeline.stencilEnable = false;
+		pipeline.cullMode = rhi::CullMode::Back;
+		cmd().bindPipeline(pipeline);
+
+		// Level 0：硬件深度 -> 线性视图距离
+		uploadPyramidMode(1);
+		ModelRenderer::drawNdcPlane(cmd());
+
+		// Level 1..N：逐级锁定上一层 [level-1, level-1] 做 Rotated-Grid 子采样，消除渲染反馈环
+		if (m_DepthPyramidLevels > 1) {
+			uploadPyramidMode(0);
+			cmd().bindTextureUnit(pyramidHandle, TextureUnit::SSAODepth);
+			for (int level = 1; level < m_DepthPyramidLevels; ++level) {
+				const uint8_t srcLevel = static_cast<uint8_t>(level - 1);
+				cmd().setTextureMipRange(pyramidHandle, srcLevel, srcLevel);
+				cmd().setRenderTargetColorAttachment(m_DepthPyramidRT.getHandle(), 0,
+					pyramidHandle, static_cast<uint8_t>(level), 0);
+				cmd().setViewport(0, 0,
+					std::max(1u, width >> level), std::max(1u, height >> level));
+				ModelRenderer::drawNdcPlane(cmd());
+			}
+			cmd().setTextureMipRange(pyramidHandle, 0,
+				static_cast<uint8_t>(m_DepthPyramidLevels - 1));
+		}
+
+		cmd().endRenderPass();
+		cmd().popDebugGroup();
 	}
 
 	PreLightingPassOutput SSAOPass::executeSSAOPass(ICamera* camera, GeometryPassOutput& gBufferOutput)
@@ -286,27 +381,8 @@ namespace engine
 
 		cmd().pushDebugGroup("SSAOPass");
 
-		rhi::PipelineState ssaoPipeline;
-		{
-			cmd().pushDebugGroup(algorithmName());
-
-		// 通过命令缓冲录制 beginRenderPass
-		rhi::RenderPassParams ssaoParams;
-		ssaoParams.viewport = { 0, 0, m_SSAORT.getWidth(), m_SSAORT.getHeight() };
-		ssaoParams.clearColorFlag = true;
-		ssaoParams.clearDepthFlag = true;
-		cmd().beginRenderPass(m_SSAORT.getHandle(), ssaoParams);
-
-		// 构建 SSAO pass 的管线状态
-		ssaoPipeline.program = algorithmShader()->getProgramHandle();
-		ssaoPipeline.depthTest = false;
-		ssaoPipeline.blendEnable = false;
-		ssaoPipeline.stencilEnable = false;
-		ssaoPipeline.cullMode = rhi::CullMode::Back;
-		cmd().bindPipeline(ssaoPipeline);
-
-		// 传递采样核 + 参数 通过 UBO
-		if (auto* uboMgr = getUBOManager()) {
+		auto* uboMgr = getUBOManager();
+		if (uboMgr) {
 			// PerFrame UBO
 			uboMgr->preparePerFrame(camera->getViewMatrix(), camera->getProjectionMatrix(),
 				glm::vec3(0.0f), glm::vec2(Window::getWidth(), Window::getHeight()));
@@ -314,13 +390,35 @@ namespace engine
 				&uboMgr->getPerFrameData(), sizeof(UBOPerFrame));
 			cmd().bindUBO(UBOBinding::PerFrame,
 				uboMgr->getPerFrameHandle(), sizeof(UBOPerFrame));
-
-			uploadAlgorithmParams(camera->getProjectionMatrix());
 		}
 
-		// 绑定深度纹理；各算法额外需要的纹理（如法线、噪声）在 bindAlgorithmTextures 里绑定。
-		cmd().bindTextureUnit(gBufferOutput.depthStencilTexture->getRHIHandle(), TextureUnit::SSAODepth);
-		bindAlgorithmTextures(gBufferOutput);
+		if (m_Algorithm == Algorithm::SAO)
+			buildDepthPyramid(gBufferOutput);
+
+		rhi::PipelineState ssaoPipeline;
+		{
+			cmd().pushDebugGroup(algorithmName());
+
+			// 通过命令缓冲录制 beginRenderPass
+			rhi::RenderPassParams ssaoParams;
+			ssaoParams.viewport = { 0, 0, m_SSAORT.getWidth(), m_SSAORT.getHeight() };
+			ssaoParams.clearColorFlag = true;
+			ssaoParams.clearDepthFlag = true;
+			cmd().beginRenderPass(m_SSAORT.getHandle(), ssaoParams);
+
+			// 构建 SSAO pass 的管线状态
+			ssaoPipeline.program = algorithmShader()->getProgramHandle();
+			ssaoPipeline.depthTest = false;
+			ssaoPipeline.blendEnable = false;
+			ssaoPipeline.stencilEnable = false;
+			ssaoPipeline.cullMode = rhi::CullMode::Back;
+			cmd().bindPipeline(ssaoPipeline);
+
+			// 传递采样核 + 参数 通过 UBO
+			uploadAlgorithmParams(camera->getProjectionMatrix());
+
+			// 绑定深度纹理及各算法额外需要的纹理
+			bindAlgorithmTextures(gBufferOutput);
 
 			// 绘制全屏四边形
 			ModelRenderer::drawNdcPlane(cmd());
@@ -329,24 +427,41 @@ namespace engine
 		}
 
 		{
-			// ========== Blur Pass ==========
+			// ========== Blur Pass（水平 + 竖直两遍可分离双边模糊） ==========
 			cmd().pushDebugGroup("SSAO Blur");
 
-		rhi::RenderPassParams blurParams;
-		blurParams.viewport = { 0, 0, m_SSAOBlurRT.getWidth(), m_SSAOBlurRT.getHeight() };
-		blurParams.clearColorFlag = true;
-		blurParams.clearDepthFlag = true;
-		cmd().beginRenderPass(m_SSAOBlurRT.getHandle(), blurParams);
+			rhi::PipelineState blurPipeline = ssaoPipeline;
+			blurPipeline.program = m_SSAOBlurShader->getProgramHandle();
 
-		// 构建 Blur pass 的管线状态（复用大部分设置，仅切换 shader）
-		rhi::PipelineState blurPipeline = ssaoPipeline;
-		blurPipeline.program = m_SSAOBlurShader->getProgramHandle();
-		cmd().bindPipeline(blurPipeline);
+			const glm::vec2 step(2.0f / static_cast<float>(m_SSAORT.getWidth()),
+				2.0f / static_cast<float>(m_SSAORT.getHeight()));
+			RenderTarget* targets[2] = { &m_BlurPingRT, &m_SSAOBlurRT };
+			Texture* inputs[2] = { m_SSAORT.getColorTexture(), m_BlurPingRT.getColorTexture() };
 
-		cmd().bindTextureUnit(m_SSAORT.getColorTexture()->getRHIHandle(), TextureUnit::PostProcessInput);
+			for (int pass = 0; pass < 2; ++pass) {
+				rhi::RenderPassParams blurParams;
+				blurParams.viewport = { 0, 0, targets[pass]->getWidth(), targets[pass]->getHeight() };
+				blurParams.clearColorFlag = true;
+				blurParams.clearDepthFlag = false;
+				cmd().beginRenderPass(targets[pass]->getHandle(), blurParams);
+				cmd().bindPipeline(blurPipeline);
 
-			ModelRenderer::drawNdcPlane(cmd());
-			cmd().endRenderPass();
+				if (uboMgr) {
+					UBOBilateralBlurParams blurUBOParams{};
+					blurUBOParams.axis = (pass == 0) ? glm::vec2(step.x, 0.0f) : glm::vec2(0.0f, step.y);
+					blurUBOParams.sampleCount = 6;
+					blurUBOParams.farPlaneOverEdgeDistance = FAR_PLANE / std::max(m_BilateralThreshold, 1.0e-4f);
+					blurUBOParams.sigma = 4.0f;
+					cmd().updateBuffer(uboMgr->getCustomHandle(), &blurUBOParams, sizeof(UBOBilateralBlurParams));
+					cmd().bindUBO(UBOBinding::CustomParams,
+						uboMgr->getCustomHandle(), sizeof(UBOBilateralBlurParams));
+				}
+
+				cmd().bindTextureUnit(inputs[pass]->getRHIHandle(), TextureUnit::PostProcessInput);
+				ModelRenderer::drawNdcPlane(cmd());
+				cmd().endRenderPass();
+			}
+
 			cmd().popDebugGroup();
 		}
 

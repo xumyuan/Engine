@@ -96,6 +96,8 @@ public:
             const void* data, uint32_t dataSize) override;
     void updateTextureSampler(TextureHandle handle,
             const TextureDesc& desc) override;
+    void setTextureMipRange(TextureHandle handle,
+            uint8_t baseLevel, uint8_t maxLevel) override;
 
     // ---------- Shader 工厂 ----------
     std::unique_ptr<RHIShaderCompiler> createShaderCompiler() override;

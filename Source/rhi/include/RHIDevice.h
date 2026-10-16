@@ -76,6 +76,11 @@ class RHIDevice {
     virtual void updateTextureSampler(TextureHandle handle,
             const TextureDesc& desc) = 0;
 
+    // 限制纹理采样的有效 mip 层级范围 [baseLevel, maxLevel]
+    // 用于同一纹理逐级生成 mip（如深度塔）时隔离读写层级，避免渲染反馈环
+    virtual void setTextureMipRange(TextureHandle handle,
+            uint8_t baseLevel, uint8_t maxLevel) = 0;
+
     // ---------- Shader 工厂 ----------
     // 创建着色器编译器（各后端提供具体实现）
     virtual std::unique_ptr<RHIShaderCompiler> createShaderCompiler() = 0;
