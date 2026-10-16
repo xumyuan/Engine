@@ -34,6 +34,7 @@ namespace engine {
 
 		void onUpdate(float deltaTime);
 		void onRender();
+		bool saveCameraPose();
 
 		void addModelsToRenderer();
 
@@ -65,6 +66,7 @@ namespace engine {
 	private:
 		// Global Config
 		GlobalConfig& m_config;
+		std::string m_ScenePath;
 
 		// Scene parameters
 		ProbeBlendSetting m_SceneProbeBlendSetting = PROBES_SIMPLE;

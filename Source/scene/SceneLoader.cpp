@@ -51,6 +51,82 @@ namespace engine {
 		TextureLoader::processMainThreadTasks();
 	}
 
+	bool SceneLoader::saveCameraToFile(const std::string& filePath, const FPSCamera& camera) {
+		if (filePath.empty()) {
+			spdlog::error("Cannot save camera pose: scene file path is empty");
+			return false;
+		}
+
+		try {
+			std::ifstream inFile(filePath);
+			if (!inFile.is_open()) {
+				spdlog::error("Cannot open scene file for reading: {}", filePath);
+				return false;
+			}
+			std::string content((std::istreambuf_iterator<char>(inFile)), std::istreambuf_iterator<char>());
+			inFile.close();
+
+			const glm::vec3 pos = camera.getPosition();
+			const float yaw = camera.getYaw();
+			const float pitch = glm::clamp(camera.getPitch(), -89.0f, 89.0f);
+
+			std::ostringstream cameraBlock;
+			cameraBlock << std::fixed << std::setprecision(3)
+				<< "\"camera\": {\n"
+				<< "        \"position\": [" << pos.x << ", " << pos.y << ", " << pos.z << "],\n"
+				<< "        \"yaw\": " << yaw << ",\n"
+				<< "        \"pitch\": " << pitch << "\n"
+				<< "    }";
+
+			const std::regex cameraPattern(R"("camera"\s*:\s*\{[^}]*\})");
+			std::string updatedContent;
+			if (std::regex_search(content, cameraPattern)) {
+				updatedContent = std::regex_replace(content, cameraPattern, cameraBlock.str(), std::regex_constants::format_first_only);
+			}
+			else {
+				const std::regex versionPattern(R"(("version"\s*:\s*\d+\s*,))");
+				if (std::regex_search(content, versionPattern)) {
+					updatedContent = std::regex_replace(
+						content,
+						versionPattern,
+						"$1\n    " + cameraBlock.str() + ",",
+						std::regex_constants::format_first_only
+					);
+				}
+				else {
+					const auto bracePos = content.find('{');
+					if (bracePos == std::string::npos) {
+						spdlog::error("Invalid JSON file (missing '{{'): {}", filePath);
+						return false;
+					}
+					updatedContent = content;
+					updatedContent.insert(bracePos + 1, "\n    " + cameraBlock.str() + ",");
+				}
+			}
+
+			// 写入前校验 JSON 语法有效
+			(void)JsonUtils::safeParseJson(updatedContent);
+
+			std::ofstream outFile(filePath, std::ios::trunc);
+			if (!outFile.is_open()) {
+				spdlog::error("Cannot open scene file for writing: {}", filePath);
+				return false;
+			}
+			outFile << updatedContent;
+			outFile.close();
+
+			spdlog::info(
+				"Saved camera pose to '{}': position=[{:.3f}, {:.3f}, {:.3f}], yaw={:.3f}, pitch={:.3f}",
+				filePath, pos.x, pos.y, pos.z, yaw, pitch
+			);
+			return true;
+		}
+		catch (const std::exception& e) {
+			spdlog::error("Failed to save camera pose to '{}': {}", filePath, e.what());
+			return false;
+		}
+	}
+
 	void SceneLoader::loadModels(Scene3D& scene, const SceneInfo& sceneInfo) {
 		auto& modelList = sceneInfo.entities;
 		if (modelList.empty()) return;

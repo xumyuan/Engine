@@ -104,10 +104,8 @@ int main(int argc, char* argv[]) {
 		if (engine::InputManager::isKeyPressed(GLFW_KEY_ESCAPE))
 			window.close();
 
-		if (engine::InputManager::isKeyPressed(GLFW_KEY_C)) {
-			auto* camera = scene->getCamera();
-			glm::vec3 pos = camera->getPosition();
-			spdlog::info("Camera Position: ({}, {}, {})", pos.x, pos.y, pos.z);
+		if (engine::InputManager::isKeyJustPressed(GLFW_KEY_C)) {
+			scene->saveCameraPose();
 		}
 
 		scene->onUpdate(deltaTime.getDeltaTime());

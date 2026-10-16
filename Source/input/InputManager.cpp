@@ -7,6 +7,7 @@ namespace engine {
 
 	// Static declarations
 	bool InputManager::s_Keys[MAX_KEYS];
+	bool InputManager::s_KeyJustPressed[MAX_KEYS];
 	float InputManager::s_KeyPressure[MAX_KEYS];
 	bool InputManager::s_Buttons[MAX_BUTTONS];
 	double InputManager::s_MouseX, InputManager::s_MouseY, InputManager::s_MouseXDelta, InputManager::s_MouseYDelta;
@@ -17,6 +18,7 @@ namespace engine {
 		s_MouseXDelta = s_MouseYDelta = 0;
 
 		memset(s_Keys, 0, sizeof(bool) * MAX_KEYS);
+		memset(s_KeyJustPressed, 0, sizeof(bool) * MAX_KEYS);
 		memset(s_KeyPressure, 0, sizeof(float) * MAX_KEYS);
 		memset(s_Buttons, 0, sizeof(bool) * MAX_BUTTONS);
 	}
@@ -26,6 +28,7 @@ namespace engine {
 	void InputManager::update() {
 		s_MouseXDelta = s_MouseYDelta = 0;
 		s_ScrollX = 0; s_ScrollY = 0;
+		memset(s_KeyJustPressed, 0, sizeof(bool) * MAX_KEYS);
 
 		m_JoystickManager.update();
 	}
@@ -37,6 +40,16 @@ namespace engine {
 		}
 		else {
 			return s_Keys[keycode];
+		}
+	}
+
+	bool InputManager::isKeyJustPressed(unsigned int keycode) {
+		if (keycode >= MAX_KEYS) {
+			spdlog::error("Key checked is out of bounds (ie not supported)");
+			return false;
+		}
+		else {
+			return s_KeyJustPressed[keycode];
 		}
 	}
 
@@ -62,6 +75,11 @@ namespace engine {
 
 
 	void InputManager::keyCallback(int key, int scancode, int action, int mods) {
+		if (key < 0 || key >= MAX_KEYS)
+			return;
+		if (action == GLFW_PRESS) {
+			s_KeyJustPressed[key] = true;
+		}
 		s_Keys[key] = action != GLFW_RELEASE;
 		s_KeyPressure[key] = s_Keys[key];
 	}

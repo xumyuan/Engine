@@ -40,6 +40,8 @@ namespace engine {
 	{
 		m_DebugSection = DebugPane::addSection("Camera", [this]() {
 			ImGui::Text("Pos  x:%.1f  y:%.1f  z:%.1f", m_Position.x, m_Position.y, m_Position.z);
+			ImGui::Text("Yaw  %.1f  Pitch  %.1f", m_Yaw, m_Pitch);
+			ImGui::Text("Hit \"C\" to save camera to JSON");
 		}, 10, true);
 	}
 

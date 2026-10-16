@@ -16,6 +16,7 @@ namespace engine {
 		void update();
 
 		static bool isKeyPressed(unsigned int keycode);
+		static bool isKeyJustPressed(unsigned int keycode);
 		static float getKeyPressure(unsigned int keycode);
 		static bool isMouseButtonPressed(unsigned int code);
 
@@ -41,6 +42,7 @@ namespace engine {
 		JoystickManager m_JoystickManager;
 
 		static bool s_Keys[MAX_KEYS];
+		static bool s_KeyJustPressed[MAX_KEYS];
 		static float s_KeyPressure[MAX_KEYS];
 		static bool s_Buttons[MAX_BUTTONS];
 		static double s_MouseX, s_MouseY, s_MouseXDelta, s_MouseYDelta;

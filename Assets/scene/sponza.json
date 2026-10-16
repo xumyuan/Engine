@@ -1,9 +1,9 @@
 {
     "version": 1,
     "camera": {
-        "position": [105.716, 136.20, 98.0],
-        "yaw": 0.0,
-        "pitch": 0.0
+        "position": [96.631, 137.732, 100.676],
+        "yaw": -4.400,
+        "pitch": 0.500
     },
     "entities":[
         {

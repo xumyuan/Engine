@@ -29,6 +29,7 @@ namespace engine {
 		if (!m_config.isLoaded()) {
 			m_config.loadFromFile();
 		}
+		m_ScenePath = m_config.getScenePath();
 
 		// 初始化 RHI 管线状态
 		if (auto* device = getRHIDevice()) {
@@ -44,7 +45,7 @@ namespace engine {
 
 		// 通过 SceneLoader 加载场景数据（从 JSON 解析模型、天空盒、灯光等）
 		BEGIN_EVENT("Scene Init");
-		SceneLoader::loadFromFile(m_config.getScenePath(), *this);
+		SceneLoader::loadFromFile(m_ScenePath, *this);
 		END_EVENT();
 	}
 
@@ -53,7 +54,8 @@ namespace engine {
 		m_ModelRenderer(getCamera()),
 		m_Terrain(glm::vec3(-220.0f, 0.0f, 0.0f)),
 		m_ProbeManager(m_SceneProbeBlendSetting),
-		m_config(GlobalConfig::getInstance())
+		m_config(GlobalConfig::getInstance()),
+		m_ScenePath(scenePath)
 	{
 
 		// 初始化 RHI 管线状态
@@ -137,6 +139,10 @@ namespace engine {
 
 	// 场景渲染
 	void Scene3D::onRender() {
+	}
+
+	bool Scene3D::saveCameraPose() {
+		return SceneLoader::saveCameraToFile(m_ScenePath, m_SceneCamera);
 	}
 
 	RenderScene Scene3D::extractRenderScene() {

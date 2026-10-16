@@ -5,6 +5,7 @@
 namespace engine {
 
 	class Scene3D;
+	class FPSCamera;
 
 	/// @brief 场景加载器 —— 负责从 JSON 文件解析场景数据并填充到 Scene3D
 	/// 将加载职责从 Scene3D 中分离出来，遵循单一职责原则
@@ -16,6 +17,12 @@ namespace engine {
 		/// @param filePath JSON 场景文件路径
 		/// @param scene 要填充的 Scene3D 实例
 		static void loadFromFile(const std::string& filePath, Scene3D& scene);
+
+		/// @brief 将当前相机位姿写回指定场景 JSON 文件的 "camera" 字段
+		/// @param filePath JSON 场景文件路径
+		/// @param camera 当前 FPSCamera
+		/// @return 保存成功返回 true
+		static bool saveCameraToFile(const std::string& filePath, const FPSCamera& camera);
 
 	private:
 		/// @brief 加载模型列表 —— 创建 SceneNode + MeshComponent
