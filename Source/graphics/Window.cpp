@@ -1,6 +1,13 @@
 #include "pch.h"
 #include "Window.h"
 
+#ifdef _WIN32
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3native.h>
+#include <imm.h>
+#pragma comment(lib, "imm32.lib")
+#endif
+
 namespace engine {
 
 	// Static declarations
@@ -79,6 +86,14 @@ namespace engine {
 			std::cout << "GLFW Window Couldn't Be Created" << std::endl;
 			return false;
 		}
+
+#ifdef _WIN32
+		// 默认解绑窗口的 IME 上下文，使按键始终走英文直通输入（防止 WASD/Shift 触发中文输入法候选框）；
+		// 当后续聚焦 ImGui 文本输入框时，ImGui 会自动重新关联 IME。
+		if (HWND hwnd = glfwGetWin32Window(m_Window)) {
+			ImmAssociateContextEx(hwnd, nullptr, 0);
+		}
+#endif
 
 		// Setup the mouse settings
 		if (s_HideCursor)
