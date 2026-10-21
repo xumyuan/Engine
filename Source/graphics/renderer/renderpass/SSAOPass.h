@@ -17,11 +17,32 @@ namespace engine
 			Count
 		};
 
-		enum class SAOQuality {
+		enum class Quality {
 			Low,
 			Medium,
 			High,
 			Ultra
+		};
+
+		struct Settings {
+			bool enabled = true;
+			Algorithm algorithm = Algorithm::Crytek;
+			float bilateralThreshold = 0.05f;
+
+			struct {
+				float radius = 0.5f;
+				float bias = 0.025f;
+				float power = 1.0f;
+			} crytek;
+
+			struct {
+				Quality quality = Quality::Medium;
+				float radius = 0.5f;
+				float bias = 0.0005f;
+				float intensity = 1.0f;
+				float power = 2.0f;
+				float minHorizonAngleDeg = 0.0f;
+			} sao;
 		};
 
 		SSAOPass(const RenderScene& renderScene);
@@ -30,60 +51,42 @@ namespace engine
 		PreLightingPassOutput executeSSAOPass(ICamera* camera, GeometryPassOutput& gBufferOutput);
 
 		inline Texture* getSSAOTexture() { return m_SSAOBlurRT.getColorTexture(); }
-		inline bool isEnabled() const { return m_Enabled; }
+		inline bool isEnabled() const { return m_Settings.enabled; }
+		inline Settings& getSettings() { return m_Settings; }
 
 	private:
-		void generateSampleKernel();
-		void generateNoiseTexture();
-		void drawAlgorithmControls();
-		const char* algorithmName() const;
-		Shader* algorithmShader() const;
-		void uploadAlgorithmParams(const glm::mat4& projection);
-		void bindAlgorithmTextures(const GeometryPassOutput& gBufferOutput);
-		UBOSAOParams makeSAOParams(const glm::mat4& projection) const;
+		void initCrytekResources();
+		void drawDebugUI();
+
 		void buildDepthPyramid(const GeometryPassOutput& gBufferOutput);
-
-		float lerp(float a, float b, float t);
+		void renderCrytek(const GeometryPassOutput& gBufferOutput);
+		void renderSAO(const glm::mat4& projection, const GeometryPassOutput& gBufferOutput);
+		void renderBilateralBlur();
+		UBOSAOParams makeSAOParams(const glm::mat4& projection) const;
 
 	private:
-		// SSAO Pass
-		RenderTarget m_SSAORT;
-		Shader* m_SSAOShader;
-		Shader* m_SAOShader;
+		static constexpr int KERNEL_SIZE = 64;
+		static constexpr int NOISE_SIZE = 4;
 
-		// Blur Pass
+		Settings m_Settings;
+		int m_DebugSection = 0;
+
+		// 渲染目标与纹理资源
+		RenderTarget m_SSAORT;
 		RenderTarget m_BlurPingRT;
 		RenderTarget m_SSAOBlurRT;
-		Shader* m_SSAOBlurShader;
-
-		// 深度塔（R32F 多 mip 纹理，存线性视图距离）
-		Texture m_DepthPyramidTexture;
 		RenderTarget m_DepthPyramidRT;
-		Shader* m_DepthPyramidShader;
+		Texture m_DepthPyramidTexture;
 		int m_DepthPyramidLevels = 1;
 
-		// 采样核（半球内的随机采样点）
-		std::vector<glm::vec3> m_SSAOKernel;
-		static const int KERNEL_SIZE = 64;
-
-		// 噪声纹理
 		Texture m_NoiseTexture;
-		static const int NOISE_SIZE = 4;
+		std::vector<glm::vec3> m_SSAOKernel;
 
-		// 共用参数。Bias / Power 两套分开存，切换算法时不互相覆盖。
-		int m_DebugSection = 0;
-		bool m_Enabled = true;
-		Algorithm m_Algorithm = Algorithm::Crytek;
-		float m_Radius = 0.5f;
-		float m_BilateralThreshold = 0.05f;
-		float m_Bias = 0.025f;
-		float m_Power = 1.0f;
-
-		SAOQuality m_SAOQuality = SAOQuality::Medium;
-		float m_SAOBias = 0.0005f;
-		float m_SAOIntensity = 1.0f;
-		float m_SAOPower = 2.0f;
-		float m_SAOMinHorizonAngleDeg = 0.0f;
+		// 着色器
+		Shader* m_SSAOShader = nullptr;
+		Shader* m_SAOShader = nullptr;
+		Shader* m_SSAOBlurShader = nullptr;
+		Shader* m_DepthPyramidShader = nullptr;
 	};
 
 }
