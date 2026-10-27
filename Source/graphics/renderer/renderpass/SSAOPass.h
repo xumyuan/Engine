@@ -14,6 +14,7 @@ namespace engine
 		enum class Algorithm {
 			Crytek,
 			SAO,
+			GTAO,
 			Count
 		};
 
@@ -43,6 +44,18 @@ namespace engine
 				float power = 2.0f;
 				float minHorizonAngleDeg = 0.0f;
 			} sao;
+
+			struct {
+				float radius = 0.5f;
+				float intensity = 1.0f;
+				float power = 1.0f;
+				int sliceCount = 4;
+				int stepsPerSlice = 3;
+				float thicknessHeuristic = 0.004f;
+				bool useVisibilityBitmasks = false;
+				float constThickness = 0.5f;
+				bool linearThickness = false;
+			} gtao;
 		};
 
 		SSAOPass(const RenderScene& renderScene);
@@ -61,8 +74,10 @@ namespace engine
 		void buildDepthPyramid(const GeometryPassOutput& gBufferOutput);
 		void renderCrytek(const GeometryPassOutput& gBufferOutput);
 		void renderSAO(const glm::mat4& projection, const GeometryPassOutput& gBufferOutput);
+		void renderGTAO(const glm::mat4& projection, const GeometryPassOutput& gBufferOutput);
 		void renderBilateralBlur();
 		UBOSAOParams makeSAOParams(const glm::mat4& projection) const;
+		UBOGTAOParams makeGTAOParams(const glm::mat4& projection) const;
 
 	private:
 		static constexpr int KERNEL_SIZE = 64;
@@ -85,6 +100,7 @@ namespace engine
 		// 着色器
 		Shader* m_SSAOShader = nullptr;
 		Shader* m_SAOShader = nullptr;
+		Shader* m_GTAOShader = nullptr;
 		Shader* m_SSAOBlurShader = nullptr;
 		Shader* m_DepthPyramidShader = nullptr;
 	};

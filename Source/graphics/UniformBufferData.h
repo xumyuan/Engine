@@ -172,6 +172,23 @@ struct alignas(16) UBOSAOParams {
 };
 static_assert(sizeof(UBOSAOParams) == 64, "UBOSAOParams size mismatch with std140 layout");
 
+// GTAO shares binding 4 with the other AO algorithms.
+struct alignas(16) UBOGTAOParams {
+    int sliceCount;                     // offset 0
+    int stepsPerSlice;                  // offset 4
+    float invRadiusSquared;             // offset 8
+    float projectionScaleRadius;        // offset 12
+    float intensity;                    // offset 16
+    float power;                        // offset 20
+    float thicknessHeuristic;           // offset 24
+    float constThickness;               // offset 28
+    float farPlane;                     // offset 32
+    int maxLevel;                       // offset 36
+    int useVisibilityBitmasks;          // offset 40
+    int linearThickness;                // offset 44
+};
+static_assert(sizeof(UBOGTAOParams) == 48, "UBOGTAOParams size mismatch with std140 layout");
+
 // ============================================================================
 // UBO 4: DepthPyramidParams — 深度塔构建参数（与 SAOParams 共用 binding 4）
 // ============================================================================

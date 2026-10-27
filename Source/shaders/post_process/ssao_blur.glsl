@@ -49,7 +49,7 @@ void tap(inout float sum, inout float totalWeight, float weight, float depth, ve
 }
 
 // 通用 AO 可分离双边模糊（对齐 Filament bilateralBlur.mat）：
-// Crytek 与 SAO 共用；C++ 按水平、竖直各调用一遍，每遍是高斯空间权重 x 深度双边权重，
+// Crytek、SAO 与 GTAO 共用；C++ 按水平、竖直各调用一遍，每遍是高斯空间权重 x 深度双边权重，
 // 中心像素的 bilateral key 原样透传给下一遍继续使用
 void main()
 {

@@ -18,6 +18,7 @@ namespace engine
 	constexpr const char* kAlgorithmNames[] = {
 		"Crytek",
 		"SAO",
+		"GTAO",
 	};
 	static_assert(sizeof(kAlgorithmNames) / sizeof(kAlgorithmNames[0])
 		== static_cast<size_t>(SSAOPass::Algorithm::Count),
@@ -34,6 +35,7 @@ namespace engine
 	{
 		m_SSAOShader = ShaderLoader::loadShader("Source/shaders/post_process/ssao.glsl");
 		m_SAOShader = ShaderLoader::loadShader("Source/shaders/post_process/sao.glsl");
+		m_GTAOShader = ShaderLoader::loadShader("Source/shaders/post_process/gtao.glsl");
 		m_SSAOBlurShader = ShaderLoader::loadShader("Source/shaders/post_process/ssao_blur.glsl");
 		m_DepthPyramidShader = ShaderLoader::loadShader("Source/shaders/post_process/depth_pyramid_minify.glsl");
 
@@ -167,6 +169,21 @@ namespace engine
 				ImGui::SetTooltip("Reject samples too close to the horizon");
 			break;
 		}
+		case Algorithm::GTAO:
+			ImGui::SliderFloat("Radius", &m_Settings.gtao.radius, 0.05f, 2.0f, "%.3f");
+			ImGui::SliderFloat("Intensity", &m_Settings.gtao.intensity, 0.0f, 4.0f, "%.2f");
+			ImGui::SliderFloat("Power", &m_Settings.gtao.power, 0.5f, 4.0f, "%.2f");
+			ImGui::SliderInt("Slices", &m_Settings.gtao.sliceCount, 1, 8);
+			ImGui::SliderInt("Steps Per Slice", &m_Settings.gtao.stepsPerSlice, 1, 8);
+			ImGui::Checkbox("Visibility Bitmasks", &m_Settings.gtao.useVisibilityBitmasks);
+			if (m_Settings.gtao.useVisibilityBitmasks) {
+				ImGui::SliderFloat("Thickness", &m_Settings.gtao.constThickness, 0.0f, 2.0f, "%.3f");
+				ImGui::Checkbox("Linear Thickness", &m_Settings.gtao.linearThickness);
+			} else {
+				ImGui::SliderFloat("Thickness Heuristic", &m_Settings.gtao.thicknessHeuristic,
+					0.0f, 0.1f, "%.4f");
+			}
+			break;
 		default:
 			break;
 		}
@@ -219,6 +236,30 @@ namespace engine
 		params.power = m_Settings.sao.power;
 		params.maxLevel = m_DepthPyramidLevels - 1;
 		params.farPlane = FAR_PLANE;
+		return params;
+	}
+
+	UBOGTAOParams SSAOPass::makeGTAOParams(const glm::mat4& projection) const
+	{
+		const auto& settings = m_Settings.gtao;
+		const float radius = std::max(settings.radius, 1.0e-4f);
+		const float projectionScale = std::min(
+			0.5f * projection[0][0] * static_cast<float>(m_SSAORT.getWidth()),
+			0.5f * projection[1][1] * static_cast<float>(m_SSAORT.getHeight()));
+
+		UBOGTAOParams params{};
+		params.sliceCount = std::clamp(settings.sliceCount, 1, 8);
+		params.stepsPerSlice = std::clamp(settings.stepsPerSlice, 1, 8);
+		params.invRadiusSquared = 1.0f / (radius * radius);
+		params.projectionScaleRadius = projectionScale * radius;
+		params.intensity = std::max(settings.intensity, 0.0f);
+		params.power = std::max(settings.power, 1.0e-4f);
+		params.thicknessHeuristic = std::clamp(settings.thicknessHeuristic, 0.0f, 1.0f);
+		params.constThickness = std::max(settings.constThickness, 0.0f);
+		params.farPlane = FAR_PLANE;
+		params.maxLevel = m_DepthPyramidLevels - 1;
+		params.useVisibilityBitmasks = settings.useVisibilityBitmasks ? 1 : 0;
+		params.linearThickness = settings.linearThickness ? 1 : 0;
 		return params;
 	}
 
@@ -360,6 +401,38 @@ namespace engine
 		cmd().popDebugGroup();
 	}
 
+	void SSAOPass::renderGTAO(const glm::mat4& projection, const GeometryPassOutput& gBufferOutput)
+	{
+		buildDepthPyramid(gBufferOutput);
+		cmd().pushDebugGroup("GTAO");
+
+		rhi::RenderPassParams passParams;
+		passParams.viewport = { 0, 0, m_SSAORT.getWidth(), m_SSAORT.getHeight() };
+		passParams.clearColorFlag = true;
+		passParams.clearDepthFlag = false;
+		passParams.clearStencilFlag = false;
+		cmd().beginRenderPass(m_SSAORT.getHandle(), passParams);
+
+		rhi::PipelineState pipeline;
+		pipeline.program = m_GTAOShader->getProgramHandle();
+		pipeline.depthTest = false;
+		pipeline.depthWrite = false;
+		pipeline.blendEnable = false;
+		pipeline.stencilEnable = false;
+		pipeline.cullMode = rhi::CullMode::Back;
+		cmd().bindPipeline(pipeline);
+
+		if (auto* uboMgr = getUBOManager()) {
+			const UBOGTAOParams params = makeGTAOParams(projection);
+			cmd().updateBuffer(uboMgr->getCustomHandle(), &params, sizeof(params));
+			cmd().bindUBO(UBOBinding::CustomParams, uboMgr->getCustomHandle(), sizeof(params));
+		}
+		cmd().bindTextureUnit(m_DepthPyramidTexture.getRHIHandle(), TextureUnit::SSAODepth);
+		ModelRenderer::drawNdcPlane(cmd());
+		cmd().endRenderPass();
+		cmd().popDebugGroup();
+	}
+
 	void SSAOPass::renderBilateralBlur()
 	{
 		cmd().pushDebugGroup("SSAO Blur");
@@ -428,6 +501,9 @@ namespace engine
 			break;
 		case Algorithm::SAO:
 			renderSAO(camera->getProjectionMatrix(), gBufferOutput);
+			break;
+		case Algorithm::GTAO:
+			renderGTAO(camera->getProjectionMatrix(), gBufferOutput);
 			break;
 		default:
 			break;

@@ -146,6 +146,28 @@ compute 参数在创建时固定，CPU 的 `getPositions()` / `getVelocities()` 
 
 小球使用归一化后的灯光颜色和独立显示亮度，避免 HDR 光源颜色经色调映射后全部变白。标记受场景深度遮挡但不写深度，不进入阴影、G-buffer 或环境探针捕获，也不改变实际照明。方向光没有有限位置，因此不绘制灯球。
 
+## 环境光遮蔽
+
+延迟渲染下，Debug Controls 的 `SSAO` 区域可通过 `Algorithm` 切换 `Crytek`、`SAO`、`GTAO`，默认仍为 Crytek。
+GTAO 参考 Filament 的 `gtaoImpl.fs` / `gtao.mat`，使用深度金字塔、几何法线重建、双向地平线搜索和余弦加权弧积分，输出接入现有双边滤波与环境光照。
+
+- `Radius` 使用世界空间单位，`Intensity` 控制强度，`Power` 控制对比度。
+- `Slices` / `Steps Per Slice` 控制采样质量与开销，默认为 4 / 3，每个切片沿两个方向采样。
+- 默认使用地平线积分，`Thickness Heuristic` 缓解薄物体过度遮蔽。
+- `Visibility Bitmasks` 启用 Filament 的 32 扇区可见性掩码模式，使用 `Thickness` 指定几何厚度；`Linear Thickness` 让厚度随视距增长。模式切换通过 uniform 完成，无需重新编译 shader。
+
+GTAO 复用全分辨率 AO 目标，没有增加时域累积或 bent normal 输出。相比参考实现，增加了屏幕外/天空采样排除、零长度向量与位移边界保护，并为 bitmask 采样限制世界空间半径。来源与许可证见 `ThirdParty/filament/README.md`。
+
+GPU 回归测试需要 OpenGL 4.5、Python 的 `numpy` / `PyOpenGL` 包以及构建生成的 `glfw3.dll`：
+
+```bash
+python scripts/Test-GTAO.py
+# 自定义 GLFW 路径（例如只构建了 Development）：
+python scripts/Test-GTAO.py --glfw out/build/default/bin/Development/glfw3.dll
+```
+
+测试在隐藏窗口运行真实 GTAO、深度金字塔和双边滤波 shader，覆盖天空、平面、深度台阶、采样参数、强度、厚度及屏幕边缘，同时编译原有 Crytek / SAO shader。
+
 ## RHI 测试
 
 ```bash
